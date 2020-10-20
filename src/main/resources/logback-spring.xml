@@ -1,0 +1,24 @@
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <!-- 控制台 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 日志格式 -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger Line:%-3L - %msg%n</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+        <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <!-- 只有这个日志权限才能看，sql语句 -->
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+    <logger name="top.dcenter" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+</configuration>
