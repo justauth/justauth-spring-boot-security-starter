@@ -128,9 +128,9 @@ public class RefreshTokenJobImpl implements RefreshTokenJob, InitializingBean {
             // 设置过期时间
             connection.expireAt(key, Instant.now().plusSeconds(expiredIn).toEpochMilli());
 
-            Long count = usersConnectionTokenRepository.count();
+            Long maxTokenId = usersConnectionTokenRepository.getMaxTokenId();
             Integer batchCount = auth2Properties.getBatchCount();
-            long total = count / batchCount + (count % batchCount == 0 ? 0 : 1);
+            long total = maxTokenId / batchCount + (maxTokenId % batchCount == 0 ? 0 : 1);
 
             for (int i = 0; i < total; i++)
             {
@@ -161,9 +161,9 @@ public class RefreshTokenJobImpl implements RefreshTokenJob, InitializingBean {
     private void refreshToken() {
         try
         {
-            Long count = usersConnectionTokenRepository.count();
+            Long maxTokenId = usersConnectionTokenRepository.getMaxTokenId();
             Integer batchCount = auth2Properties.getBatchCount();
-            long total = count / batchCount + (count % batchCount == 0 ? 0 : 1);
+            long total = maxTokenId / batchCount + (maxTokenId % batchCount == 0 ? 0 : 1);
 
             for (int i = 0; i < total; i++)
             {

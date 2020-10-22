@@ -70,11 +70,11 @@ public interface UsersConnectionTokenRepository {
 	void delAuthTokenById(String tokenId) throws Exception;
 
 	/**
-	 * 统计总记录
-	 * @return 总记录数
+	 * 获取最大 TokenId
+	 * @return 获取最大 TokenId
 	 * @throws Exception sql 执行错误
 	 */
-	Long count() throws Exception;
+	Long getMaxTokenId() throws Exception;
 
 	/**
 	 * 获取 ID 范围在 startId(包含) 与 endId(包含) 之间且过期时间小于等于 expiredTime 且 enableRefresh=1 的 token 数据.<br>

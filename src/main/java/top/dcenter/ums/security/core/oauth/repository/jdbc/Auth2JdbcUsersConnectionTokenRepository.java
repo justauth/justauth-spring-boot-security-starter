@@ -190,8 +190,8 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
     }
 
     @Override
-    public Long count() throws IncorrectResultSizeDataAccessException {
-        return jdbcTemplate.queryForObject("SELECT COUNT(1) FROM `auth_token`", Long.class);
+    public Long getMaxTokenId() throws IncorrectResultSizeDataAccessException {
+        return jdbcTemplate.queryForObject("SELECT MAX(`id`) FROM `auth_token`", Long.class);
     }
 
     @Override
