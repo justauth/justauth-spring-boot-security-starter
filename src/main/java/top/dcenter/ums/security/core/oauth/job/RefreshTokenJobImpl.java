@@ -44,6 +44,7 @@ import top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository;
 import top.dcenter.ums.security.core.oauth.repository.UsersConnectionTokenRepository;
 import top.dcenter.ums.security.core.oauth.util.MvcUtil;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -123,29 +124,41 @@ public class RefreshTokenJobImpl implements RefreshTokenJob, InitializingBean {
     private void distributedRefreshToken() {
         try (final RedisConnection connection = this.redisConnectionFactory.getConnection())
         {
+            final Instant now = Instant.now();
+
             final byte[] key = REFRESH_TOKEN_JOB.getBytes(StandardCharsets.UTF_8.name());
             final long expiredIn = Duration.ofHours(REFRESH_TOKEN_JOB_KEY_EXPIRED_IN).toSeconds();
             // 设置过期时间
-            connection.expireAt(key, Instant.now().plusSeconds(expiredIn).toEpochMilli());
+            connection.expireAt(key, now.plusSeconds(expiredIn).toEpochMilli());
 
             Long maxTokenId = usersConnectionTokenRepository.getMaxTokenId();
             Integer batchCount = auth2Properties.getBatchCount();
             long total = maxTokenId / batchCount + (maxTokenId % batchCount == 0 ? 0 : 1);
-
+            log.info("分布式 refreshToken 定时刷新任务开始: 总批次={}, batchCount={}, maxTokenId={}",
+                     total, batchCount, maxTokenId);
             for (int i = 0; i < total; i++)
             {
-                final byte[] field = Integer.toString(i).getBytes(StandardCharsets.UTF_8.name());
-                // 获取锁
-                final Boolean lock = connection.hSetNX(key, field, "0".getBytes(StandardCharsets.UTF_8.name()));
-                // 获取锁失败, 继续下一批次
-                if (lock == null || !lock)
-                {
-                    continue;
+                try {
+                    final byte[] field = Integer.toString(i).getBytes(StandardCharsets.UTF_8.name());
+                    // 获取锁
+                    final Boolean lock = connection.hSetNX(key, field, "0".getBytes(StandardCharsets.UTF_8.name()));
+                    // 获取锁失败, 继续下一批次
+                    if (lock == null || !lock)
+                    {
+                        log.info("分布式 refreshToken 定时刷新任务: 获取锁失败, 跳过第 {} 批次", i);
+                        continue;
+                    }
+                    log.info("分布式 refreshToken 定时刷新任务: 获取锁成功, 执行第 {} 批次", i);
+                    // 从数据库表 auth_token 获取符合条件的记录数; 从第三方刷新 token 信息, 并对 user_connection 与 auth_token 表进行更新
+                    refresh(batchCount, i);
                 }
-
-                // 从数据库表 auth_token 获取符合条件的记录数; 从第三方刷新 token 信息, 并对 user_connection 与 auth_token 表进行更新
-                refresh(batchCount, i);
+                catch (UnsupportedEncodingException e) {
+                    log.error(String.format("分布式 refreshToken 定时刷新任务 key(%d) 类型转换异常, error=%s", i, e.getMessage()), e);
+                }
             }
+
+            log.info("分布式 refreshToken 定时刷新任务结束: 总批次={}, batchCount={}, maxTokenId={}, 总耗时={} 毫秒",
+                     total, batchCount, maxTokenId, Instant.now().toEpochMilli() - now.toEpochMilli());
 
         }
         catch (Exception e)
@@ -161,15 +174,23 @@ public class RefreshTokenJobImpl implements RefreshTokenJob, InitializingBean {
     private void refreshToken() {
         try
         {
+            long start = Instant.now().toEpochMilli();
+
             Long maxTokenId = usersConnectionTokenRepository.getMaxTokenId();
             Integer batchCount = auth2Properties.getBatchCount();
             long total = maxTokenId / batchCount + (maxTokenId % batchCount == 0 ? 0 : 1);
 
+            log.info("refreshToken 定时刷新任务开始: 总批次={}, batchCount={}, maxTokenId={}",
+                     total, batchCount, maxTokenId);
             for (int i = 0; i < total; i++)
             {
+                log.info("refreshToken 定时刷新任务: 执行第 {} 批次", i);
                 // 从数据库表 auth_token 获取符合条件的记录数; 从第三方刷新 token 信息, 并对 user_connection 与 auth_token 表进行更新
                 refresh(batchCount, i);
             }
+
+            log.info("refreshToken 定时刷新任务结束: 总批次={}, batchCount={}, maxTokenId={}, 总耗时={} 毫秒",
+                     total, batchCount, maxTokenId, Instant.now().toEpochMilli() - start);
         }
         catch (Exception e)
         {
@@ -181,25 +202,30 @@ public class RefreshTokenJobImpl implements RefreshTokenJob, InitializingBean {
      * 从数据库表 auth_token 获取符合条件的记录数; 从第三方刷新 token 信息, 并对 user_connection 与 auth_token 表进行更新
      * @param batchCount    每次从数据库表 auth_token 获取的记录数
      * @param batch         迭代批次, 通过与 batchCount 来计算 tokenId 范围
-     * @throws Exception    从数据库表 auth_token 获取的记录数出现异常
      */
-    private void refresh(Integer batchCount, int batch) throws Exception {
+    private void refresh(Integer batchCount, int batch) {
 
         // 过期时间戳(获取小于此时间戳的记录)
         final long expiredTime = Instant.now().toEpochMilli() + Duration.ofHours(auth2Properties.getRemainingExpireIn()).toMillis();
-        // 获取 token 记录
-        List<AuthTokenPo> authTokenPoList =
-                usersConnectionTokenRepository.findAuthTokenByExpireTimeAndBetweenId(expiredTime,
-                                                                                     1L + ((long) batch) * batchCount,
-                                                                                     (batch + 1L) * batchCount);
-        // 异步更新, 如果异步线程池处理过慢, refreshTokenTaskExecutor 的默认拒绝策略为 CallerRunsPolicy, 即改为同步更新
-        authTokenPoList.forEach(
-            token ->
-            {
-                final Auth2DefaultRequest auth2DefaultRequest = Auth2RequestHolder.getAuth2DefaultRequest(token.getProviderId());
-                refreshTokenTaskExecutor.execute(() -> getTokenAndUpdateAuthTokenPo(token, auth2DefaultRequest));
-            }
-        );
+        try {
+            // 获取 token 记录
+            List<AuthTokenPo> authTokenPoList =
+                    usersConnectionTokenRepository.findAuthTokenByExpireTimeAndBetweenId(expiredTime,
+                                                                                         1L + ((long) batch) * batchCount,
+                                                                                         (batch + 1L) * batchCount);
+            // 异步更新, 如果异步线程池处理过慢, refreshTokenTaskExecutor 的默认拒绝策略为 CallerRunsPolicy, 即改为同步更新
+            authTokenPoList.forEach(
+                    token ->
+                    {
+                        final Auth2DefaultRequest auth2DefaultRequest = Auth2RequestHolder.getAuth2DefaultRequest(token.getProviderId());
+                        refreshTokenTaskExecutor.execute(() -> getTokenAndUpdateAuthTokenPo(token, auth2DefaultRequest));
+                    }
+            );
+        }
+        catch (Exception e) {
+            log.error(String.format("refreshToken 定时刷新任务从 auth_token 获取的记录数出现异常: 第 %d 批次, batchCount=%d, error=%s",
+                                    batch, batchCount, e.getMessage()), e);
+        }
     }
 
     /**
