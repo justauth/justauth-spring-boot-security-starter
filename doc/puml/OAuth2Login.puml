@@ -1,0 +1,190 @@
+@startuml
+
+skinparam backgroundColor #EEEBDC
+skinparam handwritten true
+skinparam sequence {
+ArrowColor DeepSkyBlue
+ActorBorderColor DeepSkyBlue
+LifeLineBorderColor blue
+LifeLineBackgroundColor #A9DCDF
+ParticipantBorderColor DeepSkyBlue
+ParticipantBackgroundColor #00897b
+ParticipantFontName Impact
+ParticipantFontSize 17
+ParticipantFontColor #A9DCDF
+ActorBackgroundColor aqua
+ActorFontColor DeepSkyBlue
+ActorFontSize 17
+ActorFontName Aapex
+}
+participant "client"
+participant "github"
+participant "app"
+participant "Auth2DefaultRequestRedirectFilter"  #1565c0
+note right Auth2DefaultRequestRedirectFilter: 监听:/auth2/authorization/*
+participant "Auth2LoginAuthenticationFilter"  #1565c0
+note right Auth2LoginAuthenticationFilter: 监听:/auth2/login/*
+participant "Auth2RequestHolder" #1565c0
+note right Auth2RequestHolder: 应用启动时:\n根据配置属性加载相应的\nAuth2XxxRequest
+participant "AuthenticationManager" #1565c0
+participant "Auth2LoginAuthenticationProvider" #1565c0
+participant "Auth2UserService" #1565c0
+participant "UsersConnectionRepository" #1565c0
+participant "ConnectionService" #1565c0
+participant "UmsUserDetailsService" #FFCB3B
+note right UmsUserDetailsService: 必须实现此接口
+app -> app: 应用启动时:\n根据配置属性自动加载配置
+note right app: 配置文件:\n\
+Auth2PropertiesAutoConfiguration\n\
+Auth2AutoConfiguration\n\
+Auth2AutoConfigurer\n\
+RedisCacheAutoConfiguration\n\
+ScheduleAutoConfiguration
+
+client -> client: 第三方授权登录流程开始
+client -> Auth2DefaultRequestRedirectFilter: /auth2/authorization/github
+activate Auth2DefaultRequestRedirectFilter
+Auth2DefaultRequestRedirectFilter -> Auth2RequestHolder: getAuth2DefaultRequest(String providerId)
+activate Auth2DefaultRequestRedirectFilter
+activate Auth2RequestHolder
+Auth2RequestHolder --> Auth2DefaultRequestRedirectFilter: 返回 Auth2GithubRequest
+deactivate Auth2DefaultRequestRedirectFilter
+deactivate Auth2RequestHolder
+Auth2DefaultRequestRedirectFilter -> Auth2DefaultRequestRedirectFilter: Auth2GithubRequest.authorize(state)\n\
+这里state为uuid,未设置自定义,待扩展\n返回 authorizeUrl
+activate Auth2DefaultRequestRedirectFilter
+Auth2DefaultRequestRedirectFilter --> client: 返回 authorizeUrl
+deactivate Auth2DefaultRequestRedirectFilter
+deactivate Auth2DefaultRequestRedirectFilter
+client -> github: authorizeUrl
+activate github
+github --> client: 授权页面
+activate github
+client -> github: 确认授权
+deactivate github
+github -> Auth2LoginAuthenticationFilter: 回调 /auth2/login/github?state=xxxxxx&code=xxxxxx
+deactivate github
+activate Auth2LoginAuthenticationFilter
+Auth2LoginAuthenticationFilter -> Auth2RequestHolder: getAuth2DefaultRequest(String providerId)
+activate Auth2LoginAuthenticationFilter
+activate Auth2RequestHolder
+Auth2RequestHolder --> Auth2LoginAuthenticationFilter: 返回 Auth2GithubRequest
+deactivate Auth2RequestHolder
+deactivate Auth2LoginAuthenticationFilter
+Auth2LoginAuthenticationFilter -> Auth2LoginAuthenticationFilter: new Auth2LoginAuthenticationToken\n(auth2DefaultRequest,request);
+activate Auth2LoginAuthenticationFilter
+deactivate Auth2LoginAuthenticationFilter
+Auth2LoginAuthenticationFilter -> AuthenticationManager: authenticate(Auth2LoginAuthenticationToken)
+activate AuthenticationManager
+AuthenticationManager -> Auth2LoginAuthenticationProvider: authenticate\n(Auth2LoginAuthenticationToken)
+activate Auth2LoginAuthenticationProvider
+Auth2LoginAuthenticationProvider -> Auth2UserService: 1. 从第三方获取 Userinfo\n\
+loadUser(auth2DefaultRequest, request)
+activate Auth2LoginAuthenticationProvider
+activate Auth2UserService
+Auth2UserService -> Auth2UserService: ......\n\
+auth2DefaultRequest\n\
+.login(authCallback)\n\
+......
+
+Auth2UserService --> Auth2LoginAuthenticationProvider: 返回 authUser :AuthUser
+deactivate Auth2LoginAuthenticationProvider
+deactivate Auth2UserService
+Auth2LoginAuthenticationProvider -> UsersConnectionRepository: 2. 查询是否已经有第三方的授权记录\n\
+findConnectionByProviderIdAndProviderUserId\n\
+(providerId, providerUserId);
+activate Auth2LoginAuthenticationProvider
+activate UsersConnectionRepository
+UsersConnectionRepository --> Auth2LoginAuthenticationProvider: 返回 **connectionDataList** :List<ConnectionData>
+deactivate Auth2LoginAuthenticationProvider
+deactivate UsersConnectionRepository
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: 3. 判断是否为本地登录用户(不含匿名用户)\n\
+Authentication **authenticationToken** =\n\
+SecurityContextHolder\n\
+  .getContext()\n\
+  .getAuthentication();\n\
+Object **principal** = \n\
+authenticationToken\n\
+.getPrincipal();//省略NPE判断逻辑
+activate Auth2LoginAuthenticationProvider
+deactivate Auth2LoginAuthenticationProvider
+alt 4.1 isEmpty(connectionDataList) 没有第三方登录记录, 自动注册 或 绑定
+alt principal instanceof UserDetails 为本地登录用户(不含匿名用户), 绑定操作
+Auth2LoginAuthenticationProvider -> ConnectionService: binding(principal, authUser, providerId);
+activate Auth2LoginAuthenticationProvider
+activate ConnectionService
+ConnectionService --> Auth2LoginAuthenticationProvider: 返回
+deactivate ConnectionService
+deactivate Auth2LoginAuthenticationProvider
+else principal == null 不是本地登录用户(或为匿名用户), 注册操作
+Auth2LoginAuthenticationProvider -> ConnectionService: 注册到本地账户\n\
+注册第三方授权登录信息到 user_connection 与 auth_token\n\
+signUp(authUser, providerId)
+activate Auth2LoginAuthenticationProvider
+activate ConnectionService
+ConnectionService --> Auth2LoginAuthenticationProvider: 返回
+deactivate ConnectionService
+deactivate Auth2LoginAuthenticationProvider
+end
+else 4.2 connectionDataList.size() > 0 有第三方登录记录
+opt principal instanceof UserDetails 为本地登录用户(不含匿名用户)
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: **userDetails** = (UserDetails) principal;
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: String userId = userDetails.getUsername();
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: connectionDataList: foreach -> data;
+activate Auth2LoginAuthenticationProvider
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: userId.equals(data.getUserId());
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: **connectionData** = data;
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: break;
+deactivate Auth2LoginAuthenticationProvider
+opt connectionData == null 与已认证的 userId 不同, 走第三方授权登录流程
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: **userDetails** = null;
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: **principal** = null;
+end
+end
+opt userDetails == null 不是本地登录用户(如:匿名用户); 或者是本地登录用户,但 userId 不匹配
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: 这里直接取第一条记录, 扩展点:\n\
+待实现让用户选择哪一个本地账户登录\n\
+**connectionData**=connectionDataList.get(0)\n
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: userId = connectionData.getUserId()
+Auth2LoginAuthenticationProvider -> UmsUserDetailsService: loadUserByUserId(userId)
+activate UmsUserDetailsService
+activate Auth2LoginAuthenticationProvider
+UmsUserDetailsService --> Auth2LoginAuthenticationProvider: 返回 **userDetails**
+deactivate UmsUserDetailsService
+deactivate Auth2LoginAuthenticationProvider
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: 异步更新第三方授权登录用户信息与 token 信息\n\
+异步更新执行失败再次进行同步更新\n\
+asyncUpdateUserConnectionAndToken\n\
+(authUser, connectionData);
+end
+end
+
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: 5 删除 session 中的 state 缓存\n\
+Auth2DefaultRequest.\n\
+removeStateCacheOfSessionCache\n\
+(auth2DefaultRequest.getAuthStateCache(),\n\
+auth2DefaultRequest.getAuthSource());
+
+alt 6 principal != null 已认证用户, 直接返回
+Auth2LoginAuthenticationProvider --> AuthenticationManager: 返回 **authenticationToken**
+else 7 创建成功认证 authenticationToken 并返回
+Auth2LoginAuthenticationProvider -> Auth2LoginAuthenticationProvider: new Auth2AuthenticationToken\n\
+(userDetails,\n\
+userDetails.getAuthorities(),\n\
+providerId);
+Auth2LoginAuthenticationProvider --> AuthenticationManager: 返回 **authenticationToken**
+deactivate Auth2LoginAuthenticationProvider
+end
+
+
+AuthenticationManager --> Auth2LoginAuthenticationFilter: 返回 Auth2AuthenticationToken
+deactivate AuthenticationManager
+Auth2LoginAuthenticationFilter -> Auth2LoginAuthenticationFilter: 授权登录成功,后续流程略
+Auth2LoginAuthenticationFilter --> client: 授权登录成功,后续流程略, 最终返回成功登录页或跳转目标页
+deactivate Auth2LoginAuthenticationFilter
+
+
+client -> client: 第三方授权登录流程结束
+
+
+@enduml

@@ -408,7 +408,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 - justAuth-spring-security-starter 大部分功能实现都是通过配置文件设置属性来完成的, 详细属性配置请查看`五、属性配置列表`.
 ------
 
-## 五、属性配置列表      
+## 五、时序图: 随着版本迭代会有出入
+
+![第三方授权登录](doc/OAuth2Login.png)
+
+------
+## 六、属性配置列表          
 ###  OAuth2 / refreshToken 定时任务 / JustAuth 配置属性
 
 | **属性**                                                     | **类型**       | **默认值**           | **描述**                                                     | **可选项**            |
