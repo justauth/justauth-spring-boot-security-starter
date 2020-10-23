@@ -35,6 +35,19 @@
     <artifactId>justAuth-spring-security-starter</artifactId>
     <version>1.0.0</version>
 </dependency>
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    <version>2.3.4.RELEASE</version>
+</dependency>
+
+<!-- mysql -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.21</version>
+</dependency>
 ```
 ### 2. config:  
 ```yaml
@@ -659,7 +672,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 | ums.repository.removeConnectionSql              | String   | delete from %s where %s = ? and %s = ? and %s = ?            | 第三方登录用户数据库用户表根据 userId、providerId、providerUserId 删除一个用户。  注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应,%s按顺序会用对应的 :  tableName、  userIdColumnName、  providerIdColumnName、  providerUserIdColumnName |            |
 
 ## 六、参与贡献
-1. Fork [本项目](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter)
+1. Fork [本项目](https://github.com/ZeroOrInfinity/justAuth-spring-boot-security-starter)
 2. 新建 Feat_xxx 分支
 3. 提交代码
 4. 新建 Pull Request

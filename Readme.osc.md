@@ -35,6 +35,19 @@
     <artifactId>justAuth-spring-security-starter</artifactId>
     <version>1.0.0</version>
 </dependency>
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    <version>2.3.4.RELEASE</version>
+</dependency>
+
+<!-- mysql -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.21</version>
+</dependency>
 ```
 ### 2. config:  
 ```yaml

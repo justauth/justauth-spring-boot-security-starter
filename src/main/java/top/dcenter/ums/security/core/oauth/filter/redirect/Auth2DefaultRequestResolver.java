@@ -25,6 +25,7 @@ package top.dcenter.ums.security.core.oauth.filter.redirect;
 
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import top.dcenter.ums.security.core.oauth.justauth.Auth2RequestHolder;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
 
@@ -66,7 +67,7 @@ public final class Auth2DefaultRequestResolver implements Auth2AuthorizationRequ
 
 	@Override
 	public Auth2DefaultRequest resolve(HttpServletRequest request) {
-		if (org.apache.commons.lang3.StringUtils.isNotBlank(request.getParameter(STATE)))
+		if (StringUtils.hasText(request.getParameter(STATE)))
 		{
 			return null;
 		}
@@ -79,7 +80,7 @@ public final class Auth2DefaultRequestResolver implements Auth2AuthorizationRequ
 
 	@Override
 	public Auth2DefaultRequest resolve(HttpServletRequest request, String registrationId) {
-		if (org.apache.commons.lang3.StringUtils.isNotBlank(request.getParameter(STATE)))
+		if (StringUtils.hasText(request.getParameter(STATE)))
 		{
 			return null;
 		}
