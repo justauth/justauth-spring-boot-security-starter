@@ -132,12 +132,12 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 		HttpServletRequest request = loginToken.getRequest();
 		AuthUser authUser = userService.loadUser(auth2DefaultRequest, request);
 
-		//2 检测是否已经有第三方的授权记录, List 按 rank 排序, 直接取第一条记录
+		//2 查询是否已经有第三方的授权记录, List 按 rank 排序, 直接取第一条记录
 		String providerUserId = authUser.getUuid();
 		List<ConnectionData> connectionDataList = usersConnectionRepository
 				.findConnectionByProviderIdAndProviderUserId(auth2DefaultRequest.getProviderId(), providerUserId);
 
-		//3 获取 securityContext 中的 authenticationToken, 判断是否为授权用户(不含匿名用户)
+		//3 获取 securityContext 中的 authenticationToken, 判断是否为本地登录用户(不含匿名用户)
 		final Authentication authenticationToken = SecurityContextHolder.getContext().getAuthentication();
 		Object principal = null;
 		if (authenticationToken != null && authenticationToken.isAuthenticated()
@@ -151,12 +151,13 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 		//4.1 没有第三方登录记录, 自动注册 或 绑定
 		if (CollectionUtils.isEmpty(connectionDataList))
 		{
+			// 无本地用户登录, 注册和绑定
 			if (principal == null)
 			{
 				// 注册到本地账户, 注册第三方授权登录信息到 user_connection 与 auth_token
 				userDetails = connectionService.signUp(authUser, auth2DefaultRequest.getProviderId());
 			}
-			// 绑定
+			// 本地用户已登录, 绑定
 			else
 			{
 				if (principal instanceof UserDetails)
@@ -174,19 +175,19 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 			if (principal instanceof UserDetails)
 			{
 				userDetails = (UserDetails) principal;
-				// 已认证用户 userId
+				// 本地登录用户 userId
 				final String userId = userDetails.getUsername();
 				for (ConnectionData data : connectionDataList)
 				{
 					if (userId.equals(data.getUserId()))
 					{
-						// 与认证的 userId 相同, 跳过第三方授权登录流程
+						// 与本地登录的 userId 相同, 跳过第三方授权登录流程
 						connectionData = data;
 						break;
 					}
 				}
 
-				// 与已认证的 userId 不同
+				// 与本地登录的 userId 不同
 				if (connectionData == null)
 				{
 					// 走第三方授权登录流程
@@ -217,7 +218,7 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 		Auth2DefaultRequest.removeStateCacheOfSessionCache(auth2DefaultRequest.getAuthStateCache(),
 		                                                   auth2DefaultRequest.getAuthSource());
 
-		// 6 已认证用户, 直接返回
+		// 6 本地登录用户, 直接返回
 		if (principal != null)
 		{
 			return authenticationToken;

@@ -35,12 +35,11 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResp
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import top.dcenter.ums.security.core.oauth.filter.redirect.Auth2DefaultRequestResolver;
+import top.dcenter.ums.security.core.oauth.justauth.Auth2RequestHolder;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
-import top.dcenter.ums.security.core.oauth.repository.Auth2DefaultRequestRepository;
-import top.dcenter.ums.security.core.oauth.repository.HttpSessionAuth2DefaultRequestRepository;
 import top.dcenter.ums.security.core.oauth.token.Auth2LoginAuthenticationToken;
 
 import javax.servlet.http.HttpServletRequest;
@@ -101,9 +100,6 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
 
     private static final String AUTHORIZATION_REQUEST_NOT_FOUND_ERROR_CODE = "authorization_request_not_found";
 
-    private Auth2DefaultRequestRepository<Auth2DefaultRequest> authorizationRequestRepository =
-            new HttpSessionAuth2DefaultRequestRepository();
-
     private final Auth2DefaultRequestResolver authorizationRequestResolver;
 
     /**
@@ -126,33 +122,26 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
             OAuth2Error oauth2Error = new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST);
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
-        Auth2DefaultRequest auth2DefaultRequest = this.authorizationRequestRepository.removeAuthorizationRequest(request, response);
+
+        String registrationId = this.authorizationRequestResolver.resolveRegistrationId(request);
+        Auth2DefaultRequest auth2DefaultRequest = null;
+        if (StringUtils.hasText(registrationId)) {
+            auth2DefaultRequest = Auth2RequestHolder.getAuth2DefaultRequest(registrationId);
+        }
+
         if (auth2DefaultRequest == null) {
-            String registrationId = this.authorizationRequestResolver.resolveRegistrationId(request);
+
             OAuth2Error oauth2Error = new OAuth2Error(AUTHORIZATION_REQUEST_NOT_FOUND_ERROR_CODE,
                                                       "Client Registration not found with Id: " + registrationId, null);
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
 
         Object authenticationDetails = this.authenticationDetailsSource.buildDetails(request);
-        Auth2LoginAuthenticationToken authenticationRequest = new Auth2LoginAuthenticationToken(auth2DefaultRequest,
-                                                                                                request);
+        Auth2LoginAuthenticationToken authenticationRequest = new Auth2LoginAuthenticationToken(auth2DefaultRequest, request);
         authenticationRequest.setDetails(authenticationDetails);
 
         // 通过 AuthenticationManager 转到相应的 Provider 对 Auth2LoginAuthenticationToken 进行认证
         return  this.getAuthenticationManager().authenticate(authenticationRequest);
-    }
-
-    /**
-     * Sets the repository for stored {@link OAuth2AuthorizationRequest}'s.
-     * @param authorizationRequestRepository the repository for stored
-     * {@link OAuth2AuthorizationRequest}'s
-     */
-    @SuppressWarnings("unused")
-    public final void setAuthorizationRequestRepository(
-            Auth2DefaultRequestRepository<Auth2DefaultRequest> authorizationRequestRepository) {
-        Assert.notNull(authorizationRequestRepository, "authorizationRequestRepository cannot be null");
-        this.authorizationRequestRepository = authorizationRequestRepository;
     }
 
 }
