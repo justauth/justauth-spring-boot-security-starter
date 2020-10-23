@@ -21,7 +21,7 @@
 <dependency>
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
@@ -32,7 +32,7 @@
 <dependency>
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 
 <dependency>
@@ -319,7 +319,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 #### login.html: 放在 classpath:/static
 ```html
 <!DOCTYPE html>
-<html">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>登录</title>
@@ -367,7 +367,7 @@ hello world!<br>
 <dependency>
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 ### 2. `必须实现的接口`    
