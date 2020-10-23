@@ -10,7 +10,6 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>top.dcenter</groupId>
     <artifactId>justAuth-security-oauth2-example</artifactId>
     <name>justAuth-security-oauth2-example</name>
 
@@ -19,7 +18,7 @@
         <dependency>
             <groupId>top.dcenter</groupId>
             <artifactId>justAuth-spring-security-starter</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
 
         <dependency>

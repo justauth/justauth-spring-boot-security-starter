@@ -6,7 +6,7 @@
 
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <packaging>jar</packaging>
     <name>justAuth-spring-security-starter</name>
@@ -18,7 +18,7 @@
         4. 支持第三方绑定与解绑及查询接口(top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository).
     </description>
 
-    <url>https://github.com/ZeroOrInfinity/justAuth-spring-security-starter</url>
+    <url>https://github.com/ZeroOrInfinity/justAuth-spring-boot-security-starter</url>
 
     <licenses>
         <license>
@@ -33,20 +33,20 @@
             <!-- 邮件 -->
             <email>zyw23zyw23@163.com</email>
             <!-- 开源地址 -->
-            <url>https://github.com/ZeroOrInfinity/justAuth-spring-security-starter</url>
+            <url>https://github.com/ZeroOrInfinity/justAuth-spring-boot-security-starter</url>
         </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:https://github.com/ZeroOrInfinity/justAuth-spring-security-starter.git</connection>
-        <developerConnection>scm:git:https://github.com/ZeroOrInfinity/justAuth-spring-security-starter.git</developerConnection>
-        <url>https://github.com/ZeroOrInfinity/justAuth-spring-security-starter</url>
+        <connection>scm:git:https://github.com/ZeroOrInfinity/justAuth-spring-boot-security-starter.git</connection>
+        <developerConnection>scm:git:https://github.com/ZeroOrInfinity/justAuth-spring-boot-security-starter.git</developerConnection>
+        <url>https://github.com/ZeroOrInfinity/justAuth-spring-boot-security-starter</url>
         <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/issues</url>
+        <url>https://github.com/ZeroOrInfinity/justAuth-spring-boot-security-starter/issues</url>
     </issueManagement>
 
     <dependencies>
