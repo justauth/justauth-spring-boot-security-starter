@@ -39,9 +39,9 @@ public class AuthStateRedisCache implements Auth2StateCache {
     private final JustAuthProperties justAuthProperties;
     private final StringRedisTemplate stringRedisTemplate;
 
-    public AuthStateRedisCache(Auth2Properties auth2Properties, StringRedisTemplate stringRedisTemplate) {
+    public AuthStateRedisCache(Auth2Properties auth2Properties, Object stringRedisTemplate) {
         this.justAuthProperties = auth2Properties.getJustAuth();
-        this.stringRedisTemplate = stringRedisTemplate;
+        this.stringRedisTemplate = (StringRedisTemplate) stringRedisTemplate;
     }
 
     @Override

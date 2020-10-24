@@ -33,7 +33,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.NonNull;
 import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateRedisCache;
 import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateSessionCache;
@@ -87,6 +86,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
      * key 为 {@link AuthDefaultSource}, value 为 providerId
      */
     private static final Map<AuthDefaultSource, String> SOURCE_PROVIDER_ID_MAP = new ConcurrentHashMap<>();
+
     private ApplicationContext applicationContext;
 
     /**
@@ -136,11 +136,18 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
 
         JustAuthProperties justAuthProperties = auth2Properties.getJustAuth();
         StateCacheType stateCacheType = justAuthProperties.getCacheType();
-        StringRedisTemplate stringRedisTemplate = applicationContext.getBean(StringRedisTemplate.class);
+
 
         // 获取 stateCache
-        AuthStateCache authStateCache = getAuthStateCache(stateCacheType, auth2Properties, stringRedisTemplate);
-
+        AuthStateCache authStateCache;
+        if (stateCacheType.equals(StateCacheType.REDIS)) {
+            final Class<?> stringRedisTemplateClass = Class.forName("org.springframework.data.redis.core.StringRedisTemplate");
+            Object stringRedisTemplate = applicationContext.getBean(stringRedisTemplateClass);
+            authStateCache = getAuthStateCache(stateCacheType, auth2Properties, stringRedisTemplate);
+        }
+        else {
+            authStateCache = getAuthStateCache(stateCacheType, auth2Properties, null);
+        }
 
         /* 获取 Auth2Properties 对象的字段与对应的值:
          *  1. 以此获取所有 BaseAuth2Properties 子类字段及对应的 providerId, AuthDefaultSource, 并存储再 SOURCE_PROVIDER_ID_MAP 中;
@@ -287,7 +294,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
      * @return  {@link AuthStateCache}
      */
     private AuthStateCache getAuthStateCache(StateCacheType type, Auth2Properties auth2Properties,
-                                             StringRedisTemplate stringRedisTemplate) {
+                                             Object stringRedisTemplate) {
         switch(type) {
             case DEFAULT:
                 return AuthDefaultStateCache.INSTANCE;
@@ -296,9 +303,8 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
             case REDIS:
                 if (stringRedisTemplate == null)
                 {
-                    log.error("applicationContext 中获取不到 {}, {} 类型的缓存无法创建, 用 {} 类型缓存替代",
-                              StringRedisTemplate.class.getName(), type.name(), StateCacheType.DEFAULT.name());
-                    return AuthDefaultStateCache.INSTANCE;
+                    throw new  RuntimeException(String.format("applicationContext 中获取不到 %s, %s 类型的缓存无法创建!",
+                                                              "org.springframework.data.redis.core.StringRedisTemplate", type.name()));
                 }
                 return new AuthStateRedisCache(auth2Properties, stringRedisTemplate);
             default:
