@@ -36,12 +36,11 @@ import org.springframework.util.Assert;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static java.util.Objects.requireNonNullElse;
+import static java.util.Optional.ofNullable;
 
 /**
  * 对 RedisCacheWriter 进行了扩展, 添加了对 Hash类型的缓存的支持. 实现了 {@link IRedisHashCacheWriter}
@@ -118,9 +117,9 @@ class RedisHashCacheWriter implements IRedisHashCacheWriter {
 
 			if (shouldExpireWithin(ttl)) {
 				connection.multi();
-				connection.expire(key, ttl.toSeconds());
+				connection.expire(key, ttl.getSeconds());
 				connection.hSet(key, field, value);
-				connection.expire(key, ttl.toSeconds());
+				connection.expire(key, ttl.getSeconds());
 				connection.exec();
 			} else {
 				connection.hSet(key, field, value);
@@ -163,7 +162,7 @@ class RedisHashCacheWriter implements IRedisHashCacheWriter {
 			}
 
 			try {
-				if (requireNonNullElse(connection.setNX(key, value), Boolean.FALSE))
+				if (ofNullable(connection.setNX(key, value)).orElse(Boolean.FALSE))
 				{
 
 					if (shouldExpireWithin(ttl))
@@ -198,7 +197,7 @@ class RedisHashCacheWriter implements IRedisHashCacheWriter {
 			}
 
 			try {
-				if (requireNonNullElse(connection.hSetNX(key, field, value), Boolean.FALSE))
+				if (ofNullable(connection.hSetNX(key, field, value)).orElse(Boolean.FALSE))
 				{
 
 					if (shouldExpireWithin(ttl))
@@ -255,7 +254,7 @@ class RedisHashCacheWriter implements IRedisHashCacheWriter {
 					wasLocked = true;
 				}
 
-				byte[][] keys = Optional.ofNullable(connection.keys(pattern)).orElse(Collections.emptySet())
+				byte[][] keys = ofNullable(connection.keys(pattern)).orElse(Collections.emptySet())
 						.toArray(new byte[0][]);
 
 				if (keys.length > 0) {
@@ -302,7 +301,7 @@ class RedisHashCacheWriter implements IRedisHashCacheWriter {
 	}
 
 	boolean doCheckLock(String name, RedisConnection connection) {
-		return requireNonNullElse(connection.exists(createCacheLockKey(name)), Boolean.FALSE);
+		return ofNullable(connection.exists(createCacheLockKey(name))).orElse(Boolean.FALSE);
 	}
 
 	/**

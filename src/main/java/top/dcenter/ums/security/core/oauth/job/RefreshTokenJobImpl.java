@@ -127,7 +127,7 @@ public class RefreshTokenJobImpl implements RefreshTokenJob, InitializingBean {
             final Instant now = Instant.now();
 
             final byte[] key = REFRESH_TOKEN_JOB.getBytes(StandardCharsets.UTF_8.name());
-            final long expiredIn = Duration.ofHours(REFRESH_TOKEN_JOB_KEY_EXPIRED_IN).toSeconds();
+            final long expiredIn = Duration.ofHours(REFRESH_TOKEN_JOB_KEY_EXPIRED_IN).getSeconds();
             // 设置过期时间
             connection.expireAt(key, now.plusSeconds(expiredIn).toEpochMilli());
 
