@@ -6,7 +6,7 @@
 
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 
     <packaging>jar</packaging>
     <name>justAuth-spring-security-starter</name>
@@ -140,6 +140,17 @@
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok-maven-plugin</artifactId>
+            <version>1.18.12.0</version>
+            <type>maven-plugin</type>
+        </dependency>
 
     </dependencies>
 
@@ -157,9 +168,9 @@
     <properties>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <java.version>11</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <java.version>1.8</java.version>
 
         <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
         <spring-security.version>5.4.0</spring-security.version>
@@ -171,7 +182,7 @@
         <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
         <org.projectlombok.version>1.18.12</org.projectlombok.version>
         <servlet-api.version>3.0-alpha-1</servlet-api.version>
-        <xkcoding-simple-http.version>1.0.3</xkcoding-simple-http.version>
+        <xkcoding-simple-http.version>1.0.4</xkcoding-simple-http.version>
 
     </properties>
 
@@ -234,7 +245,6 @@
                 <artifactId>lombok</artifactId>
                 <version>${org.projectlombok.version}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -318,9 +328,9 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.8.1</version>
                         <configuration>
-                            <source>${maven.compiler.source}</source>
-                            <target>${maven.compiler.target}</target>
-                            <encoding>${project.build.sourceEncoding}</encoding>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                            <encoding>UTF-8</encoding>
                         </configuration>
                     </plugin>
 

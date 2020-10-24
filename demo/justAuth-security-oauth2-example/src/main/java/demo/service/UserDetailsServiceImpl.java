@@ -39,6 +39,7 @@ import top.dcenter.ums.security.core.oauth.exception.RegisterUserFailureExceptio
 import top.dcenter.ums.security.core.oauth.exception.UserNotExistException;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -146,7 +147,12 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
     @Override
     public List<Boolean> existedByUserIds(String... userIds) throws UsernameNotFoundException {
         // ... 在本地账户上查询 userIds 是否已被使用
-        return List.of(true, false, false);
+        List<Boolean> list = new ArrayList<>();
+        list.add(true);
+        list.add(false);
+        list.add(false);
+
+        return list;
     }
 
 }

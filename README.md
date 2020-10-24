@@ -1,5 +1,5 @@
 # Spring security 集成 JustAuth 实现第三方授权登录脚手架: 
-![JDK](https://img.shields.io/badge/JDK-11-green.svg)
+![JDK](https://img.shields.io/badge/JDK-1.8-green.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.6.3-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-5.7.27-green.svg)
 ![Redis](https://img.shields.io/badge/Redis-5.0.3-green.svg)
@@ -21,7 +21,7 @@
 <dependency>
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -32,7 +32,7 @@
 <dependency>
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 
 <dependency>
@@ -46,6 +46,15 @@
     <groupId>mysql</groupId>
     <artifactId>mysql-connector-java</artifactId>
     <version>8.0.21</version>
+</dependency>
+
+<!-- 默认会按照下面的优先级自行寻找底层实现，java 11 HttpClient -> OkHttp3 -> apache HttpClient -> hutool-http
+     示例使用 apache HttpClient .
+     注意: 如果是 JDK11 则不需要此依赖-->
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient</artifactId>
+    <version>4.5.12</version>
 </dependency>
 ```
 ### 2. config:  
@@ -241,7 +250,12 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
     @Override
     public List<Boolean> existedByUserIds(String... userIds) throws UsernameNotFoundException {
         // ... 在本地账户上查询 userIds 是否已被使用
-        return List.of(true, false, false);
+        List<Boolean> list = new ArrayList<>();
+        list.add(true);
+        list.add(false);
+        list.add(false);
+        
+        return list;
     }
 
 }
@@ -367,7 +381,7 @@ hello world!<br>
 <dependency>
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 ### 2. `必须实现的接口`    
