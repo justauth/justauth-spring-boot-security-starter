@@ -18,7 +18,7 @@
         <dependency>
             <groupId>top.dcenter</groupId>
             <artifactId>justAuth-spring-security-starter</artifactId>
-            <version>1.0.2</version>
+            <version>${justAuth-spring-security.version}</version>
         </dependency>
 
         <dependency>

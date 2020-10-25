@@ -11,4 +11,8 @@
 
     <name>oauth2-demo</name>
 
+    <properties>
+        <justAuth-spring-security.version>1.0.2</justAuth-spring-security.version>
+    </properties>
+
 </project>
