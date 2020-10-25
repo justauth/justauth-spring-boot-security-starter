@@ -1,5 +1,6 @@
 # Spring security 集成 JustAuth 实现第三方授权登录脚手架: 
-![JDK](https://img.shields.io/badge/JDK-1.8-green.svg)
+
+![JDK](https://img.shields.io/badge/JDK-1.8+-green.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.6.3-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-5.7.27-green.svg)
 ![Redis](https://img.shields.io/badge/Redis-5.0.3-green.svg)
@@ -8,6 +9,7 @@
 ![license](https://img.shields.io/badge/license-MIT-yellow.svg)
 
 ## 一、`特性`
+
 [Spring security 集成 JustAuth 实现第三方授权登录](https://gitee.com/pcore/just-auth-spring-security-starter): 此项目从 **用户管理脚手架**(UMS):https://github.com/ZeroOrInfinity/UMS | https://gitee
 .com/pcore/UMS) 项目中分离.
 1. 支持所有 justAuth 支持的第三方登录，登录后自动注册 或 绑定.
@@ -18,6 +20,7 @@
 微信群：UMS 添加微信(z56133)备注(UMS) 
 ------
 ## 二、`maven`：
+
 ```xml
 <dependency>
     <groupId>top.dcenter</groupId>
@@ -28,7 +31,9 @@
 
 ------
 ## 三、`快速开始(Quick Start)`：
+
 ### 1. 添加依赖:
+
 ```xml
 <dependency>
     <groupId>top.dcenter</groupId>
@@ -49,7 +54,7 @@
     <version>8.0.21</version>
 </dependency>
 
-<!-- 默认会按照下面的优先级自行寻找底层实现，java 11 HttpClient -> OkHttp3 -> apache HttpClient -> hutool-http
+<!-- 默认会按照下面的优先级自行寻找一种 HTTP 工具依赖，java 11 HttpClient -> OkHttp3 -> apache HttpClient -> hutool-http
      示例使用 apache HttpClient .
      注意: 如果是 JDK11 则不需要此依赖-->
 <dependency>
@@ -58,7 +63,34 @@
     <version>4.5.12</version>
 </dependency>
 ```
+#### 依赖说明: 如果是 JDK-1.8 环境, 任选一种 HTTP 工具依赖，项目内如果已有，请忽略。另外需要特别注意，如果项目中已经引入了低版本的依赖，请先排除低版本以后来，引入高版本或者最新版本的依赖
+
+- `hutool-http`
+```xml
+<dependency>
+    <groupId>cn.hutool</groupId>
+    <artifactId>hutool-http</artifactId>
+    <version>5.2.5</version>
+</dependency>
+```
+- `httpclient`
+```xml
+<dependency>
+	<groupId>org.apache.httpcomponents</groupId>
+  	<artifactId>httpclient</artifactId>
+  	<version>4.5.12</version>
+</dependency>
+```
+- `okhttp`
+```xml
+<dependency>
+  <groupId>com.squareup.okhttp3</groupId>
+  <artifactId>okhttp</artifactId>
+  <version>4.4.1</version>
+</dependency>
+```
 ### 2. config:  
+
 ```yaml
 server:
   port: 9090
@@ -126,7 +158,9 @@ server:
     context-path: /demo
 ```
 ### 3. 必须实现 UmsUserDetailsService 接口:
+
 #### UserDetailsServiceImpl.java
+
 ```java
 import lombok.extern.slf4j.Slf4j;
 import me.zhyd.oauth.model.AuthUser;
@@ -264,7 +298,9 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
 ```
 
 ### 4. 必须添加 top.dcenter.ums.security.core.oauth.config.Auth2AutoConfigurer 到 HttpSecurity
+
 #### WebSecurityConfig.java
+
 ```java
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -330,9 +366,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 }
 ```
-  
+
 ### 4. 前端页面 :
+
 #### login.html: 放在 classpath:/static
+
 ```html
 <!DOCTYPE html>
 <html>
@@ -351,6 +389,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 </html>
 ```
 #### index.html: 放在 classpath:/static
+
 ```html
 <!DOCTYPE html>
 <html>
@@ -373,12 +412,15 @@ hello world!<br>
 </html>
 ```
 ### 5. 访问前端页面
+
 - 浏览器访问 `http://localhost:9090/demo/login.html`, 至此集成了：第三方登录([justAuth-spring-security-starter](https://gitee.com/pcore/just-auth-spring-security-starter)); 实现快速开发。
 - 详细配置配置在: [justAuth-security-oauth2-example](https://gitee.com/pcore/just-auth-spring-security-starter/tree/master/demo/justAuth-security-oauth2-example)
 ------
 
 ## 四、使用说明:
+
 ### 1. `引入依赖`
+
 ```xml
 <dependency>
     <groupId>top.dcenter</groupId>
@@ -386,9 +428,11 @@ hello world!<br>
     <version>1.0.2</version>
 </dependency>
 ```
-### 2. `必须实现的接口`    
+### 2. `必须实现的接口`   
+ 
    - 本地用户服务: [UmsUserDetailsService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)    
-### 3. `必须添加 Auth2AutoConfigurer 到 HttpSecurity`    
+### 3. `必须添加 Auth2AutoConfigurer 到 HttpSecurity`   
+ 
 ```java
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -419,6 +463,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 }
 ```
 ### 4. `属性配置`
+
 - justAuth-spring-security-starter 大部分功能实现都是通过配置文件设置属性来完成的, 详细属性配置请查看`五、属性配置列表`.
 ------
 
@@ -427,8 +472,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 ![第三方授权登录](doc/OAuth2Login.png)
 
 ------
-## 六、属性配置列表          
+## 六、属性配置列表
+  
 ###  OAuth2 / refreshToken 定时任务 / JustAuth 配置属性
+
 
 | **属性**                                                     | **类型**       | **默认值**           | **描述**                                                     | **可选项**            |
 | ------------------------------------------------------------ | -------------- | -------------------- | ------------------------------------------------------------ | --------------------- |
@@ -692,6 +739,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 | ums.repository.removeConnectionSql              | String   | delete from %s where %s = ? and %s = ? and %s = ?            | 第三方登录用户数据库用户表根据 userId、providerId、providerUserId 删除一个用户。  注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应,%s按顺序会用对应的 :  tableName、  userIdColumnName、  providerIdColumnName、  providerUserIdColumnName |            |
 
 ## 六、参与贡献
+
 1. Fork [本项目](https://gitee.com/pcore/just-auth-spring-security-starter)
 2. 新建 Feat_xxx 分支
 3. 提交代码
