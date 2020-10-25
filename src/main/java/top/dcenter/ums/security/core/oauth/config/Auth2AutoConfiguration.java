@@ -24,7 +24,7 @@
 package top.dcenter.ums.security.core.oauth.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -189,7 +189,7 @@ public class Auth2AutoConfiguration implements InitializingBean, ApplicationCont
                 database = resultSet.getString(QUERY_TABLE_EXIST_SQL_RESULT_SET_COLUMN_INDEX);
             }
 
-            if (StringUtils.isNotBlank(database))
+            if (StringUtils.hasText(database))
             {
                 String queryUserConnectionTableExistSql = repositoryProperties.getQueryUserConnectionTableExistSql(database);
 

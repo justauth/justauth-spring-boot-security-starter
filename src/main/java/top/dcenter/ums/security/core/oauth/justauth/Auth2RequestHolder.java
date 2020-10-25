@@ -28,7 +28,6 @@ import me.zhyd.oauth.cache.AuthDefaultStateCache;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -163,7 +162,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
             if (baseProperties instanceof BaseAuth2Properties)
             {
                 String providerId = field.getName();
-                String[] splits = StringUtils.splitByCharacterTypeCamelCase(providerId);
+                String[] splits = MvcUtil.splitByCharacterTypeCamelCase(providerId, true);
                 AuthDefaultSource source = AuthDefaultSource.valueOf(String.join(FIELD_SEPARATOR, splits).toUpperCase());
 
                 SOURCE_PROVIDER_ID_MAP.put(source, providerId);
@@ -339,7 +338,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
         for (Field field : declaredFields)
         {
             field.setAccessible(true);
-            if (StringUtils.equals(fieldName, field.getName()))
+            if (field.getName().equals(fieldName))
             {
                 providerProperties = field.get(auth2Properties);
                 break;
@@ -355,7 +354,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
         for (Field field : declaredFields)
         {
             field.setAccessible(true);
-            if (StringUtils.equals(PROVIDER_ID_FIELD_NAME, field.getName()))
+            if (PROVIDER_ID_FIELD_NAME.equals(field.getName()))
             {
                 providerId = (String) field.get(providerProperties);
                 requireNonNull(providerId, String.format("获取不到 %s 类型所对应的 %s 的值", source.name(), PROVIDER_ID_FIELD_NAME));
@@ -368,13 +367,13 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
         for (Field field : declaredFields)
         {
             field.setAccessible(true);
-            if (StringUtils.equals(CLIENT_ID_FIELD_NAME, field.getName()))
+            if (CLIENT_ID_FIELD_NAME.equals(field.getName()))
             {
                 String clientId = (String) field.get(providerProperties);
                 requireNonNull(clientId, String.format("获取不到 %s 类型所对应的 %s 的值", source.name(), CLIENT_ID_FIELD_NAME));
                 builder.clientId(clientId);
             }
-            if (StringUtils.equals(CLIENT_SECRET_FIELD_NAME, field.getName()))
+            if (CLIENT_SECRET_FIELD_NAME.equals(field.getName()))
             {
                 String clientSecret = (String) field.get(providerProperties);
                 requireNonNull(clientSecret, String.format("获取不到 %s 类型所对应的 %s 的值", source.name(), CLIENT_SECRET_FIELD_NAME));
@@ -398,7 +397,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
     public static String getProviderIdBySource(@NonNull AuthDefaultSource source) {
         String fieldName;
         String name = source.name().toLowerCase();
-        String[] splits = StringUtils.splitByWholeSeparator(name, FIELD_SEPARATOR);
+        String[] splits = name.split(FIELD_SEPARATOR);
         fieldName = name;
         if (splits.length > 1)
         {

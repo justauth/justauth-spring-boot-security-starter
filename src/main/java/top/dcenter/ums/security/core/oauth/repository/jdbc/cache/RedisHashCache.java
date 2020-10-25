@@ -23,7 +23,6 @@
 
 package top.dcenter.ums.security.core.oauth.repository.jdbc.cache;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.support.NullValue;
 import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.core.convert.ConversionFailedException;
@@ -40,7 +39,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
-import top.dcenter.ums.security.core.oauth.config.RedisCacheAutoConfiguration;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -49,9 +48,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
+
+import static top.dcenter.ums.security.core.oauth.config.RedisCacheAutoConfiguration.REDIS_CACHE_HASH_KEY_SEPARATE;
 
 
 /**
@@ -354,7 +356,7 @@ public class RedisHashCache extends RedisCache {
             try
             {
                 String convert = conversionService.convert(key, String.class);
-                if (StringUtils.isBlank(convert))
+                if (!StringUtils.hasText(convert))
                 {
                     throw new ConversionFailedException(source, target, key, new RuntimeException("convert is null"));
                 }
@@ -410,7 +412,8 @@ public class RedisHashCache extends RedisCache {
     private Object[] parsingKey(Object key) {
         if (key instanceof String)
         {
-            return StringUtils.splitByWholeSeparator((String) key, RedisCacheAutoConfiguration.REDIS_CACHE_HASH_KEY_SEPARATE);
+            return Optional.ofNullable((Object[]) StringUtils.split((String) key, REDIS_CACHE_HASH_KEY_SEPARATE))
+                           .orElse(new Object[]{key});
         }
         return new Object[]{key};
     }

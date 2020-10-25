@@ -23,7 +23,7 @@
 
 package top.dcenter.ums.security.core.oauth.justauth.cache;
 
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import top.dcenter.ums.security.core.oauth.justauth.enums.CacheKeyStrategy;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
@@ -61,7 +61,7 @@ public class AuthStateRedisCache implements Auth2StateCache {
 
     @Override
     public boolean containsKey(String key) {
-        return StringUtils.isNotBlank(stringRedisTemplate.opsForValue().get(key));
+        return StringUtils.hasText(stringRedisTemplate.opsForValue().get(key));
     }
 
     @Override

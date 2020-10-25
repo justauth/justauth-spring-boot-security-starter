@@ -335,7 +335,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 #### login.html: 放在 classpath:/static
 ```html
 <!DOCTYPE html>
-<html">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>登录</title>

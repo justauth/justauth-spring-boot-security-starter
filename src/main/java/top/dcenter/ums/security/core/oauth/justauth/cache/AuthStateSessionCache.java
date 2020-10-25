@@ -25,7 +25,7 @@ package top.dcenter.ums.security.core.oauth.justauth.cache;
 
 import me.zhyd.oauth.cache.AuthCacheConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import top.dcenter.ums.security.core.oauth.justauth.enums.CacheKeyStrategy;
@@ -80,7 +80,7 @@ public class AuthStateSessionCache implements Auth2StateCache {
 
         String result = (String) requestAttributes.getAttribute(sessionKey, SCOPE_SESSION);
 
-        if (StringUtils.isBlank(result))
+        if (!StringUtils.hasText(result))
         {
             return null;
         }
@@ -108,7 +108,7 @@ public class AuthStateSessionCache implements Auth2StateCache {
 
     @Override
     public boolean containsKey(String key) {
-        return StringUtils.isNotBlank(this.get(key));
+        return StringUtils.hasText(this.get(key));
     }
 
     @Override

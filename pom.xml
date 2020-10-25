@@ -150,6 +150,7 @@
             <artifactId>lombok-maven-plugin</artifactId>
             <version>1.18.12.0</version>
             <type>maven-plugin</type>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>
