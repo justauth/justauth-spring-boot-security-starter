@@ -24,7 +24,7 @@
 <dependency>
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.2</version>
+    <version>latest</version>
 </dependency>
 ```
 
@@ -37,7 +37,7 @@
 <dependency>
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.2</version>
+    <version>latest</version>
 </dependency>
 
 <dependency>
@@ -53,7 +53,7 @@
     <version>8.0.21</version>
 </dependency>
 
-<!-- 默认会按照下面的优先级自行寻找一种 HTTP 工具依赖，java 11 HttpClient -> OkHttp3 -> apache HttpClient -> hutool-http
+<!-- 第三方授权登录默认会按照下面的优先级自行寻找一种 HTTP 工具依赖，java 11 HttpClient -> OkHttp3 -> apache HttpClient -> hutool-http
      示例使用 apache HttpClient .
      注意: 如果是 JDK11 则不需要此依赖-->
 <dependency>

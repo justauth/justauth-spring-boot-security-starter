@@ -27,6 +27,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,9 +42,9 @@ import java.util.UUID;
 public interface UmsUserDetailsService extends UserDetailsService, UserDetailsRegisterService {
 
     /**
-     * 用于第三方登录时查询服务, userId 为本地账户的 userId
+     * 用于第三方登录时查询服务, userId 为本地账户的 userId (username 支持唯一索引, 也可以是 username)
      * @see UserDetailsService#loadUserByUsername(String)
-     * @param userId    userId 为本地账户的 userId
+     * @param userId    userId 为本地账户的 userId (username 支持唯一索引, 也可以是 username)
      * @return the UserDetails requested
      * @throws UsernameNotFoundException    没有此 userId 的用户
      */
@@ -51,11 +52,11 @@ public interface UmsUserDetailsService extends UserDetailsService, UserDetailsRe
 
     /**
      * 在本地账户中检查是否存在 usernames, usernames 为本地账户的 usernames
-     * @param usernames   usernames 为本地账户的 username
-     * @return usernames 是否存在的列表(true 表示存在), 与传入的 usernames 顺序一一对应
-     * @throws UsernameNotFoundException    没有此 username 的用户
+     * @param usernames     usernames 为本地账户的 username
+     * @return usernames    是否存在的列表(true 表示存在), 与传入的 usernames 顺序一一对应
+     * @throws IOException  数据库查询异常
      */
-    List<Boolean> existedByUserIds(String... usernames) throws UsernameNotFoundException;
+    List<Boolean> existedByUsernames(String... usernames) throws IOException;
 
     /**
      * 生成一个用户 id. 预留接口, 默认生成一个不带 "-" 的 UUID

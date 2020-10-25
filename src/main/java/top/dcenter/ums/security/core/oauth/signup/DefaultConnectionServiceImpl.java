@@ -89,7 +89,7 @@ public class DefaultConnectionServiceImpl implements ConnectionService {
         try {
             // 重名检查
             username = null;
-            final List<Boolean> existedByUserIds = userDetailsService.existedByUserIds(usernames);
+            final List<Boolean> existedByUserIds = userDetailsService.existedByUsernames(usernames);
             for(int i = 0, len = existedByUserIds.size(); i < len; i++) {
                 if (!existedByUserIds.get(i))
                 {

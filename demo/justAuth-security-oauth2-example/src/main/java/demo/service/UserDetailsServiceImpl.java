@@ -23,8 +23,9 @@
 
 package demo.service;
 
-import lombok.extern.slf4j.Slf4j;
 import me.zhyd.oauth.model.AuthUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -51,8 +52,9 @@ import java.util.List;
  * @version V1.0  Created by 2020/9/20 11:06
  */
 @Service
-@Slf4j
 public class UserDetailsServiceImpl implements UmsUserDetailsService {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
     @Autowired(required = false)
@@ -145,7 +147,7 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
     }
 
     @Override
-    public List<Boolean> existedByUserIds(String... userIds) throws UsernameNotFoundException {
+    public List<Boolean> existedByUsernames(String... userIds) throws UsernameNotFoundException {
         // ... 在本地账户上查询 userIds 是否已被使用
         List<Boolean> list = new ArrayList<>();
         list.add(true);
