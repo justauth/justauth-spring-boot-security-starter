@@ -41,13 +41,13 @@ import java.util.UUID;
 public interface UmsUserDetailsService extends UserDetailsService, UserDetailsRegisterService {
 
     /**
-     * 用于第三方登录时查询服务, username 为本地账户的 username
+     * 用于第三方登录时查询服务, userId 为本地账户的 userId
      * @see UserDetailsService#loadUserByUsername(String)
-     * @param username    username 为本地账户的 username
+     * @param userId    userId 为本地账户的 userId
      * @return the UserDetails requested
-     * @throws UsernameNotFoundException    没有此 username 的用户
+     * @throws UsernameNotFoundException    没有此 userId 的用户
      */
-    UserDetails loadUserByUserId(String username) throws UsernameNotFoundException;
+    UserDetails loadUserByUserId(String userId) throws UsernameNotFoundException;
 
     /**
      * 在本地账户中检查是否存在 usernames, usernames 为本地账户的 usernames
