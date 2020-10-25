@@ -53,18 +53,6 @@
         <dependency>
             <groupId>me.zhyd.oauth</groupId>
             <artifactId>JustAuth</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.xkcoding.http</groupId>
-                    <artifactId>simple-http</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- 修复 HttpClientImpl timeout 配置失效问题, 作者(xkcoding) 更新太慢, 自己先上传一个 -->
-        <dependency>
-            <groupId>top.dcenter</groupId>
-            <artifactId>xkcoding-simple-http</artifactId>
         </dependency>
 
         <dependency>
@@ -176,14 +164,12 @@
         <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
         <spring-security.version>5.4.0</spring-security.version>
 
-        <commons-lang3.version>3.11</commons-lang3.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <commons-pool2.version>2.8.1</commons-pool2.version>
-        <just-auth.version>1.15.7</just-auth.version>
+        <just-auth.version>1.15.8</just-auth.version>
         <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
         <org.projectlombok.version>1.18.12</org.projectlombok.version>
         <servlet-api.version>3.0-alpha-1</servlet-api.version>
-        <xkcoding-simple-http.version>1.0.4</xkcoding-simple-http.version>
 
     </properties>
 
@@ -210,13 +196,6 @@
                 <version>${just-auth.version}</version>
             </dependency>
 
-            <!-- 修复 HttpClientImpl timeout 配置失效问题, 作者(xkcoding) 更新太慢, 自己先上传一个 -->
-            <dependency>
-                <groupId>top.dcenter</groupId>
-                <artifactId>xkcoding-simple-http</artifactId>
-                <version>${xkcoding-simple-http.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>servlet-api</artifactId>
@@ -230,11 +209,6 @@
                 <version>${commons-beanutils.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>jsr305</artifactId>
