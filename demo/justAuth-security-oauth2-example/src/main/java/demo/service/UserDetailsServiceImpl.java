@@ -147,7 +147,7 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
     }
 
     @Override
-    public List<Boolean> existedByUsernames(String... userIds) throws UsernameNotFoundException {
+    public List<Boolean> existedByUsernames(String... usernames) throws UsernameNotFoundException {
         // ... 在本地账户上查询 userIds 是否已被使用
         List<Boolean> list = new ArrayList<>();
         list.add(true);
