@@ -242,12 +242,20 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
         }
     }
 
-    @Override
-    public UserDetails registerUser(AuthUser authUser, String username, String defaultAuthority) throws RegisterUserFailureException {
+   @Override
+    public UserDetails registerUser(AuthUser authUser, String username, String defaultAuthority, String decodeState) throws RegisterUserFailureException {
 
         // 第三方授权登录不需要密码, 这里随便设置的, 生成环境按自己的逻辑
         String encodedPassword = passwordEncoder.encode(authUser.getUuid());
 
+        // 这里的 decodeState 可以根据自己实现的 top.dcenter.ums.security.core.oauth.service.Auth2StateCoder 接口的逻辑来传递必要的参数.
+        // 比如: 第三方登录成功后的跳转地址
+        final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        // 假设 decodeState 就是 redirectUrl, 我们直接把 redirectUrl 设置到 request 上
+        // 后续经过成功处理器时直接从 requestAttributes.getAttribute("redirectUrl", RequestAttributes.SCOPE_REQUEST) 获取并跳转
+        requestAttributes.setAttribute("redirectUrl", decodeState, RequestAttributes.SCOPE_REQUEST);
+        // 当然 decodeState 也可以传递从前端传到后端的用户信息, 注册到本地用户
+        
         List<GrantedAuthority> grantedAuthorities = AuthorityUtils.commaSeparatedStringToAuthorityList(defaultAuthority);
 
         // ... 用户注册逻辑
@@ -347,6 +355,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .loginPage("/login.html")
             .defaultSuccessUrl("/index.html");
         http.logout().logoutSuccessUrl("/login.html");
+
+        http.csrf().disable();
 
         // ========= start: 使用 justAuth-spring-security-starter 必须步骤 ========= 
         // 添加 Auth2AutoConfigurer 使 OAuth2(justAuth) login 生效.
@@ -466,13 +476,33 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 - justAuth-spring-security-starter 大部分功能实现都是通过配置文件设置属性来完成的, 详细属性配置请查看`五、属性配置列表`.
 ------
+## 五、接口说明: 
 
-## 五、时序图: 随着版本迭代会有出入
+- [UmsUserDetailsService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java): `必须实现`
+
+- [Auth2StateCoder](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2StateCoder.java): `用户需要时实现`, 对第三方授权登录流程中的 state 进行自定义编解码. 可以传递必要的信息, 
+  如: 第三方登录成功的跳转地址等 注意此接口的两个方法必须同时实现对应的编解码逻辑, 实现此接口后注入 IOC 容器即可, 如有前端向后端获取 authorizeUrl
+  时向后端传递额外参数 且用作注册时的信息, 需配合 UmsUserDetailsService.registerUser(AuthUser, String, String, String) 方法实现.
+
+- [Auth2UserService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2UserService.java): 获取第三方用户信息的接口, 一般**不需要用户实现**, 除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+
+- [UsersConnectionRepository](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionRepository.java): 第三方授权登录的第三方用户信息增删改查, 绑定与解绑及查询是否绑定与解绑接口, 一般**不需要用户实现**. 
+  除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+
+- [UsersConnectionTokenRepository](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionTokenRepository.java): 第三方授权登录用户 accessToken 信息表增删改查接口, 一般**不需要用户实现**. 
+  除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+
+- [ConnectionService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/signup/ConnectionService.java): 第三方授权登录用户的注册, 绑定, 更新第三方用户信息与 accessToken 信息的接口, 一般**不需要用户实现**.
+  除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+
+
+------
+## 六、`时序图`: 随着版本迭代会有出入
 
 ![第三方授权登录](doc/OAuth2Login.png)
 
 ------
-## 六、属性配置列表
+## 七、`属性配置列表`
 
 ###  OAuth2 / refreshToken 定时任务 / JustAuth 配置属性
 

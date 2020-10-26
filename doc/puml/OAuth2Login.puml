@@ -108,7 +108,7 @@ authenticationToken\n\
 .getPrincipal();//省略NPE判断逻辑
 activate Auth2LoginAuthenticationProvider
 deactivate Auth2LoginAuthenticationProvider
-alt 4.1 isEmpty(connectionDataList) 没有第三方登录记录, 自动注册 或 绑定
+alt 4.1 isEmpty(connectionDataList) 没有第三方登录记录, 自动注册 或 绑定 或 临时创建第三方登录用户
 alt principal instanceof UserDetails 为本地登录用户(不含匿名用户), 绑定操作
 Auth2LoginAuthenticationProvider -> ConnectionService: binding(principal, authUser, providerId);
 activate Auth2LoginAuthenticationProvider
@@ -117,6 +117,7 @@ ConnectionService --> Auth2LoginAuthenticationProvider: 返回
 deactivate ConnectionService
 deactivate Auth2LoginAuthenticationProvider
 else principal == null 不是本地登录用户(或为匿名用户), 注册操作
+alt autoSignUp == true, 自动注册
 Auth2LoginAuthenticationProvider -> ConnectionService: 注册到本地账户\n\
 注册第三方授权登录信息到 user_connection 与 auth_token\n\
 signUp(authUser, providerId)
@@ -125,6 +126,21 @@ activate ConnectionService
 ConnectionService --> Auth2LoginAuthenticationProvider: 返回
 deactivate ConnectionService
 deactivate Auth2LoginAuthenticationProvider
+else autoSignUp == false, 临时创建第三方登录用户
+Auth2LoginAuthenticationProvider --> Auth2LoginAuthenticationProvider : userDetails = \n\
+TemporaryUser.builder()\n\
+// 重新注册本地账号时按自己的业务逻辑进行命名\n\
+.username(authUser.getUsername()\n + "_" + providerId\n + "_" + providerUserId)\n\
+// 临时密码, 重新注册本地账号时按自己的业务逻辑进行设置\n\
+.password("{noop}" + temporaryUserPassword)\n\
+.authUser(authUser)\n\
+.disabled(false)\n\
+.accountExpired(false)\n\
+.accountLocked(false)\n\
+.credentialsExpired(false)\n\
+.authorities(AuthorityUtils.\ncommaSeparatedString\nToAuthorityList(temporaryUserAuthorities))\n\
+.build();
+end
 end
 else 4.2 connectionDataList.size() > 0 有第三方登录记录
 opt principal instanceof UserDetails 为本地登录用户(不含匿名用户)

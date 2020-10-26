@@ -69,6 +69,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .defaultSuccessUrl("/index.html");
         http.logout().logoutSuccessUrl("/login.html");
 
+        http.csrf().disable();
+
         // ========= start: 使用 justAuth-spring-security-starter 必须步骤 =========
         // 添加 Auth2AutoConfigurer 使 OAuth2(justAuth) login 生效.
         http.apply(this.auth2AutoConfigurer);

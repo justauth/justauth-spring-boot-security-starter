@@ -23,12 +23,13 @@
 package top.dcenter.ums.security.core.oauth.service;
 
 import me.zhyd.oauth.model.AuthUser;
+import org.springframework.lang.NonNull;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * 对 OAuth2 login 流程中的 state 进行自定义编解码.<br>
+ * 对 OAuth2 login 流程中的 state 进行自定义编解码. 可以传递必要的信息, 如: 第三方登录成功的跳转地址等<br>
  *     注意此接口的两个方法必须同时实现对应的编解码逻辑, 实现此接口后注入 IOC 容器即可, 如有前端向后端获取 authorizeUrl 时向后端传递额外参数
  *     且用作注册时的信息, 需配合 {@link UmsUserDetailsService#registerUser(AuthUser, String, String, String)} 方法实现.<br>
  * {@code https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22JC7}
@@ -46,12 +47,12 @@ public interface Auth2StateCoder {
      *                   从而编码进 state 中, 在 OAuth2 login 流程中传递参数.
      * @return  返回编码后的 state
      */
-    String encode(String state, HttpServletRequest request);
+    String encode(@NonNull String state, @NonNull HttpServletRequest request);
 
     /**
      * 对 encoderState 进行解码
      * @param encoderState  编码后的 state
      * @return  返回解码后的 state
      */
-    String decode(String encoderState);
+    String decode(@NonNull String encoderState);
 }

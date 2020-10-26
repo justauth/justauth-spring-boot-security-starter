@@ -27,6 +27,7 @@ import me.zhyd.oauth.model.AuthUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
@@ -35,6 +36,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import top.dcenter.ums.security.core.oauth.enums.ErrorCodeEnum;
 import top.dcenter.ums.security.core.oauth.exception.RegisterUserFailureException;
 import top.dcenter.ums.security.core.oauth.exception.UserNotExistException;
@@ -107,10 +110,21 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
     }
 
     @Override
-    public UserDetails registerUser(AuthUser authUser, String username, String defaultAuthority) throws RegisterUserFailureException {
+    public UserDetails registerUser(@NonNull AuthUser authUser, @NonNull String username,
+                                    @NonNull String defaultAuthority, String decodeState) throws RegisterUserFailureException {
 
         // 第三方授权登录不需要密码, 这里随便设置的, 生成环境按自己的逻辑
         String encodedPassword = passwordEncoder.encode(authUser.getUuid());
+
+        // 这里的 decodeState 可以根据自己实现的 top.dcenter.ums.security.core.oauth.service.Auth2StateCoder 接口的逻辑来传递必要的参数.
+        // 比如: 第三方登录成功后的跳转地址
+        final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        // 假设 decodeState 就是 redirectUrl, 我们直接把 redirectUrl 设置到 request 上
+        // 后续经过成功处理器时直接从 requestAttributes.getAttribute("redirectUrl", RequestAttributes.SCOPE_REQUEST) 获取并跳转
+        if (requestAttributes != null) {
+            requestAttributes.setAttribute("redirectUrl", decodeState, RequestAttributes.SCOPE_REQUEST);
+        }
+        // 当然 decodeState 也可以传递从前端传到后端的用户信息, 注册到本地用户
 
         List<GrantedAuthority> grantedAuthorities = AuthorityUtils.commaSeparatedStringToAuthorityList(defaultAuthority);
 

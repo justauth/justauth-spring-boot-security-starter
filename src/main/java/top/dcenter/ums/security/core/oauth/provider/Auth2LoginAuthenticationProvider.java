@@ -165,7 +165,7 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 
 		boolean cacheWasUsed = false;
 		UserDetails userDetails = null;
-		//4.1 没有第三方登录记录, 自动注册 或 绑定 或 缓存第三方登录记录
+		//4.1 没有第三方登录记录, 自动注册 或 绑定 或 临时创建第三方登录用户
 		if (CollectionUtils.isEmpty(connectionDataList))
 		{
 			// 无本地用户登录, 注册和绑定
@@ -181,7 +181,10 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 					// 创建临时用户的 userDetails, 再次获取通过 SecurityContextHolder.getContext().getAuthentication().getPrincipal()
 					// @formatter:off
 					userDetails = TemporaryUser.builder()
+					                           // username = authUser.getUsername() + "_" + providerId + "_" + providerUserId
+					                           // 重新注册本地账号时按自己的业务逻辑进行命名
 					                           .username(authUser.getUsername() + "_" + providerId + "_" + providerUserId)
+					                           // 临时密码, 重新注册本地账号时按自己的业务逻辑进行设置
 					                           .password("{noop}" + temporaryUserPassword)
 					                           .authUser(authUser)
 					                           .disabled(false)
