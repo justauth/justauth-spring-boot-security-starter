@@ -42,16 +42,22 @@ ums:
   oauth:
     # 是否支持第三方授权登录功能, 默认: true
     enabled: true
+    # 第三方授权登录后如未注册用户是否支持自动注册功能, 默认: true
+    auto-sign-up: false
+    # 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户密码, 默认为: "". 注意: 生产环境更换密码
+    temporary-user-password: ""
+    # 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户的默认权限, 多个权限用逗号分开, 默认为: "ROLE_TEMPORARY_USER"
+    temporary-user-authorities: ROLE_TEMPORARY_USER
     # 抑制反射警告, 支持 JDK11, 默认: false , 在确认 WARNING: An illegal reflective access operation has occurred 安全后, 可以打开此设置, 可以抑制反射警告.
     suppress-reflect-warning: true
     # 第三方服务商: providerId, 支持所有 JustAuth 支持的第三方授权登录, 目前有 32 家第三方授权登录
     github:
       # 根据是否有设置 clientId 来动态加载相应 JustAuth 的 AuthXxxRequest
       client-id: 4d4ee00e82f669f2ea8d
-      client-secret: 953ddbe871a08d6924053531e89ecc01d87195a8
+      client-secret: 4050be113a83556b63bd991d606fded437b05235
     gitee:
       client-id: dcc38c801ee88f43cfc1d5c52ec579751c12610c37b87428331bd6694056648e
-      client-secret: e60a110a2f6e7c930c2d416f802bec6061e19bfa0ceb0df9f6b182b05d8f5a58
+      client-secret: f7384969d0e93088cdab546a1cea026442c16e2476cedec02e202cc89ee773ae
     # 第三方登录授权登录 url 前缀, 不包含 ServletContextPath，默认为 /auth2/authorization.
     auth-login-url-prefix: /auth2/authorization
     # 第三方登录回调处理 url 前缀 ，也就是 RedirectUrl 的前缀, 不包含 ServletContextPath，默认为 /auth2/login.

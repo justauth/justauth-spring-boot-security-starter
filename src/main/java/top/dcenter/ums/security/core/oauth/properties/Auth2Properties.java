@@ -198,6 +198,12 @@ public class Auth2Properties {
     private Boolean enabled = true;
 
     /**
+     * 第三方授权登录后如未注册用户是否支持自动注册功能, 默认: true<br>
+     * {@code https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22KP3}
+     */
+    private Boolean autoSignUp = true;
+
+    /**
      * 第三方登录回调的域名, 例如：https://localhost 默认为 "http://127.0.0.1"，
      * redirectUrl 直接由 {domain}/{servletContextPath}/{redirectUrlPrefix}/{providerId}(ums.oauth.[qq/gitee/weibo])组成
      */
@@ -217,6 +223,16 @@ public class Auth2Properties {
      * 第三方授权登录成功后的默认权限, 多个权限用逗号分开, 默认为: "ROLE_USER"
      */
     private String defaultAuthorities = "ROLE_USER";
+
+    /**
+     * 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户密码, 默认为: "".<br>
+     *     注意: 生产环境更换密码
+     */
+    private String temporaryUserPassword = "";
+    /**
+     * 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户的默认权限, 多个权限用逗号分开, 默认为: "ROLE_TEMPORARY_USER"
+     */
+    private String temporaryUserAuthorities = "ROLE_TEMPORARY_USER";
 
     // =================== refreshToken 定时任务 属性 ===================
     /**

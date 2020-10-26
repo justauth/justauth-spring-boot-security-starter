@@ -28,6 +28,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.SpringSecurityMessageSource;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserCache;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -43,6 +44,7 @@ import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
 import top.dcenter.ums.security.core.oauth.signup.ConnectionService;
 import top.dcenter.ums.security.core.oauth.token.Auth2AuthenticationToken;
 import top.dcenter.ums.security.core.oauth.token.Auth2LoginAuthenticationToken;
+import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -89,6 +91,9 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 	private final UsersConnectionRepository usersConnectionRepository;
 	private final ConnectionService connectionService;
 	private final ExecutorService updateConnectionTaskExecutor;
+	private final Boolean autoSignUp;
+	private final String temporaryUserAuthorities;
+	private final String temporaryUserPassword;
 
 	protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 	private UserCache userCache = new NullUserCache();
@@ -109,17 +114,26 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 	                                        ConnectionService connectionService,
 	                                        UmsUserDetailsService umsUserDetailsService,
 	                                        UsersConnectionRepository usersConnectionRepository,
-	                                        ExecutorService updateConnectionTaskExecutor) {
+	                                        ExecutorService updateConnectionTaskExecutor,
+	                                        Boolean autoSignUp,
+	                                        String temporaryUserAuthorities,
+	                                        String temporaryUserPassword) {
 		Assert.notNull(updateConnectionTaskExecutor, "updateConnectionTaskExecutor cannot be null");
 		Assert.notNull(userService, "userService cannot be null");
 		Assert.notNull(connectionService, "connectionService cannot be null");
 		Assert.notNull(umsUserDetailsService, "umsUserDetailsService cannot be null");
 		Assert.notNull(usersConnectionRepository, "usersConnectionRepository cannot be null");
+		Assert.notNull(autoSignUp, "autoSignUp cannot be null");
+		Assert.notNull(temporaryUserAuthorities, "temporaryUserAuthorities cannot be null");
+		Assert.notNull(temporaryUserPassword, "temporaryUserPassword cannot be null");
 		this.updateConnectionTaskExecutor = updateConnectionTaskExecutor;
 		this.connectionService = connectionService;
 		this.userService = userService;
 		this.umsUserDetailsService = umsUserDetailsService;
 		this.usersConnectionRepository = usersConnectionRepository;
+		this.autoSignUp = autoSignUp;
+		this.temporaryUserAuthorities = temporaryUserAuthorities;
+		this.temporaryUserPassword = temporaryUserPassword;
 	}
 
 	@SuppressWarnings("AlibabaMethodTooLong")
@@ -130,12 +144,15 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 
 		//1 从第三方获取 Userinfo
 		HttpServletRequest request = loginToken.getRequest();
+		// 获取 encodeState, https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22JC7
+		final String encodeState = request.getParameter("state");
 		AuthUser authUser = userService.loadUser(auth2DefaultRequest, request);
 
 		//2 查询是否已经有第三方的授权记录, List 按 rank 排序, 直接取第一条记录
 		String providerUserId = authUser.getUuid();
+		final String providerId = auth2DefaultRequest.getProviderId();
 		List<ConnectionData> connectionDataList = usersConnectionRepository
-				.findConnectionByProviderIdAndProviderUserId(auth2DefaultRequest.getProviderId(), providerUserId);
+				.findConnectionByProviderIdAndProviderUserId(providerId, providerUserId);
 
 		//3 获取 securityContext 中的 authenticationToken, 判断是否为本地登录用户(不含匿名用户)
 		final Authentication authenticationToken = SecurityContextHolder.getContext().getAuthentication();
@@ -148,14 +165,33 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 
 		boolean cacheWasUsed = false;
 		UserDetails userDetails = null;
-		//4.1 没有第三方登录记录, 自动注册 或 绑定
+		//4.1 没有第三方登录记录, 自动注册 或 绑定 或 缓存第三方登录记录
 		if (CollectionUtils.isEmpty(connectionDataList))
 		{
 			// 无本地用户登录, 注册和绑定
 			if (principal == null)
 			{
-				// 注册到本地账户, 注册第三方授权登录信息到 user_connection 与 auth_token
-				userDetails = connectionService.signUp(authUser, auth2DefaultRequest.getProviderId());
+				// 自动注册, https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22KP3.
+				if (this.autoSignUp) {
+					// 自动注册到本地账户, 注册第三方授权登录信息到 user_connection 与 auth_token
+					userDetails = connectionService.signUp(authUser, providerId, encodeState);
+				}
+				// 不支持自动注册, https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22KP3.
+				else {
+					// 创建临时用户的 userDetails, 再次获取通过 SecurityContextHolder.getContext().getAuthentication().getPrincipal()
+					// @formatter:off
+					userDetails = TemporaryUser.builder()
+					                           .username(authUser.getUsername() + "_" + providerId + "_" + providerUserId)
+					                           .password("{noop}" + temporaryUserPassword)
+					                           .authUser(authUser)
+					                           .disabled(false)
+					                           .accountExpired(false)
+					                           .accountLocked(false)
+					                           .credentialsExpired(false)
+					                           .authorities(AuthorityUtils.commaSeparatedStringToAuthorityList(temporaryUserAuthorities))
+					                           .build();
+					// @formatter:on
+				}
 			}
 			// 本地用户已登录, 绑定
 			else
@@ -163,7 +199,7 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 				if (principal instanceof UserDetails)
 				{
 					// 当 principal 为 UserDetails 类型是进行绑定操作.
-					connectionService.binding((UserDetails) principal, authUser, auth2DefaultRequest.getProviderId());
+					connectionService.binding((UserDetails) principal, authUser, providerId);
 				}
 			}
 		}
@@ -252,7 +288,7 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 
 		// 7 创建成功认证 token 并返回
 		Auth2AuthenticationToken auth2AuthenticationToken = new Auth2AuthenticationToken(userDetails, userDetails.getAuthorities(),
-		                                                                                 auth2DefaultRequest.getProviderId());
+		                                                                                 providerId);
 		auth2AuthenticationToken.setDetails(loginToken.getDetails());
 
 		return auth2AuthenticationToken;
@@ -304,7 +340,7 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 	 * method.
 	 *
 	 * @param userDetails as retrieved from the
-	 * {@link ConnectionService#signUp(AuthUser, String)}} or
+	 * {@link ConnectionService#signUp(AuthUser, String, String)}} or
 	 * <code>UserCache</code> or {@link UmsUserDetailsService#loadUserByUserId(String)}
 	 * @param authentication the current request that needs to be authenticated
 	 *

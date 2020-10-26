@@ -24,6 +24,7 @@
 package top.dcenter.ums.security.core.oauth.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -48,6 +49,7 @@ import top.dcenter.ums.security.core.oauth.repository.UsersConnectionTokenReposi
 import top.dcenter.ums.security.core.oauth.repository.factory.Auth2JdbcUsersConnectionRepositoryFactory;
 import top.dcenter.ums.security.core.oauth.repository.factory.UsersConnectionRepositoryFactory;
 import top.dcenter.ums.security.core.oauth.repository.jdbc.Auth2JdbcUsersConnectionTokenRepository;
+import top.dcenter.ums.security.core.oauth.service.Auth2StateCoder;
 import top.dcenter.ums.security.core.oauth.service.Auth2UserService;
 import top.dcenter.ums.security.core.oauth.service.DefaultAuth2UserServiceImpl;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
@@ -129,13 +131,16 @@ public class Auth2AutoConfiguration implements InitializingBean, ApplicationCont
                                repositoryProperties.getTextEncryptorSalt());
     }
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Bean
     @ConditionalOnMissingBean(type = "top.dcenter.ums.security.core.oauth.signup.ConnectionService")
     public ConnectionService connectionSignUp(UmsUserDetailsService userDetailsService,
                                               UsersConnectionTokenRepository usersConnectionTokenRepository,
-                                              UsersConnectionRepository usersConnectionRepository) {
+                                              UsersConnectionRepository usersConnectionRepository,
+                                              @Autowired(required = false) Auth2StateCoder auth2StateCoder) {
         return new DefaultConnectionServiceImpl(userDetailsService, auth2Properties,
-                                                usersConnectionRepository, usersConnectionTokenRepository);
+                                                usersConnectionRepository, usersConnectionTokenRepository,
+                                                auth2StateCoder);
     }
 
     @Bean
@@ -201,12 +206,14 @@ public class Auth2AutoConfiguration implements InitializingBean, ApplicationCont
                     if (tableCount < 1)
                     {
                         String creatUserConnectionTableSql = repositoryProperties.getCreatUserConnectionTableSql();
-                        connection.prepareStatement(creatUserConnectionTableSql).executeUpdate();
-                        log.info("{} 表创建成功，SQL：{}", repositoryProperties.getTableName(),
-                                 creatUserConnectionTableSql);
-                        if (!connection.getAutoCommit())
-                        {
-                            connection.commit();
+                        try (final PreparedStatement preparedStatement = connection.prepareStatement(creatUserConnectionTableSql);) {
+                            preparedStatement.executeUpdate();
+                            log.info("{} 表创建成功，SQL：{}", repositoryProperties.getTableName(),
+                                     creatUserConnectionTableSql);
+                            if (!connection.getAutoCommit())
+                            {
+                                connection.commit();
+                            }
                         }
                     }
                 }

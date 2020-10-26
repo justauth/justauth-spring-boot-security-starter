@@ -43,6 +43,7 @@ import top.dcenter.ums.security.core.oauth.filter.redirect.Auth2DefaultRequestRe
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 import top.dcenter.ums.security.core.oauth.provider.Auth2LoginAuthenticationProvider;
 import top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository;
+import top.dcenter.ums.security.core.oauth.service.Auth2StateCoder;
 import top.dcenter.ums.security.core.oauth.service.Auth2UserService;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
 import top.dcenter.ums.security.core.oauth.signup.ConnectionService;
@@ -67,6 +68,9 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
     private final UsersConnectionRepository usersConnectionRepository;
     private final ConnectionService connectionSignUp;
     private final ExecutorService updateConnectionTaskExecutor;
+    @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection"})
+    @Autowired(required = false)
+    private Auth2StateCoder auth2StateCoder;
     @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection"})
     @Autowired(required = false)
     private AuthenticationFailureHandler authenticationFailureHandler;
@@ -94,7 +98,8 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
 
         // 添加第三方登录入口过滤器
         String authorizationRequestBaseUri = auth2Properties.getAuthLoginUrlPrefix();
-        Auth2DefaultRequestRedirectFilter auth2DefaultRequestRedirectFilter = new Auth2DefaultRequestRedirectFilter(authorizationRequestBaseUri);
+        Auth2DefaultRequestRedirectFilter auth2DefaultRequestRedirectFilter =
+                new Auth2DefaultRequestRedirectFilter(authorizationRequestBaseUri, this.auth2StateCoder);
         http.addFilterAfter(auth2DefaultRequestRedirectFilter, AbstractPreAuthenticatedProcessingFilter.class);
 
         // 添加第三方登录回调接口过滤器
@@ -125,7 +130,9 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
         // 添加 provider
         Auth2LoginAuthenticationProvider auth2LoginAuthenticationProvider = new Auth2LoginAuthenticationProvider(
                 auth2UserService, connectionSignUp, umsUserDetailsService,
-                usersConnectionRepository, updateConnectionTaskExecutor);
+                usersConnectionRepository, updateConnectionTaskExecutor,
+                auth2Properties.getAutoSignUp(), auth2Properties.getTemporaryUserAuthorities(),
+                auth2Properties.getTemporaryUserPassword());
         http.authenticationProvider(postProcess(auth2LoginAuthenticationProvider));
 
     }

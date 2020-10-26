@@ -19,6 +19,7 @@ package top.dcenter.ums.security.core.oauth.filter.redirect;
 import org.springframework.core.log.LogMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -32,6 +33,7 @@ import org.springframework.security.web.util.ThrowableAnalyzer;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.OncePerRequestFilter;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
+import top.dcenter.ums.security.core.oauth.service.Auth2StateCoder;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -62,10 +64,10 @@ import java.io.IOException;
  * <p>
  * The default base {@code URI} {@code /auth2/authorization} may be overridden via the
  * constructor
- * {@link #Auth2DefaultRequestRedirectFilter(String)},
+ * {@link Auth2DefaultRequestRedirectFilter(String)},
  * or alternatively, an {@code Auth2DefaultRequestResolver} may be provided to the
  * constructor
- * {@link #Auth2DefaultRequestRedirectFilter(Auth2DefaultRequestResolver)}
+ * {@link Auth2DefaultRequestRedirectFilter(Auth2DefaultRequestResolver)}
  * to override the resolving of authorization requests.
  *
  * @author Joe Grandja
@@ -97,6 +99,8 @@ public class Auth2DefaultRequestRedirectFilter extends OncePerRequestFilter {
 
 	private final Auth2DefaultRequestResolver authorizationRequestResolver;
 
+	private final Auth2StateCoder auth2StateCoder;
+
 	private RequestCache requestCache = new HttpSessionRequestCache();
 
 	/**
@@ -104,22 +108,27 @@ public class Auth2DefaultRequestRedirectFilter extends OncePerRequestFilter {
 	 * parameters.
 	 * @param authorizationRequestBaseUri the base {@code URI} used for authorization
 	 * requests
+	 * @param auth2StateCoder             state 的编解码器
 	 */
-	public Auth2DefaultRequestRedirectFilter(@NonNull String authorizationRequestBaseUri) {
+	public Auth2DefaultRequestRedirectFilter(@NonNull String authorizationRequestBaseUri,
+	                                         @Nullable Auth2StateCoder auth2StateCoder) {
 		Assert.hasText(authorizationRequestBaseUri, "authorizationRequestBaseUri cannot be empty");
 		this.authorizationRequestResolver = new Auth2DefaultRequestResolver(authorizationRequestBaseUri);
+		this.auth2StateCoder = auth2StateCoder;
 	}
 
 	/**
 	 * Constructs an {@code Auth2DefaultRequestRedirectFilter} using the provided
 	 * parameters.
-	 * @param authorizationRequestResolver the resolver used for resolving authorization
-	 * requests
+	 * @param authorizationRequestResolver  the resolver used for resolving authorization requests
+	 * @param auth2StateCoder               state 的编解码器
 	 * @since 5.1
 	 */
-	public Auth2DefaultRequestRedirectFilter(Auth2DefaultRequestResolver authorizationRequestResolver) {
+	public Auth2DefaultRequestRedirectFilter(Auth2DefaultRequestResolver authorizationRequestResolver,
+	                                         @Nullable Auth2StateCoder auth2StateCoder) {
 		Assert.notNull(authorizationRequestResolver, "authorizationRequestResolver cannot be null");
 		this.authorizationRequestResolver = authorizationRequestResolver;
+		this.auth2StateCoder = auth2StateCoder;
 	}
 
 	/**
@@ -185,8 +194,12 @@ public class Auth2DefaultRequestRedirectFilter extends OncePerRequestFilter {
 
 	private void sendRedirectForAuthorization(HttpServletRequest request, HttpServletResponse response,
 			Auth2DefaultRequest authorizationRequest) throws IOException {
-		// 扩展点: 可自定义 state 生成. 这里直接使用 Auth2DefaultRequest 接口的默认方法 generateState()
-		String authorize = authorizationRequest.authorize(authorizationRequest.generateState());
+		String state = authorizationRequest.generateState();
+		if (this.auth2StateCoder != null) {
+			// 对 state 进行自定义编码 https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22JC7
+			state = this.auth2StateCoder.encode(state, request);
+		}
+		String authorize = authorizationRequest.authorize(state);
 
 		this.authorizationRedirectStrategy.sendRedirect(request, response, authorize);
 	}

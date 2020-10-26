@@ -27,6 +27,7 @@ import com.xkcoding.http.config.HttpConfig;
 import lombok.extern.slf4j.Slf4j;
 import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,7 @@ import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 import top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository;
 import top.dcenter.ums.security.core.oauth.repository.UsersConnectionTokenRepository;
 import top.dcenter.ums.security.core.oauth.repository.exception.UpdateConnectionException;
+import top.dcenter.ums.security.core.oauth.service.Auth2StateCoder;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
 
 import java.util.List;
@@ -48,7 +50,7 @@ import static top.dcenter.ums.security.core.oauth.util.MvcUtil.toJsonString;
 
 /**
  * 默认的第三方授权登录时自动注册处理器。<br>
- * {@link #signUp(AuthUser, String)} 功能：第三方登录自动注册时, 根据 第三方的 authUser 注册为本地账户的用户,
+ * {@link #signUp(AuthUser, String, String)} 功能：第三方登录自动注册时, 根据 第三方的 authUser 注册为本地账户的用户,
  * 用户名可能为 username 或 username + "_" + providerId 或 username + "_" + providerId + "_" + providerUserId<br><br>
  * @author YongWu zheng
  * @version V2.0  Created by 2020/5/14 22:32
@@ -66,26 +68,29 @@ public class DefaultConnectionServiceImpl implements ConnectionService {
     private final String defaultAuthorities;
     private final UsersConnectionRepository usersConnectionRepository;
     private final UsersConnectionTokenRepository usersConnectionTokenRepository;
+    private final Auth2StateCoder auth2StateCoder;
 
     public DefaultConnectionServiceImpl(UmsUserDetailsService userDetailsService,
                                         Auth2Properties auth2Properties,
                                         UsersConnectionRepository usersConnectionRepository,
-                                        UsersConnectionTokenRepository usersConnectionTokenRepository) {
+                                        UsersConnectionTokenRepository usersConnectionTokenRepository,
+                                        Auth2StateCoder auth2StateCoder) {
         this.userDetailsService = userDetailsService;
         this.defaultAuthorities = auth2Properties.getDefaultAuthorities();
         this.usersConnectionRepository = usersConnectionRepository;
         this.usersConnectionTokenRepository = usersConnectionTokenRepository;
         this.timeout = auth2Properties.getProxy().getHttpConfig().getTimeout();
+        this.auth2StateCoder = auth2StateCoder;
     }
 
     @Override
     @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRES_NEW)
-    public UserDetails signUp(AuthUser authUser, String providerId) throws RegisterUserFailureException {
+    public UserDetails signUp(@NonNull AuthUser authUser, @NonNull String providerId, @NonNull String encodeState) throws RegisterUserFailureException {
         // 这里为第三方登录自动注册时调用，所以这里不需要实现对用户信息的注册，可以在用户登录完成后提示用户修改用户信息。
         String username = authUser.getUsername();
         String[] usernames = new String[]{username,
-                                          username + "_" + authUser.getSource(),
-                                          username + "_" + authUser.getSource() + "_" + authUser.getUuid()};
+                                          username + "_" + providerId,
+                                          username + "_" + providerId + "_" + authUser.getUuid()};
         try {
             // 重名检查
             username = null;
@@ -103,8 +108,16 @@ public class DefaultConnectionServiceImpl implements ConnectionService {
                 throw new RegisterUserFailureException(ErrorCodeEnum.USERNAME_USED, authUser.getUsername());
             }
 
+            // 解密 encodeState  https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22JC7
+            String decodeState;
+            if (this.auth2StateCoder != null) {
+                decodeState = this.auth2StateCoder.decode(encodeState);
+            }
+            else {
+                decodeState = encodeState;
+            }
             // 注册到本地账户
-            UserDetails userDetails = userDetailsService.registerUser(authUser, username, defaultAuthorities);
+            UserDetails userDetails = userDetailsService.registerUser(authUser, username, defaultAuthorities, decodeState);
             // 第三方授权登录信息绑定到本地账号, 且添加第三方授权登录信息到 user_connection 与 auth_token
             registerConnection(providerId, authUser, userDetails);
 
@@ -119,7 +132,7 @@ public class DefaultConnectionServiceImpl implements ConnectionService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRED)
-    public void updateUserConnection(AuthUser authUser, ConnectionData data) throws UpdateConnectionException {
+    public void updateUserConnection(@NonNull AuthUser authUser, @NonNull ConnectionData data) throws UpdateConnectionException {
         ConnectionData connectionData = null;
         try
         {
@@ -149,7 +162,7 @@ public class DefaultConnectionServiceImpl implements ConnectionService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRED)
-    public void binding(UserDetails principal, AuthUser authUser, String providerId) {
+    public void binding(@NonNull UserDetails principal, @NonNull AuthUser authUser, @NonNull String providerId) {
         // 第三方授权登录信息绑定到本地账号, 且添加第三方授权登录信息到 user_connection 与 auth_token
         registerConnection(providerId, authUser, principal);
     }
