@@ -51,7 +51,9 @@ import static top.dcenter.ums.security.core.oauth.util.MvcUtil.toJsonString;
 /**
  * 默认的第三方授权登录时自动注册处理器。<br>
  * {@link #signUp(AuthUser, String, String)} 功能：第三方登录自动注册时, 根据 第三方的 authUser 注册为本地账户的用户,
- * 用户名可能为 username 或 username + "_" + providerId 或 username + "_" + providerId + "_" + providerUserId<br><br>
+ * 用户名的生成规则由 {@link UmsUserDetailsService#generateUsernames(AuthUser)} 定义, 默认规则为:
+ * username 或 username + "_" + providerId 或 username + "_" + providerId + "_" + providerUserId.
+ * 如需自定义用户名生成逻辑, 重新实现 {@link UmsUserDetailsService#generateUsernames(AuthUser)} 方法即可
  * @author YongWu zheng
  * @version V2.0  Created by 2020/5/14 22:32
  * @see ConnectionService
@@ -88,9 +90,8 @@ public class DefaultConnectionServiceImpl implements ConnectionService {
     public UserDetails signUp(@NonNull AuthUser authUser, @NonNull String providerId, @NonNull String encodeState) throws RegisterUserFailureException {
         // 这里为第三方登录自动注册时调用，所以这里不需要实现对用户信息的注册，可以在用户登录完成后提示用户修改用户信息。
         String username = authUser.getUsername();
-        String[] usernames = new String[]{username,
-                                          username + "_" + providerId,
-                                          username + "_" + providerId + "_" + authUser.getUuid()};
+        String[] usernames = userDetailsService.generateUsernames(authUser);
+
         try {
             // 重名检查
             username = null;
