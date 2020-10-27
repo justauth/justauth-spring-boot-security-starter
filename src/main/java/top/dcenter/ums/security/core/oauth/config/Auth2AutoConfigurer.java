@@ -104,7 +104,8 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
 
         // 添加第三方登录回调接口过滤器
         String filterProcessesUrl = auth2Properties.getRedirectUrlPrefix();
-        Auth2LoginAuthenticationFilter auth2LoginAuthenticationFilter = new Auth2LoginAuthenticationFilter(filterProcessesUrl);
+        Auth2LoginAuthenticationFilter auth2LoginAuthenticationFilter =
+                new Auth2LoginAuthenticationFilter(filterProcessesUrl, auth2Properties.getSignUpUrl());
         AuthenticationManager sharedObject = http.getSharedObject(AuthenticationManager.class);
         auth2LoginAuthenticationFilter.setAuthenticationManager(sharedObject);
         if (authenticationFailureHandler != null)
