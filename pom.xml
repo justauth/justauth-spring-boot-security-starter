@@ -12,7 +12,7 @@
     <name>justAuth-spring-security-starter</name>
     <description>
         spring security 集成 JustAuth 实现第三方授权登录: 此项目从 UMS(用户管理脚手架:https://github.com/ZeroOrInfinity/UMS | https://gitee.com/pcore/UMS) 项目中分离.
-        1. 支持所有 justAuth 支持的第三方登录，登录后自动注册 或 绑定.
+        1. 支持所有 justAuth 支持的第三方登录，登录后自动注册 或 绑定 或 创建临时用户.
         2. 支持定时刷新 accessToken 分布式定时任务,
         3. 支持第三方授权登录的用户信息表与 token 信息表的缓存功能.
         4. 支持第三方绑定与解绑及查询接口(top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository).

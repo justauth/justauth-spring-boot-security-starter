@@ -12,7 +12,7 @@
 
 [Spring security 集成 JustAuth 实现第三方授权登录](https://gitee.com/pcore/just-auth-spring-security-starter): 此项目从 **用户管理脚手架**(UMS):https://github.com/ZeroOrInfinity/UMS | https://gitee
 .com/pcore/UMS) 项目中分离.
-1. 支持所有 justAuth 支持的第三方登录，登录后自动注册 或 绑定.
+1. 支持所有 justAuth 支持的第三方登录，登录后自动注册 或 绑定 或 创建临时用户([TemporaryUser](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/userdetails/TemporaryUser.java)).
 2. 支持定时刷新 accessToken 分布式定时任务,
 3. 支持第三方授权登录的用户信息表与 token 信息表的 redis 缓存功能.
 4. 支持第三方绑定与解绑及查询接口(top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository).
@@ -290,6 +290,23 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
         return User.withUserDetails(userDetails).build();
     }
 
+    /**
+     * {@link #existedByUsernames(String...)} usernames 生成规则.
+     * 如需自定义重新实现此逻辑
+     * @param authUser     第三方用户信息
+     * @return  返回一个 username 数组
+     */
+    @Override
+    public String[] generateUsernames(AuthUser authUser) {
+        return new String[]{
+                authUser.getUsername(),
+                // providerId = authUser.getSource()
+                authUser.getUsername() + "_" + authUser.getSource(),
+                // providerUserId = authUser.getUuid()
+                authUser.getUsername() + "_" + authUser.getSource() + "_" + authUser.getUuid()
+        };
+    }
+
     @Override
     public List<Boolean> existedByUsernames(String... usernames) throws UsernameNotFoundException {
         // ... 在本地账户上查询 userIds 是否已被使用
@@ -458,6 +475,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // ========= start: 使用 justAuth-spring-security-starter 必须步骤 ========= 
         // 添加 Auth2AutoConfigurer 使 OAuth2(justAuth) login 生效.
         http.apply(this.auth2AutoConfigurer);
+
+        http.csrf().disable();
 
         // 放行第三方登录入口地址与第三方登录回调地址
         // @formatter:off
