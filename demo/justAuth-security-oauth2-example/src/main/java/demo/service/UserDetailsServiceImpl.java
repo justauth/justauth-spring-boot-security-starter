@@ -153,6 +153,23 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
         return user;
     }
 
+    /**
+     * {@link #existedByUsernames(String...)} usernames 生成规则.
+     * 如需自定义重新实现此逻辑
+     * @param authUser     第三方用户信息
+     * @return  返回一个 username 数组
+     */
+    @Override
+    public String[] generateUsernames(AuthUser authUser) {
+        return new String[]{
+                authUser.getUsername(),
+                // providerId = authUser.getSource()
+                authUser.getUsername() + "_" + authUser.getSource(),
+                // providerUserId = authUser.getUuid()
+                authUser.getUsername() + "_" + authUser.getSource() + "_" + authUser.getUuid()
+        };
+    }
+
     @Override
     public UserDetails loadUserByUserId(String userId) throws UsernameNotFoundException {
         UserDetails userDetails = loadUserByUsername(userId);
