@@ -187,6 +187,7 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 					                           // 临时密码, 重新注册本地账号时按自己的业务逻辑进行设置
 					                           .password("{noop}" + temporaryUserPassword)
 					                           .authUser(authUser)
+					                           .encodeState(encodeState)
 					                           .disabled(false)
 					                           .accountExpired(false)
 					                           .accountLocked(false)

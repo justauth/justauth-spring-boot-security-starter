@@ -65,6 +65,7 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 	private final boolean credentialsNonExpired;
 	private final boolean enabled;
 	private final AuthUser authUser;
+	private final String encodeState;
 
 	// ~ Constructors
 	// ===================================================================================================
@@ -78,10 +79,14 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 	 * @param password      密码
 	 * @param authorities   权限默认为 {@link Auth2Properties#defaultAuthorities}
 	 * @param authUser      第三方授权登录的用户信息
+	 * @param encodeState  第三方授权登录的流程中加密后的 state 参数
 	 */
 	public TemporaryUser(String username, String password,
-	                     Collection<? extends GrantedAuthority> authorities, AuthUser authUser) {
-		this(username, password, true, true, true, true, authorities, authUser);
+	                     Collection<? extends GrantedAuthority> authorities,
+	                     AuthUser authUser,
+	                     String encodeState) {
+		this(username, password, true, true, true, true,
+		     authorities, authUser, encodeState);
 	}
 
 	/**
@@ -100,6 +105,7 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 	 * @param authorities the authorities that should be granted to the caller if they
 	 * presented the correct username and password and the user is enabled. Not null.
 	 * @param authUser      第三方授权登录的用户信息
+	 * @param encodeState  第三方授权登录的流程中加密后的 state 参数
 	 *
 	 * @throws IllegalArgumentException if a <code>null</code> value was passed either as
 	 * a parameter or as an element in the <code>GrantedAuthority</code> collection
@@ -107,7 +113,8 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 	public TemporaryUser(String username, String password, boolean enabled,
 	                     boolean accountNonExpired, boolean credentialsNonExpired,
 	                     boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities,
-	                     AuthUser authUser) {
+	                     AuthUser authUser,
+	                     String encodeState) {
 
 		if (((username == null) || "".equals(username)) || (password == null)) {
 			throw new IllegalArgumentException(
@@ -122,6 +129,7 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 		this.accountNonLocked = accountNonLocked;
 		this.authorities = Collections.unmodifiableSet(sortAuthorities(authorities));
 		this.authUser = authUser;
+		this.encodeState = encodeState;
 	}
 
 	// ~ Methods
@@ -144,6 +152,10 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 
 	public AuthUser getAuthUser() {
 		return authUser;
+	}
+
+	public String getEncodeState() {
+		return encodeState;
 	}
 
 	@Override
@@ -245,6 +257,7 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 				.append("; ");
 		sb.append("AccountNonLocked: ").append(this.accountNonLocked).append("; ");
 		sb.append("authUser: ").append(this.authUser.toString()).append("; ");
+		sb.append("encodeState: ").append(this.encodeState).append("; ");
 
 		if (!authorities.isEmpty()) {
 			sb.append("Granted Authorities: ");
@@ -360,6 +373,7 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 		private String password;
 		private List<GrantedAuthority> authorities;
 		private AuthUser authUser;
+		private String encodeState;
 		private boolean accountExpired;
 		private boolean accountLocked;
 		private boolean credentialsExpired;
@@ -500,6 +514,17 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 		}
 
 		/**
+		 * Populates the encodeState. This encodeState is required.
+		 * @param authUser  第三方授权登录的流程中加密后的 state 参数
+		 * @returnhe {@link UserBuilder} for method chaining (i.e. to populate
+		 * additional encodeState for this user)
+		 */
+		public UserBuilder encodeState(String encodeState) {
+			this.encodeState = encodeState;
+			return this;
+		}
+
+		/**
 		 * Defines if the account is expired or not. Default is false.
 		 *
 		 * @param accountExpired true if the account is expired, false otherwise
@@ -551,7 +576,7 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 			String encodedPassword = this.passwordEncoder.apply(password);
 			return new TemporaryUser(username, encodedPassword, !disabled, !accountExpired,
 			                         !credentialsExpired, !accountLocked, authorities,
-			                         authUser);
+			                         authUser, encodeState);
 		}
 	}
 }
