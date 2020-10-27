@@ -87,9 +87,6 @@ public class SignUpController {
     private final Integer timeout;
 
     @Autowired
-    private Auth2Properties auth2Properties;
-
-    @Autowired
     private ConnectionService connectionService;
 
     @Autowired
@@ -101,7 +98,7 @@ public class SignUpController {
     @Autowired
     private Auth2StateCoder auth2StateCoder;
 
-    public SignUpController() {
+    public SignUpController(Auth2Properties auth2Properties) {
         this.timeout = Math.toIntExact(auth2Properties.getProxy().getTimeout().toMillis());
     }
 
@@ -127,8 +124,9 @@ public class SignUpController {
             // 从 request 获取前端提交数据
             // ...
 
+            UserDetails newUserDetails;
             // 演示 1. start: 自动注册逻辑
-            UserDetails newUserDetails = connectionService.signUp(authUser, authUser.getSource(), temporaryUser.getEncodeState());
+            // newUserDetails = connectionService.signUp(authUser, authUser.getSource(), temporaryUser.getEncodeState());
             // 演示 1. end: 自动注册逻辑
 
             // 演示 2. start: 自定义注册用户逻辑
@@ -167,10 +165,10 @@ public class SignUpController {
                     decodeState = encodeState;
                 }
                 // 注册到本地账户
-                UserDetails new2UserDetails = umsUserDetailsService.registerUser(authUser, username, authorities,
+                newUserDetails = umsUserDetailsService.registerUser(authUser, username, authorities,
                                                                               decodeState);
                 // 第三方授权登录信息绑定到本地账号, 且添加第三方授权登录信息到 user_connection 与 auth_token
-                registerConnection(authUser.getSource(), authUser, new2UserDetails);
+                registerConnection(authUser.getSource(), authUser, newUserDetails);
 
             }
             catch (Exception e) {
