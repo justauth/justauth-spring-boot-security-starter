@@ -204,6 +204,11 @@ public class Auth2Properties {
     private Boolean autoSignUp = true;
 
     /**
+     * 第三方授权登录后如未注册用户不支持自动注册功能, 这跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现; 默认: "/signUp"<br>
+     */
+    private String signUpUrl = "/signUp";
+
+    /**
      * 第三方登录回调的域名, 例如：https://localhost 默认为 "http://127.0.0.1"，
      * redirectUrl 直接由 {domain}/{servletContextPath}/{redirectUrlPrefix}/{providerId}(ums.oauth.[qq/gitee/weibo])组成
      */

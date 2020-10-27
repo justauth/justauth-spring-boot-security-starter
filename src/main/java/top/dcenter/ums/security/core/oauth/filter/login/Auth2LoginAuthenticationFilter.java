@@ -17,8 +17,10 @@ package top.dcenter.ums.security.core.oauth.filter.login;
 
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider;
@@ -33,6 +35,8 @@ import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResponse;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.util.MultiValueMap;
@@ -41,9 +45,13 @@ import top.dcenter.ums.security.core.oauth.filter.redirect.Auth2DefaultRequestRe
 import top.dcenter.ums.security.core.oauth.justauth.Auth2RequestHolder;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
 import top.dcenter.ums.security.core.oauth.token.Auth2LoginAuthenticationToken;
+import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * An implementation of an {@link AbstractAuthenticationProcessingFilter} for OAuth 2.0
@@ -102,16 +110,25 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
 
     private final Auth2DefaultRequestResolver authorizationRequestResolver;
 
+    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+
+    /**
+     * 第三方授权登录后如未注册用户不支持自动注册功能, 这跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现
+     */
+    private final String signUpUrl;
+
     /**
      * Constructs an {@code Auth2LoginAuthenticationFilter} using the provided
      * parameters.
      * @param filterProcessesUrl the {@code URI} where this {@code Filter} will process
      * the authentication requests, not null
+     * @param signUpUrl          第三方授权登录后如未注册用户不支持自动注册功能, 这跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现
      * @since 5.1
      */
-    public Auth2LoginAuthenticationFilter(@NonNull String filterProcessesUrl) {
+    public Auth2LoginAuthenticationFilter(@NonNull String filterProcessesUrl, @NonNull String signUpUrl) {
         super(filterProcessesUrl + "/*");
         this.authorizationRequestResolver = new Auth2DefaultRequestResolver(filterProcessesUrl);
+        this.signUpUrl = signUpUrl;
     }
 
     @Override
@@ -141,7 +158,40 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
         authenticationRequest.setDetails(authenticationDetails);
 
         // 通过 AuthenticationManager 转到相应的 Provider 对 Auth2LoginAuthenticationToken 进行认证
-        return  this.getAuthenticationManager().authenticate(authenticationRequest);
+        return this.getAuthenticationManager().authenticate(authenticationRequest);
     }
 
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request,
+                                            HttpServletResponse response, FilterChain chain, Authentication authResult)
+            throws IOException, ServletException {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Authentication success. Updating SecurityContextHolder to contain: "
+                                 + authResult);
+        }
+
+        SecurityContextHolder.getContext().setAuthentication(authResult);
+
+        // Fire event
+        if (this.eventPublisher != null) {
+            eventPublisher.publishEvent(new InteractiveAuthenticationSuccessEvent(
+                    authResult, this.getClass()));
+        }
+
+        final Object principal = authResult.getPrincipal();
+        if (principal instanceof TemporaryUser) {
+            this.redirectStrategy.sendRedirect(request, response, this.signUpUrl);
+            return;
+        }
+        else {
+            getRememberMeServices().loginSuccess(request, response, authResult);
+        }
+
+        getSuccessHandler().onAuthenticationSuccess(request, response, authResult);
+    }
+
+    public void setRedirectStrategy(RedirectStrategy redirectStrategy) {
+        this.redirectStrategy = redirectStrategy;
+    }
 }
