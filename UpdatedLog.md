@@ -1,3 +1,7 @@
+## 1.0.6
+### Fixes and Improvements:
+1. 增加 RememberMeAuthenticationToken 的反序列化, 优化反序列化配置(Auth2Jackson2Module).
+
 ## 1.0.5
 ### Fixes and Improvements:
 1. 添加了一些 Authentication 与 UserDetails 子类的反序列化器, 以解决 redis 缓存不能反序列化此类型的问题.
