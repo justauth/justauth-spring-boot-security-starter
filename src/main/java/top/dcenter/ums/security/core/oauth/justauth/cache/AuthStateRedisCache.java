@@ -61,7 +61,7 @@ public class AuthStateRedisCache implements Auth2StateCache {
 
     @Override
     public boolean containsKey(String key) {
-        return StringUtils.hasText(stringRedisTemplate.opsForValue().get(key));
+        return StringUtils.hasText(stringRedisTemplate.opsForValue().get(justAuthProperties.getCacheKeyPrefix() + key));
     }
 
     @Override
