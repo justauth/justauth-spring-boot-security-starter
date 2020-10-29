@@ -25,10 +25,13 @@ package top.dcenter.ums.security.core.oauth.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import lombok.extern.slf4j.Slf4j;
+import me.zhyd.oauth.model.AuthToken;
+import me.zhyd.oauth.model.AuthUser;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -53,9 +56,22 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.jackson2.CoreJackson2Module;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.security.web.jackson2.WebJackson2Module;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.AnonymousAuthenticationTokenJsonDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.Auth2AuthenticationTokenJsonDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.AuthUserJsonDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.TemporaryUserDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.UserDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.WebAuthenticationDetailsDeserializer;
 import top.dcenter.ums.security.core.oauth.properties.RedisCacheProperties;
 import top.dcenter.ums.security.core.oauth.repository.jdbc.cache.RedisHashCacheManager;
 import top.dcenter.ums.security.core.oauth.repository.jdbc.key.generator.RemoveConnectionsByConnectionKeyWithUserIdKeyGenerator;
+import top.dcenter.ums.security.core.oauth.token.Auth2AuthenticationToken;
+import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -124,6 +140,23 @@ public class RedisCacheAutoConfiguration {
         om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance,
                                  ObjectMapper.DefaultTyping.NON_FINAL);
         om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        om.registerModules(new CoreJackson2Module(),
+                                      new WebJackson2Module());
+        om.addMixIn(Auth2AuthenticationToken.class,
+                    Auth2AuthenticationTokenJsonDeserializer.Auth2AuthenticationTokenMixin.class)
+          .addMixIn(AnonymousAuthenticationToken.class,
+                    AnonymousAuthenticationTokenJsonDeserializer.AnonymousAuthenticationTokenMixin.class)
+          .addMixIn(User.class,
+                    UserDeserializer.UserMixin.class)
+          .addMixIn(TemporaryUser.class,
+                    TemporaryUserDeserializer.TemporaryUserMixin.class)
+          .addMixIn(WebAuthenticationDetails.class,
+                    WebAuthenticationDetailsDeserializer.WebAuthenticationDetailsMixin.class)
+          .addMixIn(AuthUser.class,
+                    AuthUserJsonDeserializer.AuthUserMixin.class)
+          .addMixIn(AuthToken.class,
+                    AuthUserJsonDeserializer.AuthTokenMixin.class);
         jackson2JsonRedisSerializer.setObjectMapper(om);
         return jackson2JsonRedisSerializer;
     }

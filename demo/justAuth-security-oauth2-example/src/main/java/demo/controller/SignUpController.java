@@ -28,6 +28,7 @@ import me.zhyd.oauth.model.AuthUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -98,6 +99,9 @@ public class SignUpController {
     @Autowired
     private Auth2StateCoder auth2StateCoder;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
     public SignUpController(Auth2Properties auth2Properties) {
         this.timeout = Math.toIntExact(auth2Properties.getProxy().getTimeout().toMillis());
     }
@@ -113,6 +117,7 @@ public class SignUpController {
         log.info(MvcUtil.toJsonString(userDetails));
 
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         final Object principal = authentication.getPrincipal();
         if (principal instanceof TemporaryUser)
         {
@@ -125,58 +130,68 @@ public class SignUpController {
             // ...
 
             UserDetails newUserDetails;
-            // 演示 1. start: 自动注册逻辑
-            // newUserDetails = connectionService.signUp(authUser, authUser.getSource(), temporaryUser.getEncodeState());
-            // 演示 1. end: 自动注册逻辑
 
-            // 演示 2. start: 自定义注册用户逻辑
-            final String encodeState = temporaryUser.getEncodeState();
-            final String authorities =
-                    authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
+            // 测试是否自动注册
+            boolean autoSignUp = false;
+            //noinspection ConstantConditions
+            if (autoSignUp) {
+                // 演示 1. start: 自动注册逻辑
+                 newUserDetails = connectionService.signUp(authUser, authUser.getSource(), temporaryUser.getEncodeState());
+                // 演示 1. end: 自动注册逻辑
+            }
+            else {
+                // 演示 2. start: 自定义注册用户逻辑
+                final String encodeState = temporaryUser.getEncodeState();
+                final String authorities =
+                        authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
-            // 这里为第三方登录自动注册时调用，所以这里不需要实现对用户信息的注册，可以在用户登录完成后提示用户修改用户信息。
-            String username = authUser.getUsername();
-            // existedByUsernames(String...) usernames 生成规则. 如需自定义重新实现 generateUsernames(authUser)
-            String[] usernames = umsUserDetailsService.generateUsernames(authUser);
+                // 这里为第三方登录自动注册时调用，所以这里不需要实现对用户信息的注册，可以在用户登录完成后提示用户修改用户信息。
+                String username = authUser.getUsername();
+                // existedByUsernames(String...) usernames 生成规则. 如需自定义重新实现 generateUsernames(authUser)
+                String[] usernames = umsUserDetailsService.generateUsernames(authUser);
 
-            try {
-                // 重名检查
-                username = null;
-                final List<Boolean> existedByUserIds = umsUserDetailsService.existedByUsernames(usernames);
-                for(int i = 0, len = existedByUserIds.size(); i < len; i++) {
-                    if (!existedByUserIds.get(i))
-                    {
-                        username = usernames[i];
-                        break;
+                try {
+
+                    // 重名检查
+                    username = null;
+                    final List<Boolean> existedByUserIds = umsUserDetailsService.existedByUsernames(usernames);
+                    for(int i = 0, len = existedByUserIds.size(); i < len; i++) {
+                        if (!existedByUserIds.get(i))
+                        {
+                            username = usernames[i];
+                            break;
+                        }
                     }
-                }
-                // 用户重名, 自动注册失败
-                if (username == null)
-                {
-                    throw new RegisterUserFailureException(ErrorCodeEnum.USERNAME_USED, authUser.getUsername());
-                }
+                    // 用户重名, 自动注册失败
+                    if (username == null)
+                    {
+                        throw new RegisterUserFailureException(ErrorCodeEnum.USERNAME_USED, authUser.getUsername());
+                    }
 
-                // 解密 encodeState  https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22JC7
-                String decodeState;
-                if (this.auth2StateCoder != null) {
-                    decodeState = this.auth2StateCoder.decode(encodeState);
+                    // 解密 encodeState  https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22JC7
+                    String decodeState;
+                    if (this.auth2StateCoder != null) {
+                        decodeState = this.auth2StateCoder.decode(encodeState);
+                    }
+                    else {
+                        decodeState = encodeState;
+                    }
+                    // 注册到本地账户
+                    newUserDetails = umsUserDetailsService.registerUser(authUser, username, authorities,
+                                                                        decodeState);
+                    // 第三方授权登录信息绑定到本地账号, 且添加第三方授权登录信息到 user_connection 与 auth_token
+                    registerConnection(authUser.getSource(), authUser, newUserDetails);
+
                 }
-                else {
-                    decodeState = encodeState;
+                catch (Exception e) {
+                    log.error(String.format("OAuth2自动注册失败: error=%s, username=%s, authUser=%s",
+                                            e.getMessage(), username, MvcUtil.toJsonString(authUser)), e);
+                    throw new RegisterUserFailureException(ErrorCodeEnum.USER_REGISTER_FAILURE, username);
                 }
-                // 注册到本地账户
-                newUserDetails = umsUserDetailsService.registerUser(authUser, username, authorities,
-                                                                              decodeState);
-                // 第三方授权登录信息绑定到本地账号, 且添加第三方授权登录信息到 user_connection 与 auth_token
-                registerConnection(authUser.getSource(), authUser, newUserDetails);
+                // 演示 2. end: 自定义注册用户逻辑
 
             }
-            catch (Exception e) {
-                log.error(String.format("OAuth2自动注册失败: error=%s, username=%s, authUser=%s",
-                                        e.getMessage(), username, MvcUtil.toJsonString(authUser)), e);
-                throw new RegisterUserFailureException(ErrorCodeEnum.USER_REGISTER_FAILURE, username);
-            }
-            // 演示 2. end: 自定义注册用户逻辑
+
 
             // 创建新的成功认证 token
             Auth2AuthenticationToken auth2AuthenticationToken =
@@ -187,9 +202,6 @@ public class SignUpController {
             // 自己的其他更新逻辑 ...
 
         }
-
-        // principal 等价于 userDetails
-        log.info("userDetails.equals(principal) = {}", userDetails.equals(principal));
 
         return map;
     }

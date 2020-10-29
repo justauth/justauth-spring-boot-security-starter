@@ -70,6 +70,8 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 	// ~ Constructors
 	// ===================================================================================================
 
+
+
 	/**
 	 * Calls the more complex constructor with all boolean arguments set to {@code true}.
 	 */
@@ -81,13 +83,15 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 	 * @param authUser      第三方授权登录的用户信息
 	 * @param encodeState  第三方授权登录的流程中加密后的 state 参数
 	 */
-	public TemporaryUser(String username, String password,
+	public TemporaryUser(String username,
+	                     String password,
 	                     Collection<? extends GrantedAuthority> authorities,
 	                     AuthUser authUser,
 	                     String encodeState) {
 		this(username, password, true, true, true, true,
 		     authorities, authUser, encodeState);
 	}
+
 
 	/**
 	 * Construct the <code>User</code> with the details required by

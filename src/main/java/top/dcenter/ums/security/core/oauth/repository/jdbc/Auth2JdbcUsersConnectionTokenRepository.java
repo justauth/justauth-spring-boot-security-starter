@@ -66,7 +66,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
         this.textEncryptor = textEncryptor;
     }
 
-    @Cacheable(cacheNames = RedisCacheAutoConfiguration.USER_CONNECTION_CACHE_NAME, key = "'h:' + #tokenId")
+    @Cacheable(cacheNames = RedisCacheAutoConfiguration.USER_CONNECTION_CACHE_NAME, key = "'s:token:' + #tokenId")
     @Override
     public AuthTokenPo findAuthTokenById(String tokenId) throws DataAccessException {
         return jdbcTemplate.queryForObject("SELECT `id`, `enableRefresh`, `providerId`, `accessToken`, `expireIn`, " +
@@ -80,7 +80,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
     }
 
     @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRED)
-    @CachePut(cacheNames = RedisCacheAutoConfiguration.USER_CONNECTION_CACHE_NAME, key = "'h:' + #result.id")
+    @CachePut(cacheNames = RedisCacheAutoConfiguration.USER_CONNECTION_CACHE_NAME, key = "'s:token:' + #result.id")
     @Override
     public AuthTokenPo saveAuthToken(AuthTokenPo authToken) throws DataAccessException {
         jdbcTemplate.update("INSERT INTO auth_token(`enableRefresh` ,`providerId`, `accessToken`, `expireIn`, " +
@@ -120,7 +120,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
         return authToken;
     }
 
-    @CachePut(cacheNames = RedisCacheAutoConfiguration.USER_CONNECTION_CACHE_NAME, key = "'h:' + #result.id")
+    @CachePut(cacheNames = RedisCacheAutoConfiguration.USER_CONNECTION_CACHE_NAME, key = "'s:token:' + #result.id")
     @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRED)
     @Override
     public AuthTokenPo updateAuthToken(@NonNull AuthTokenPo authToken) throws DataAccessException {
@@ -182,7 +182,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
     }
 
     @CacheEvict(cacheNames = RedisCacheAutoConfiguration.USER_CONNECTION_CACHE_NAME,
-            key = "'h:' + #tokenId", beforeInvocation = true)
+            key = "'s:token:' + #tokenId", beforeInvocation = true)
     @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRED)
     @Override
     public void delAuthTokenById(@NonNull String tokenId) throws DataAccessException {
@@ -209,7 +209,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
     }
 
     @CacheEvict(cacheNames = RedisCacheAutoConfiguration.USER_CONNECTION_CACHE_NAME,
-            key = "'h:' + #tokenId", beforeInvocation = true)
+            key = "'s:token:' + #tokenId", beforeInvocation = true)
     @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRED)
     @Override
     public void updateEnableRefreshByTokenId(@NonNull EnableRefresh enableRefresh, @NonNull Long tokenId) throws DataAccessException {

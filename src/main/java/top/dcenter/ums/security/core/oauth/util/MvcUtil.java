@@ -27,10 +27,24 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import me.zhyd.oauth.model.AuthToken;
+import me.zhyd.oauth.model.AuthUser;
 import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.util.UrlPathHelper;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.jackson2.CoreJackson2Module;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.security.web.jackson2.WebJackson2Module;
 import top.dcenter.ums.security.core.oauth.config.Auth2AutoConfiguration;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.AnonymousAuthenticationTokenJsonDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.Auth2AuthenticationTokenJsonDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.AuthUserJsonDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.TemporaryUserDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.UserDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.WebAuthenticationDetailsDeserializer;
+import top.dcenter.ums.security.core.oauth.token.Auth2AuthenticationToken;
+import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -42,10 +56,8 @@ import java.util.Map;
 
 /**
  * 功能: <br>
- * 1. 去掉 Controller 的 Mapping 动作<br>
- * 2. Controller 在 mvc 中做 Uri 映射等动作<br>
- * 3. 获取 servletContextPath<br>
- * 4. 获取 {@link UrlPathHelper}<br>
+ * 1. 给 targetClass 的 methodName 方法上的 @Scheduled 的 cron 重新赋值为 cronValue<br>
+ * 2. 获取 servletContextPath<br>
  * @author YongWu zheng
  * @version V1.0  Created by 2020/9/17 18:32
  */
@@ -73,6 +85,22 @@ public class MvcUtil {
 
     static {
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        OBJECT_MAPPER.registerModules(new CoreJackson2Module(),
+                                     new WebJackson2Module());
+        OBJECT_MAPPER.addMixIn(Auth2AuthenticationToken.class,
+                              Auth2AuthenticationTokenJsonDeserializer.Auth2AuthenticationTokenMixin.class)
+                     .addMixIn(AnonymousAuthenticationToken.class,
+                               AnonymousAuthenticationTokenJsonDeserializer.AnonymousAuthenticationTokenMixin.class)
+                     .addMixIn(User.class,
+                              UserDeserializer.UserMixin.class)
+                     .addMixIn(TemporaryUser.class,
+                              TemporaryUserDeserializer.TemporaryUserMixin.class)
+                     .addMixIn(WebAuthenticationDetails.class,
+                              WebAuthenticationDetailsDeserializer.WebAuthenticationDetailsMixin.class)
+                     .addMixIn(AuthUser.class,
+                              AuthUserJsonDeserializer.AuthUserMixin.class)
+                     .addMixIn(AuthToken.class,
+                              AuthUserJsonDeserializer.AuthTokenMixin.class);
     }
 
     /**

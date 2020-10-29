@@ -56,7 +56,8 @@ public class Auth2AuthenticationToken extends AbstractAuthenticationToken {
 	 * @param providerId the providerId
 	 * {@link OAuth2AuthorizedClient Authorized Client}
 	 */
-	public Auth2AuthenticationToken(Object principal, Collection<? extends GrantedAuthority> authorities,
+	public Auth2AuthenticationToken(Object principal,
+	                                Collection<? extends GrantedAuthority> authorities,
 	                                String providerId) {
 		super(authorities);
 		Assert.notNull(principal, "principal cannot be null");
