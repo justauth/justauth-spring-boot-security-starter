@@ -34,29 +34,31 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
-import top.dcenter.ums.security.core.oauth.token.Auth2AuthenticationToken;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
 /**
- * Auth2AuthenticationToken Jackson 反序列化
+ * RememberMeAuthenticationToken Jackson 反序列化
  * @author YongWu zheng
  * @version V2.0  Created by 2020/10/28 10:58
  */
-public class Auth2AuthenticationTokenJsonDeserializer extends StdDeserializer<Auth2AuthenticationToken> {
+public class RememberMeAuthenticationTokenJsonDeserializer extends StdDeserializer<RememberMeAuthenticationToken> {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    public Auth2AuthenticationTokenJsonDeserializer() {
-        super(Auth2AuthenticationToken.class);
+    public RememberMeAuthenticationTokenJsonDeserializer() {
+        super(RememberMeAuthenticationToken.class);
     }
 
     @Override
-    public Auth2AuthenticationToken deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public RememberMeAuthenticationToken deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 
         ObjectMapper mapper = (ObjectMapper) p.getCodec();
 
@@ -67,7 +69,8 @@ public class Auth2AuthenticationTokenJsonDeserializer extends StdDeserializer<Au
                 mapper.convertValue(jsonNode.get("authorities"),
                                     new TypeReference<Collection<SimpleGrantedAuthority>>() {});
 
-        final String providerId = jsonNode.get("providerId").asText(null);
+        final boolean authenticated = jsonNode.get("authenticated").asBoolean();
+        final Integer keyHash = jsonNode.get("keyHash").asInt();
         final JsonNode detailsNode = jsonNode.get("details");
         final JsonNode principalNode = jsonNode.get("principal");
 
@@ -89,29 +92,43 @@ public class Auth2AuthenticationTokenJsonDeserializer extends StdDeserializer<Au
             principal = mapper.convertValue(principalNode, javaType);
         }
         catch (Exception e) {
-            final String msg = String.format("Auth2AuthenticationToken Jackson 反序列化错误: principal 反序列化错误: %s", principalNode.toString());
+            final String msg = String.format("RememberMeAuthenticationToken Jackson 反序列化错误: principal 反序列化错误: %s", principalNode.toString());
             log.error(msg);
             throw new IOException(msg);
         }
 
-        final Auth2AuthenticationToken auth2AuthenticationToken =
-                new Auth2AuthenticationToken(principal,
-                                             tokenAuthorities,
-                                             providerId);
+        // 创建 RememberMeAuthenticationToken 对象
+        RememberMeAuthenticationToken token;
+        try {
+            final Constructor<RememberMeAuthenticationToken> declaredConstructor =
+                    RememberMeAuthenticationToken.class.getDeclaredConstructor(Integer.class, Object.class, Collection.class);
+            declaredConstructor.setAccessible(true);
+            token = declaredConstructor.newInstance(keyHash, principal, tokenAuthorities);
+        }
+        catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            final String msg = String.format("RememberMeAuthenticationToken Jackson 反序列化错误: principal 反序列化错误: %s",
+                                             e.getMessage());
+            log.error(msg);
+            throw new IOException(msg);
+        }
+
+        token.setAuthenticated(authenticated);
+        // 为了安全, 不信任反序列化后的凭证; 一般认证成功后都会自动释放密码.
+        token.eraseCredentials();
 
         // 创建 details 对象
         if (!(detailsNode.isNull() || detailsNode.isMissingNode())) {
             WebAuthenticationDetails details = mapper.convertValue(detailsNode, new TypeReference<WebAuthenticationDetails>(){});
-            auth2AuthenticationToken.setDetails(details);
+            token.setDetails(details);
         }
 
-        return auth2AuthenticationToken;
+        return token;
 
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE)
-    @JsonDeserialize(using = Auth2AuthenticationTokenJsonDeserializer.class)
-    public interface Auth2AuthenticationTokenMixin {}
+    @JsonDeserialize(using = RememberMeAuthenticationTokenJsonDeserializer.class)
+    public interface RememberMeAuthenticationTokenMixin {}
 
 }
