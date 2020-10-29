@@ -452,7 +452,7 @@ hello world!<br>
 <dependency>
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.2</version>
+    <version>latest</version>
 </dependency>
 ```
 ### 2. `必须实现的接口`   
@@ -516,12 +516,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 ------
-## 六、`时序图`: 随着版本迭代会有出入
+## 六、`Jackson 序列化与反序列化`
+
+- 添加一些 Authentication 与 UserDetails 子类的反序列化器, 以解决 redis 缓存不能反序列化此类型的问题,
+具体配置 redis 反序列器的配置请看 [RedisCacheAutoConfiguration.getJackson2JsonRedisSerializer()](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/config/RedisCacheAutoConfiguration.java) 方法.
+- 注意: [UmsUserDetailsService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)
+的注册用户方法返回的 `UserDetails` 的默认实现 `User` 已实现反序列化器, 如果是开发者**自定义的子类**, **需开发者自己实现反序列化器**.
+
+------
+## 七、`时序图`: 随着版本迭代会有出入
 
 ![第三方授权登录](doc/OAuth2Login.png)
 
 ------
-## 七、`属性配置列表`
+## 八、`属性配置列表`
 
 ###  OAuth2 / refreshToken 定时任务 / JustAuth 配置属性
 
