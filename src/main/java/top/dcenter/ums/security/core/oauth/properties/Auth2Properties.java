@@ -180,11 +180,11 @@ public class Auth2Properties {
      */
     private JdProperties jd = new JdProperties();
     /**
-     * 字段名称与其所代表的第三方的 providerId 相同. 
+     * 字段名称与其所代表的第三方的 providerId 相同.
      */
     private AliyunProperties aliyun = new AliyunProperties();
 
-    
+
     // =================== OAuth2 属性 ===================
     /**
      * 抑制反射警告, 支持 JDK11, 默认: false ,
@@ -204,9 +204,10 @@ public class Auth2Properties {
     private Boolean autoSignUp = true;
 
     /**
-     * 第三方授权登录后如未注册用户不支持自动注册功能, 这跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现; 默认: "/signUp"<br>
+     * 第三方授权登录后如未注册用户不支持自动注册功能, 这跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现; 默认: null; 例: "/signUp";
+     * 添加该字段则跳转指定url进行注册, 否则执行默认认证流程; 想传自定义 json 数据到前端, 这里要设置 null , 在成功处理器上处理返回 json<br>
      */
-    private String signUpUrl = "/signUp";
+    private String signUpUrl;
 
     /**
      * 第三方登录回调的域名, 例如：https://localhost 默认为 "http://127.0.0.1"，
@@ -283,7 +284,7 @@ public class Auth2Properties {
      * @since 1.15.5
      */
     private HttpConfigProperties proxy = new HttpConfigProperties();
-    
+
 
     @Getter
     @Setter
