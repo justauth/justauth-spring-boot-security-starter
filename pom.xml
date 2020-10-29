@@ -6,7 +6,7 @@
 
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
 
     <packaging>jar</packaging>
     <name>justAuth-spring-security-starter</name>
@@ -16,6 +16,7 @@
         2. 支持定时刷新 accessToken 分布式定时任务,
         3. 支持第三方授权登录的用户信息表与 token 信息表的缓存功能.
         4. 支持第三方绑定与解绑及查询接口(top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository).
+        5. 支持对 Authentication 与 UserDetails 的 Jackson2 反序列化设置(Auth2Jackson2Module)
     </description>
 
     <url>https://github.com/ZeroOrInfinity/justAuth-spring-boot-security-starter</url>

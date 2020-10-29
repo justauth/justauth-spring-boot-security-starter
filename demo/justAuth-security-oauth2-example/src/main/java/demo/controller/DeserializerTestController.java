@@ -29,8 +29,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
-import me.zhyd.oauth.model.AuthToken;
-import me.zhyd.oauth.model.AuthUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,21 +40,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.jackson2.CoreJackson2Module;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.jackson2.WebJackson2Module;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import top.dcenter.ums.security.core.oauth.config.RedisCacheAutoConfiguration;
-import top.dcenter.ums.security.core.oauth.jackson.deserializes.AnonymousAuthenticationTokenJsonDeserializer;
-import top.dcenter.ums.security.core.oauth.jackson.deserializes.Auth2AuthenticationTokenJsonDeserializer;
-import top.dcenter.ums.security.core.oauth.jackson.deserializes.AuthUserJsonDeserializer;
-import top.dcenter.ums.security.core.oauth.jackson.deserializes.TemporaryUserDeserializer;
-import top.dcenter.ums.security.core.oauth.jackson.deserializes.UserDeserializer;
-import top.dcenter.ums.security.core.oauth.jackson.deserializes.WebAuthenticationDetailsDeserializer;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.Auth2Jackson2Module;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
 import top.dcenter.ums.security.core.oauth.token.Auth2AuthenticationToken;
-import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
 import top.dcenter.ums.security.core.oauth.util.MvcUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -101,22 +92,8 @@ public class DeserializerTestController {
                                      ObjectMapper.DefaultTyping.NON_FINAL);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.registerModules(new CoreJackson2Module(),
-                               new WebJackson2Module());
-        mapper.addMixIn(Auth2AuthenticationToken.class,
-                        Auth2AuthenticationTokenJsonDeserializer.Auth2AuthenticationTokenMixin.class)
-              .addMixIn(AnonymousAuthenticationToken.class,
-                        AnonymousAuthenticationTokenJsonDeserializer.AnonymousAuthenticationTokenMixin.class)
-              .addMixIn(User.class,
-                        UserDeserializer.UserMixin.class)
-              .addMixIn(TemporaryUser.class,
-                        TemporaryUserDeserializer.TemporaryUserMixin.class)
-              .addMixIn(WebAuthenticationDetails.class,
-                        WebAuthenticationDetailsDeserializer.WebAuthenticationDetailsMixin.class)
-              .addMixIn(AuthUser.class,
-                        AuthUserJsonDeserializer.AuthUserMixin.class)
-              .addMixIn(AuthToken.class,
-                        AuthUserJsonDeserializer.AuthTokenMixin.class);
+        mapper.registerModules(new CoreJackson2Module(), new WebJackson2Module(), new Auth2Jackson2Module());
+
 
         // 测试 redis 序列化 与 反序列化
         if (authentication instanceof Auth2AuthenticationToken)
