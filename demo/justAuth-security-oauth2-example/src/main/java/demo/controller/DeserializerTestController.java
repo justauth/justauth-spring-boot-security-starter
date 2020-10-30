@@ -85,14 +85,16 @@ public class DeserializerTestController {
 
         log.info(MvcUtil.toJsonString(userDetails));
 
-        // redis 添加反序列化配置.
+        // start: redis 添加反序列化配置.
         ObjectMapper mapper = new ObjectMapper();
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         mapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance,
                                      ObjectMapper.DefaultTyping.NON_FINAL);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        // Auth2Jackson2Module 为此项目实现的反序列化配置
         mapper.registerModules(new CoreJackson2Module(), new WebJackson2Module(), new Auth2Jackson2Module());
+        // end: redis 添加反序列化配置.
 
 
         // 测试 redis 序列化 与 反序列化

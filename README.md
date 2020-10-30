@@ -517,6 +517,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 - 添加一些 Authentication 与 UserDetails 子类的反序列化器, 以解决 redis 缓存不能反序列化此类型的问题,
 具体配置 redis 反序列器的配置请看 [RedisCacheAutoConfiguration.getJackson2JsonRedisSerializer()](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/config/RedisCacheAutoConfiguration.java) 方法.
+
+```java
+// 示例
+Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
+ObjectMapper objectMapper = new ObjectMapper();
+// Auth2Jackson2Module 为此项目实现的反序列化配置     
+objectMapper.registerModules(new CoreJackson2Module(), new WebJackson2Module(), new Auth2Jackson2Module());
+jackson2JsonRedisSerializer.setObjectMapper(om);
+```
 - 注意: [UmsUserDetailsService](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)
 的注册用户方法返回的 `UserDetails` 的默认实现 `User` 已实现反序列化器, 如果是开发者**自定义的子类**, **需开发者自己实现反序列化器**.
 
@@ -534,7 +543,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 | ------------------------------------------------------------ | -------------- | -------------------- | ------------------------------------------------------------ | --------------------- |
 | ums.oauth.enabled                                            | Boolean        | true                 | 是否支持第三方授权登录功能, 默认: true                       | true/false            |
 | ums.oauth.autoSignUp                                            | Boolean        | true                 | 第三方授权登录后如未注册用户是否支持自动注册功能, 默认: true                       | true/false            |
-| ums.oauth.signUpUrl                                            | String        | /signUp                 | 第三方授权登录后如未注册用户不支持自动注册功能, 这跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现; 默认: "/signUp"                       |             |
+| ums.oauth.signUpUrl                                            | String        | /signUp.html                 | 第三方授权登录后如未注册用户不支持自动注册功能, 这跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现; 默认: `/signUp.html`; 例如: 1. 设置值 `"/signUp"`, 则跳转指定到 `"/signUp"` 进行注册. 2. 想返回自定义 json 数据到前端, 这里要设置 null , 在 `Auth2LoginAuthenticationFilter` 设置的 `AuthenticationSuccessHandler` 上处理返回 json; 判断是否为临时用户的条件是: `Authentication.getPrincipal()` 是否为 `TemporaryUser` 类型.                       |             |
 | ums.oauth.temporaryUserPassword                                            | String        | ""                 | 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户密码, 默认为: "". 注意: 生产环境更换密码                       |             |
 | ums.oauth.temporaryUserAuthorities                                            | String        | "ROLE_TEMPORARY_USER"                 | 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户的默认权限, 多个权限用逗号分开, 默认为: "ROLE_TEMPORARY_USER"                       |             |
 | ums.oauth.domain                                             | String         | http://127.0.0.1     | 第三方登录回调的域名, 例如：https://localhost 默认为 "http://127.0.0.1"， redirectUrl 直接由 `{domain}/{servletContextPath}/{redirectUrlPrefix}/{providerId}(ums.oauth.[qq/gitee/weibo])`组成 |                       |
