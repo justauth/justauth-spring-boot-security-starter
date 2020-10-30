@@ -114,7 +114,7 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
     private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     /**
-     * 第三方授权登录后如未注册用户不支持自动注册功能, 这跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现
+     * 第三方授权登录后如未注册用户不支持自动注册功能, 则跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现
      */
     private final String signUpUrl;
 
@@ -123,7 +123,7 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
      * parameters.
      * @param filterProcessesUrl the {@code URI} where this {@code Filter} will process
      * the authentication requests, not null
-     * @param signUpUrl          第三方授权登录后如未注册用户不支持自动注册功能, 这跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现
+     * @param signUpUrl          第三方授权登录后如未注册用户不支持自动注册功能, 则跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现
      * @since 5.1
      */
     public Auth2LoginAuthenticationFilter(@NonNull String filterProcessesUrl, @Nullable String signUpUrl) {

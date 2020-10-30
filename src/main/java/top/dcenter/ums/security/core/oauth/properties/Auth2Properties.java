@@ -208,7 +208,7 @@ public class Auth2Properties {
     private Boolean autoSignUp = true;
 
     /**
-     * 第三方授权登录后如未注册用户不支持自动注册功能, 这跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现; 默认: /signUp.html; <br>
+     * 第三方授权登录后如未注册用户不支持自动注册功能, 则跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现; 默认: /signUp.html; <br>
      * 注意: 当 autoSignUp = false 时, 此属性才生效.<br>
      * 例如:<br>
      * 1. 设置值 "/signUp", 则跳转指定到 "/signUp" 进行注册. <br>
