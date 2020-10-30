@@ -192,6 +192,7 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
         getSuccessHandler().onAuthenticationSuccess(request, response, authResult);
     }
 
+    @SuppressWarnings("unused")
     public void setRedirectStrategy(RedirectStrategy redirectStrategy) {
         this.redirectStrategy = redirectStrategy;
     }

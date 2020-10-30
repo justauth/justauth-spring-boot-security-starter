@@ -51,21 +51,25 @@ public class AuthStateRedisCache implements Auth2StateCache {
 
     @Override
     public void cache(String key, String value, long timeout) {
-        stringRedisTemplate.opsForValue().set(justAuthProperties.getCacheKeyPrefix() + key, value, timeout);
+        stringRedisTemplate.opsForValue().set(parsingKey(key), value, timeout);
     }
 
     @Override
     public String get(String key) {
-        return stringRedisTemplate.opsForValue().get(justAuthProperties.getCacheKeyPrefix() + key);
+        return stringRedisTemplate.opsForValue().get(parsingKey(key));
     }
 
     @Override
     public boolean containsKey(String key) {
-        return StringUtils.hasText(stringRedisTemplate.opsForValue().get(justAuthProperties.getCacheKeyPrefix() + key));
+        return StringUtils.hasText(stringRedisTemplate.opsForValue().get(parsingKey(key)));
     }
 
     @Override
     public CacheKeyStrategy getCacheKeyStrategy() {
         return CacheKeyStrategy.UUID;
+    }
+
+    private String parsingKey(String key) {
+        return justAuthProperties.getCacheKeyPrefix() + key;
     }
 }
