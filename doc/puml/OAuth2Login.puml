@@ -195,7 +195,23 @@ end
 
 AuthenticationManager --> Auth2LoginAuthenticationFilter: 返回 Auth2AuthenticationToken
 deactivate AuthenticationManager
-Auth2LoginAuthenticationFilter -> Auth2LoginAuthenticationFilter: 授权登录成功,后续流程略
+Auth2LoginAuthenticationFilter -> Auth2LoginAuthenticationFilter: successfulAuthentication(...)
+activate Auth2LoginAuthenticationFilter
+Auth2LoginAuthenticationFilter -> Auth2LoginAuthenticationFilter: ...
+opt principal instanceof TemporaryUser && StringUtils.hasText(this.signUpUrl)
+Auth2LoginAuthenticationFilter -> Auth2LoginAuthenticationFilter: \n\
+redirectStrategy.sendRedirect\n(request, response, this.signUpUrl);
+Auth2LoginAuthenticationFilter -> Auth2LoginAuthenticationFilter: return;
+end
+Auth2LoginAuthenticationFilter -> Auth2LoginAuthenticationFilter: \n\
+getSuccessHandler()\n.onAuthenticationSuccess\n(request, response, authResult);\n\
+在成功处理器中: \n\
+可以**判断是否为临时用户**: \n\
+**Authentication.getPrincipal() instanceof TemporaryUser**\n\
+再进行相关逻辑处理, 如返回 json
+deactivate Auth2LoginAuthenticationFilter
+
+
 Auth2LoginAuthenticationFilter --> client: 授权登录成功,后续流程略, 最终返回成功登录页或跳转目标页
 deactivate Auth2LoginAuthenticationFilter
 
