@@ -1,3 +1,8 @@
+## 1.0.7
+### Fixes and Improvements:
+1. 修复 AuthStateRedisCache.java containsKey(key) 方法的 bug.
+2. 改进 signUpUrl 的处理方式: 增加如果 signUpUrl == null 时不跳转, 直接由开发者在成功处理器上自己处理.
+
 ## 1.0.6
 ### Fixes and Improvements:
 1. 增加 RememberMeAuthenticationToken 的反序列化, 优化反序列化配置(Auth2Jackson2Module).
