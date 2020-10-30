@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+</head>
+<body>
+<h1>signUpUrl 注册页面</h1>
+<h2>使用说明:</h2>
+<p>第三方授权登录后如未注册用户不支持自动注册功能, 则跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现; 默认: /signUp.html; </p>
+<p>注意: 当 autoSignUp = false 时, 此属性才生效. </p>
+<p>例如: </p>
+<p>1. 设置值 "/signUp", 则跳转指定到 "/signUp" 进行注册. </p>
+<p>2. 想返回自定义 json 数据到前端, 这里要设置 null , 在 Auth2LoginAuthenticationFilter 设置的 AuthenticationSuccessHandler 上处理返回 json;
+    判断是否为临时用户的条件是: Authentication.getPrincipal() 是否为 TemporaryUser 类型.</p>
+</body>
+</html>
