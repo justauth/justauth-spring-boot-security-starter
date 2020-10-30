@@ -133,9 +133,9 @@ public class ExecutorProperties {
     @Setter
     public static class UserConnectionUpdateExecutorProperties {
         /**
-         * 线程池中空闲时保留的线程数, 默认: 5
+         * 线程池中空闲时保留的线程数, 默认: 1
          */
-        private Integer corePoolSize = 5;
+        private Integer corePoolSize = 1;
         /**
          * 最大线程数, 默认: 本机核心数
          */
