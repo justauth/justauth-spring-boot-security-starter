@@ -1,6 +1,11 @@
+## 1.0.8
+### Fixes and Improvements:
+1. 修复生成 userConnectionUpdateExecutor 时 maximumPoolSize 小于 corePoolSize 的 bug. 感谢: 永生的灯塔水母
+2. 修改 signUpUrl 相关的注释,文档, 示例, 增加 signUp.html 提示页面
+
 ## 1.0.7
 ### Fixes and Improvements:
-1. 修复 AuthStateRedisCache.java containsKey(key) 方法的 bug.
+1. 修复 AuthStateRedisCache.java containsKey(key) 方法的 bug. 感谢: 永生的灯塔水母
 2. 改进 signUpUrl 的处理方式: 增加如果 signUpUrl == null 时不跳转, 直接由开发者在成功处理器上自己处理.
 
 ## 1.0.6
