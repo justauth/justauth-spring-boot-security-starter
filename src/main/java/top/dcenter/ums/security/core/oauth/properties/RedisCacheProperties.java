@@ -37,21 +37,22 @@ import java.util.Set;
  * @version V1.0  Created by 2020/6/15 19:29
  */
 @Getter
-@Setter
 @ConfigurationProperties("ums.cache.redis")
 public class RedisCacheProperties {
 
-    private Cache cache = new Cache();
+    private final Cache cache = new Cache();
 
     /**
      * Redis cache is open, 默认 false
      */
+    @Setter
     private Boolean open = false;
 
     /**
      * 是否使用 spring IOC 容器中的 RedisConnectionFactory， 默认： false. <br>
      * 如果使用 spring IOC 容器中的 RedisConnectionFactory，则要注意 cache.database-index 要与 spring.redis.database 一样。
      */
+    @Setter
     private Boolean useIocRedisConnectionFactory = false;
 
 

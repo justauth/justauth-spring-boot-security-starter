@@ -39,7 +39,6 @@ import java.util.concurrent.TimeUnit;
  * @version V2.0  Created by 2020/10/15 12:06
  */
 @Getter
-@Setter
 @ConfigurationProperties("ums.executor")
 public class ExecutorProperties {
 
@@ -47,18 +46,18 @@ public class ExecutorProperties {
      * 启动第三方授权登录用户的 accessToken 的定时任务时的 Executor 属性,<br>
      * 注意: 需要根据实际生产环境进行优化
      */
-    private AccessTokenRefreshJobExecutorProperties accessTokenRefreshJob = new AccessTokenRefreshJobExecutorProperties();
+    private final AccessTokenRefreshJobExecutorProperties accessTokenRefreshJob = new AccessTokenRefreshJobExecutorProperties();
     /**
      * 更新第三方授权登录用户的 accessToken 的执行逻辑, 向本地数据库 auth_token 表获取过期或在一定时间内过期的 token 记录, 用 refreshToken 向第三方服务商更新
      * accessToken 信息的 Executor 属性,<br>
      * 注意: 定时刷新 accessToken 的执行逻辑是多线程的, 需要根据实际生产环境进行优化
      */
-    private RefreshTokenExecutorProperties refreshToken = new RefreshTokenExecutorProperties();
+    private final RefreshTokenExecutorProperties refreshToken = new RefreshTokenExecutorProperties();
     /**
      * 第三方授权登录时, 异步更新用户的第三方授权用户信息与 token 信息的 Executor 属性,<br>
      * 注意: 第三方授权登录时是异步更新第三方用户信息与 token 信息到本地数据库时使用此配置, 需要根据实际生产环境进行优化
      */
-    private UserConnectionUpdateExecutorProperties userConnectionUpdate = new UserConnectionUpdateExecutorProperties();
+    private final UserConnectionUpdateExecutorProperties userConnectionUpdate = new UserConnectionUpdateExecutorProperties();
 
     @Getter
     @Setter
