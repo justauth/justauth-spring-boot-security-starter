@@ -15,6 +15,7 @@
 2. 支持定时刷新 accessToken 分布式定时任务,
 3. 支持第三方授权登录的用户信息表与 token 信息表的 redis 缓存功能.
 4. 支持第三方绑定与解绑及查询接口(top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository).
+5. 支持基于 SLF4J MDC 机制的日志链路追踪功能
 
 微信群：UMS 添加微信(z56133)备注(UMS) 
 ------
@@ -530,12 +531,58 @@ jackson2JsonRedisSerializer.setObjectMapper(om);
 的注册用户方法返回的 `UserDetails` 的默认实现 `User` 已实现反序列化器, 如果是开发者**自定义的子类**, **需开发者自己实现反序列化器**.
 
 ------
-## 七、`时序图(Sequence Diagram)`: 随着版本迭代会有出入
+## 七、基于 SLF4J MDC 机制的日志链路追踪功能
+
+- 使用此功能在日志配置文件中的 `pattern` 中添加 `%X{MDC_TRACE_ID}` 即可.
+```xml
+<!-- 控制台 -->
+<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- 日志格式 -->
+    <encoder>
+        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %X{MDC_TRACE_ID} %logger[%L] - %msg%n</pattern>
+        <charset>utf-8</charset>
+    </encoder>
+    <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <!-- 只有这个日志权限才能看，sql语句 -->
+        <level>DEBUG</level>
+    </filter>
+</appender>
+```
+- 多线程使用问题: 父线程新建子线程之前调用 `MDC.getCopyOfContextMap()` 方法获取 `MDC context`, 子线程在执行操作前先调用 
+`MDC.setContextMap(context)` 方法将父线程的 `MDC context` 设置到子线程中. ThreadPoolTaskExecutor 的配置请参考 [ScheduleAutoConfiguration](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/core/src/main/java/top/dcenter/ums/security/core/oauth/config/ScheduleAutoConfiguration.java).
+- 多线程传递 MDC context 简单示例:  
+```java
+final Logger log = LoggerFactory.getLogger(this.getClass());
+// 获取父线程 MDC 中的内容
+final Map<String, String> context = MDC.getCopyOfContextMap();
+final Runnable r = () -> {
+    log.info("testMDC");
+    System.out.println("...");
+};
+new Thread(() -> {
+    // 将父线程的 MDC context 设置到子线程中
+    MDC.setContextMap(context);
+    r.run();
+}, "testMDC").start();
+```
+
+
+------
+## 八、`时序图(Sequence Diagram)`: 随着版本迭代会有出入
 
 ![第三方授权登录](doc/OAuth2Login.png)
 
 ------
-## 八、`属性配置列表`
+## 九、`属性配置列表`
+
+###  基于 SLF4J MDC 机制的日志链路追踪配置属性
+
+| **属性**                                         | **类型**                | **默认值**                             | **描述**                                                     | **可选项**                         |
+| ------------------------------------------------ | ----------------------- | -------------------------------------- | ------------------------------------------------------------ | ---------------------------------- |
+| ums.mdc.enabled | Boolean | true | 是否支持基于 SLF4J MDC 机制日志的链路追踪, 默认: true | true/false     |
+| ums.mdc.includeUrls | List<String> | /** | 需要添加 MDC 日志的链路追踪的 url, 默认: /**, 并在日志文件的 pattern 中添加 %X{MDC_TRACE_ID} |      |
+| ums.mdc.excludeUrls | List<String> |      | 不需要 MDC 日志的链路追踪的 url, 如: 静态路径 |      |
 
 ###  OAuth2 / refreshToken 定时任务 / JustAuth 配置属性
 
@@ -804,7 +851,7 @@ jackson2JsonRedisSerializer.setObjectMapper(om);
 | ums.repository.removeConnectionsSql             | String   | delete from %s where %s = ? and %s = ?                       | 第三方登录用户数据库用户表根据 userId 与 providerId 删除多个用户。  注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应,%s按顺序会用对应的 :  tableName、  userIdColumnName、  providerIdColumnName |            |
 | ums.repository.removeConnectionSql              | String   | delete from %s where %s = ? and %s = ? and %s = ?            | 第三方登录用户数据库用户表根据 userId、providerId、providerUserId 删除一个用户。  注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应,%s按顺序会用对应的 :  tableName、  userIdColumnName、  providerIdColumnName、  providerUserIdColumnName |            |
 
-## 六、参与贡献
+## 十、参与贡献
 
 1. Fork [本项目](https://github.com/ZeroOrInfinity/justAuth-spring-boot-security-starter)
 2. 新建 Feat_xxx 分支

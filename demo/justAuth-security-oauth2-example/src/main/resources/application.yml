@@ -55,6 +55,18 @@ spring:
 
 # ums core
 ums:
+  # ================ 基于 SLF4J MDC 机制的日志链路追踪配置属性 ================
+  mdc:
+    # 是否支持基于 SLF4J MDC 机制日志的链路追踪, 默认: true
+    enable: true
+    # 需要添加 MDC 日志的链路追踪的 url, 默认: /**, 并在日志文件的 pattern 中添加 %X{MDC_TRACE_ID}
+    include-urls:
+      - /**
+    # 不需要 MDC 日志的链路追踪的 url, 如: 静态路径
+    exclude-urls:
+      - /**/*.js
+      - /**/*.html
+      - /**/*.css
   # ================ 第三方授权登录相关配置 ================
   oauth:
     # 是否支持第三方授权登录功能, 默认: true
@@ -241,7 +253,11 @@ spring:
 
 #debug: true
 
+
 server:
   port: 9090
   servlet:
     context-path: /demo
+
+logging:
+  config: classpath:logback-spring.xml
