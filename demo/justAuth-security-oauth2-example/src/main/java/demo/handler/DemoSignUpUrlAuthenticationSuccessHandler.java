@@ -27,6 +27,7 @@ import org.springframework.security.web.authentication.SavedRequestAwareAuthenti
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
 
@@ -40,6 +41,7 @@ import java.io.IOException;
  * @author YongWu zheng
  * @version V2.0  Created by 2020/10/30 10:19
  */
+@Component
 public class DemoSignUpUrlAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
     private RequestCache requestCache = new HttpSessionRequestCache();
 
@@ -69,8 +71,7 @@ public class DemoSignUpUrlAuthenticationSuccessHandler extends SavedRequestAware
         }
         String targetUrlParameter = getTargetUrlParameter();
         if (isAlwaysUseDefaultTargetUrl()
-                || (targetUrlParameter != null && StringUtils.hasText(request
-                                                                              .getParameter(targetUrlParameter)))) {
+                || (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
             requestCache.removeRequest(request, response);
             super.onAuthenticationSuccess(request, response, authentication);
 
