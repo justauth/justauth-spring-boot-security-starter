@@ -1,3 +1,7 @@
+## 1.0.10
+### Fixes and Improvements:
+1. 修复: 修复 enableRefreshTokenJob 属性不能控制是否开启定时刷新 accessToken 任务的 bug
+
 ## 1.0.9
 ### Fixes and Improvements:
 1. 修复: 示例功能, 当 signUpUrl=null 时, 成功处理器未生效的bug
