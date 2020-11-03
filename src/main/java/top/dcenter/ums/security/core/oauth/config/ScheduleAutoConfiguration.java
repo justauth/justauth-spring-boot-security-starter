@@ -27,7 +27,6 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -79,7 +78,6 @@ public class ScheduleAutoConfiguration implements SchedulingConfigurer, Disposab
     }
 
     @Bean
-    @ConditionalOnMissingBean(type = {"top.dcenter.ums.security.core.oauth.job.RefreshTokenJob"})
     @ConditionalOnProperty(prefix = "ums.oauth", name = "enableRefreshTokenJob", havingValue = "true")
     public RefreshTokenJob refreshTokenJob(UsersConnectionTokenRepository usersConnectionTokenRepository,
                                            UsersConnectionRepository usersConnectionRepository,
