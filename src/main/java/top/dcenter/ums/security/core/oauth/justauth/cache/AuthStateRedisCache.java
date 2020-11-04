@@ -29,6 +29,7 @@ import top.dcenter.ums.security.core.oauth.justauth.enums.CacheKeyStrategy;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 import top.dcenter.ums.security.core.oauth.properties.JustAuthProperties;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -38,17 +39,20 @@ import java.util.concurrent.TimeUnit;
  */
 public class AuthStateRedisCache implements Auth2StateCache {
 
-    private final JustAuthProperties justAuthProperties;
     private final StringRedisTemplate stringRedisTemplate;
+    private final Duration timeout;
+    private final String cacheKeyPrefix;
 
     public AuthStateRedisCache(Auth2Properties auth2Properties, Object stringRedisTemplate) {
-        this.justAuthProperties = auth2Properties.getJustAuth();
         this.stringRedisTemplate = (StringRedisTemplate) stringRedisTemplate;
+        final JustAuthProperties justAuth = auth2Properties.getJustAuth();
+        this.timeout = justAuth.getTimeout();
+        this.cacheKeyPrefix = justAuth.getCacheKeyPrefix();
     }
 
     @Override
     public void cache(String key, String value) {
-        stringRedisTemplate.opsForValue().set(parsingKey(key), value, justAuthProperties.getTimeout());
+        stringRedisTemplate.opsForValue().set(parsingKey(key), value, this.timeout);
     }
 
     @Override
@@ -72,6 +76,6 @@ public class AuthStateRedisCache implements Auth2StateCache {
     }
 
     private String parsingKey(String key) {
-        return justAuthProperties.getCacheKeyPrefix() + key;
+        return this.cacheKeyPrefix + key;
     }
 }
