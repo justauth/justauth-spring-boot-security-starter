@@ -96,7 +96,7 @@ public class SignUpController {
     private UsersConnectionRepository usersConnectionRepository;
     @Autowired
     private UsersConnectionTokenRepository usersConnectionTokenRepository;
-    @Autowired
+    @Autowired(required = false)
     private Auth2StateCoder auth2StateCoder;
 
     @Autowired

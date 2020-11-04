@@ -1,6 +1,10 @@
+## 1.0.11
+### Fixes and Improvements:
+1. 修复: 第三方授权登录时, 缓存到 redis 时, 设置 state 缓存时间时少个时间单位, 变成 offset错误的 bug. 感谢: 永生的灯塔水母
+
 ## 1.0.10
 ### Fixes and Improvements:
-1. 修复: 修复 enableRefreshTokenJob 属性不能控制是否开启定时刷新 accessToken 任务的 bug
+1. 修复: enableRefreshTokenJob 属性不能控制是否开启定时刷新 accessToken 任务的 bug.
 
 ## 1.0.9
 ### Fixes and Improvements:
