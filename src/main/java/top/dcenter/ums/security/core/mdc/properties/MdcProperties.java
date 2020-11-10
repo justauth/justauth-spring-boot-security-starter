@@ -26,8 +26,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 基于 SLF4J MDC 机制日志的链路追踪: 日志属性
@@ -38,7 +38,7 @@ import java.util.List;
 public class MdcProperties {
 
     public MdcProperties() {
-        this.includeUrls = new ArrayList<>();
+        this.includeUrls = new HashSet<>();
         includeUrls.add("/**");
     }
 
@@ -54,11 +54,11 @@ public class MdcProperties {
      */
     @Setter
     @Getter
-    private List<String> includeUrls;
+    private Set<String> includeUrls;
     /**
      * 不需要 MDC 日志的链路追踪的 url, 如: 静态路径
      */
     @Setter
     @Getter
-    private List<String> excludeUrls = new ArrayList<>();
+    private Set<String> excludeUrls = new HashSet<>();
 }

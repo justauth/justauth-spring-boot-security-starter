@@ -38,6 +38,10 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
+import org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter;
+import top.dcenter.ums.security.core.mdc.config.MdcPropertiesAutoConfiguration;
+import top.dcenter.ums.security.core.mdc.filter.MdcLogFilter;
+import top.dcenter.ums.security.core.mdc.properties.MdcProperties;
 import top.dcenter.ums.security.core.oauth.filter.login.Auth2LoginAuthenticationFilter;
 import top.dcenter.ums.security.core.oauth.filter.redirect.Auth2DefaultRequestRedirectFilter;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
@@ -59,10 +63,11 @@ import java.util.concurrent.ExecutorService;
  */
 @Configuration
 @ConditionalOnProperty(prefix = "ums.oauth", name = "enabled", havingValue = "true")
-@AutoConfigureAfter({Auth2AutoConfiguration.class})
+@AutoConfigureAfter({Auth2AutoConfiguration.class, MdcPropertiesAutoConfiguration.class})
 public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> implements InitializingBean {
 
     private final Auth2Properties auth2Properties;
+    private final MdcProperties mdcProperties;
     private final UmsUserDetailsService umsUserDetailsService;
     private final Auth2UserService auth2UserService;
     private final UsersConnectionRepository usersConnectionRepository;
@@ -81,11 +86,13 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
     @Autowired(required = false)
     private PersistentTokenBasedRememberMeServices persistentTokenBasedRememberMeServices;
 
-    public Auth2AutoConfigurer(Auth2Properties auth2Properties, UmsUserDetailsService umsUserDetailsService,
+    public Auth2AutoConfigurer(Auth2Properties auth2Properties, MdcProperties mdcProperties,
+                               UmsUserDetailsService umsUserDetailsService,
                                Auth2UserService auth2UserService, UsersConnectionRepository usersConnectionRepository,
                                ConnectionService connectionSignUp,
                                @Qualifier("updateConnectionTaskExecutor") ExecutorService updateConnectionTaskExecutor) {
         this.auth2Properties = auth2Properties;
+        this.mdcProperties = mdcProperties;
         this.umsUserDetailsService = umsUserDetailsService;
         this.auth2UserService = auth2UserService;
         this.usersConnectionRepository = usersConnectionRepository;
@@ -95,6 +102,11 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
 
     @Override
     public void configure(HttpSecurity http) {
+
+        if (this.mdcProperties.getEnable()) {
+            // 基于 MDC 机制实现日志的链路追踪过滤器
+            http.addFilterBefore(new MdcLogFilter(this.mdcProperties), WebAsyncManagerIntegrationFilter.class);
+        }
 
         // 添加第三方登录入口过滤器
         String authorizationRequestBaseUri = auth2Properties.getAuthLoginUrlPrefix();

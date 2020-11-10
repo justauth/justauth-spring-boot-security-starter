@@ -1,3 +1,7 @@
+## 1.0.12
+### Fixes and Improvements:
+1. 修复: 不能对部分通过 Filter 实现的逻辑进行 MDC 日志链路追踪的 bug, 如: 第三方授权登录, 因为 interceptor 拦截在 Filter 之后.
+
 ## 1.0.11
 ### Fixes and Improvements:
 1. 修复: 第三方授权登录时, 缓存到 redis 时, 设置 state 缓存时间时少个时间单位, 变成 offset错误的 bug. 感谢: 永生的灯塔水母

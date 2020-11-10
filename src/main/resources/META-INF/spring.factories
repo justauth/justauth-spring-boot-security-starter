@@ -2,7 +2,6 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   top.dcenter.ums.security.core.oauth.config.Auth2PropertiesAutoConfiguration,\
   top.dcenter.ums.security.core.mdc.config.MdcPropertiesAutoConfiguration,\
-  top.dcenter.ums.security.core.mdc.config.MdcLogWebMvcConfigurer,\
   top.dcenter.ums.security.core.oauth.config.Auth2AutoConfiguration,\
   top.dcenter.ums.security.core.oauth.config.Auth2AutoConfigurer,\
   top.dcenter.ums.security.core.oauth.config.RedisCacheAutoConfiguration,\
