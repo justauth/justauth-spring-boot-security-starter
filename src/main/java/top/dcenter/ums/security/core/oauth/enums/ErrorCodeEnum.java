@@ -56,6 +56,9 @@ public enum ErrorCodeEnum {
     GET_REQUEST_PARAMETER_FAILURE(906, "获取注册信息失败"),
     UPDATE_CONNECTION_DATA_FAILURE(940, "更新第三方授权登录用户信息失败"),
     REFRESH_TOKEN_FAILURE(950, "refresh Token 刷新失败"),
+
+    AUTH2_PROVIDER_NOT_SUPPORT(960, "此服务商的第三方授权登录不支持"),
+
     USER_REGISTER_OAUTH2_FAILURE(999, "本地用户注册成功, 第三方信息保存失败"),
 
     VALIDATE_CODE_PARAM_ERROR(600, "验证码参数错误"),

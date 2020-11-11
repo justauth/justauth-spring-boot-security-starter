@@ -109,7 +109,8 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
         // 添加第三方登录入口过滤器
         String authorizationRequestBaseUri = auth2Properties.getAuthLoginUrlPrefix();
         Auth2DefaultRequestRedirectFilter auth2DefaultRequestRedirectFilter =
-                new Auth2DefaultRequestRedirectFilter(authorizationRequestBaseUri, this.auth2StateCoder);
+                new Auth2DefaultRequestRedirectFilter(authorizationRequestBaseUri, this.auth2StateCoder,
+                                                      this.authenticationFailureHandler);
         http.addFilterAfter(auth2DefaultRequestRedirectFilter, AbstractPreAuthenticatedProcessingFilter.class);
 
         // 添加第三方登录回调接口过滤器

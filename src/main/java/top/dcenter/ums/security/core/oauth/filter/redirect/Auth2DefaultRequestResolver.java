@@ -23,9 +23,12 @@
 
 package top.dcenter.ums.security.core.oauth.filter.redirect;
 
+import org.springframework.lang.Nullable;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import top.dcenter.ums.security.core.oauth.enums.ErrorCodeEnum;
+import top.dcenter.ums.security.core.oauth.exception.Auth2Exception;
 import top.dcenter.ums.security.core.oauth.justauth.Auth2RequestHolder;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
 
@@ -66,28 +69,24 @@ public final class Auth2DefaultRequestResolver implements Auth2AuthorizationRequ
 	}
 
 	@Override
-	public Auth2DefaultRequest resolve(HttpServletRequest request) {
+	public Auth2DefaultRequest resolve(HttpServletRequest request) throws Auth2Exception {
 		if (StringUtils.hasText(request.getParameter(STATE)))
 		{
 			return null;
 		}
 		String registrationId = this.resolveRegistrationId(request);
-		if (registrationId == null) {
-			return null;
-		}
-		return resolve(request, registrationId);
+
+		return getAuth2DefaultRequest(registrationId);
 	}
 
 	@Override
-	public Auth2DefaultRequest resolve(HttpServletRequest request, String registrationId) {
+	public Auth2DefaultRequest resolve(HttpServletRequest request, String registrationId) throws Auth2Exception {
 		if (StringUtils.hasText(request.getParameter(STATE)))
 		{
 			return null;
 		}
-		if (registrationId == null) {
-			return null;
-		}
-		return Auth2RequestHolder.getAuth2DefaultRequest(registrationId);
+
+		return getAuth2DefaultRequest(registrationId);
 	}
 
 	public String resolveRegistrationId(HttpServletRequest request) {
@@ -96,6 +95,19 @@ public final class Auth2DefaultRequestResolver implements Auth2AuthorizationRequ
 					.get(REGISTRATION_ID_URI_VARIABLE_NAME);
 		}
 		return null;
+	}
+
+	@Nullable
+	private Auth2DefaultRequest getAuth2DefaultRequest(@Nullable String registrationId) throws Auth2Exception {
+		if (registrationId == null) {
+			return null;
+		}
+
+		final Auth2DefaultRequest auth2DefaultRequest = Auth2RequestHolder.getAuth2DefaultRequest(registrationId);
+		if (auth2DefaultRequest == null) {
+			throw new Auth2Exception(ErrorCodeEnum.AUTH2_PROVIDER_NOT_SUPPORT, registrationId);
+		}
+		return auth2DefaultRequest;
 	}
 
 }
