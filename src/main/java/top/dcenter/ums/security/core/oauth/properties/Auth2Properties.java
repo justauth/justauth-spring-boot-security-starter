@@ -32,6 +32,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import top.dcenter.ums.security.core.oauth.filter.login.Auth2LoginAuthenticationFilter;
+import top.dcenter.ums.security.core.oauth.job.RefreshTokenJob;
 import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
 
 import java.net.InetSocketAddress;
@@ -197,12 +198,6 @@ public class Auth2Properties {
     private Boolean suppressReflectWarning = false;
 
     /**
-     * 是否支持第三方授权登录功能, 默认: true
-     */
-    @Setter
-    private Boolean enabled = true;
-
-    /**
      * 第三方授权登录后如未注册用户是否支持自动注册功能, 默认: true<br>
      * {@code https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22KP3}
      */
@@ -272,7 +267,8 @@ public class Auth2Properties {
     private String refreshTokenJobCron = "0 * 2 * * ?";
 
     /**
-     * 是否支持定时刷新 AccessToken 定时任务. 默认: false.<br>
+     * 是否支持定时刷新 AccessToken 定时任务, 考虑到很多应用都有自己的定时任务应用, 默认: false.
+     * {@link RefreshTokenJob} 接口的实现已注入 IOC 容器, 方便自定义定时任务接口时调用. <br>
      * 支持分布式(分布式 IOC 容器中必须有 {@link RedisConnectionFactory}, 也就是说,
      * 是否分布式执行依据 IOC 容器中是否有 {@link RedisConnectionFactory})
      */
