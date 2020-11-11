@@ -1,4 +1,8 @@
-## 1.0.12
+## 1.1.1
+### Fixes and Improvements:
+1. 优化: 第三方授权登录获取授权链接时, 如果请求的第三方不在应用支持第三方服务商范围内, 跳转授权失败处理器处理.
+
+## 1.1.0
 ### Fixes and Improvements:
 1. 改进: 考虑到很多应用都有自己的定时任务应用, 提取 Executor 配置放入 executor 包, 从定时任务 RefreshAccessTokenJob 中拆分出 RefreshAccessTokenJobHandler
 , RefreshTokenJob 接口的实现已注入 IOC 容器, 方便自定义定时任务接口时调用.
