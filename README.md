@@ -4,8 +4,8 @@
 ![Maven](https://img.shields.io/badge/Maven-3.6.3-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-5.7.27-green.svg)
 ![Redis](https://img.shields.io/badge/Redis-5.0.3-green.svg)
-![SpringBoot](https://img.shields.io/badge/SpringBoot-2.3.4-green.svg)
-![SpringSecurity](https://img.shields.io/badge/SpringSecurity-5.3.5-green.svg)
+![SpringBoot](https://img.shields.io/badge/SpringBoot-2.3.5-green.svg)
+![SpringSecurity](https://img.shields.io/badge/SpringSecurity-5.4.1-green.svg)
 ![license](https://img.shields.io/badge/license-MIT-yellow.svg)
 
 ## 一、`特性`
@@ -588,7 +588,6 @@ new Thread(() -> {
 
 | **属性**                                                     | **类型**       | **默认值**           | **描述**                                                     | **可选项**            |
 | ------------------------------------------------------------ | -------------- | -------------------- | ------------------------------------------------------------ | --------------------- |
-| ums.oauth.enabled                                            | Boolean        | true                 | 是否支持第三方授权登录功能, 默认: true                       | true/false            |
 | ums.oauth.autoSignUp                                            | Boolean        | true                 | 第三方授权登录后如未注册用户是否支持自动注册功能, 默认: true                       | true/false            |
 | ums.oauth.signUpUrl                                            | String        | /signUp.html                 | 第三方授权登录后如未注册用户不支持自动注册功能, 则跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现; 默认: `/signUp.html`; 例如: 1. 设置值 `"/signUp"`, 则跳转指定到 `"/signUp"` 进行注册. 2. 想返回自定义 json 数据到前端, 这里要设置 null , 在 `Auth2LoginAuthenticationFilter` 设置的 `AuthenticationSuccessHandler` 上处理返回 json; 判断是否为临时用户的条件是: `Authentication.getPrincipal()` 是否为 `TemporaryUser` 类型.                       |             |
 | ums.oauth.temporaryUserPassword                                            | String        | ""                 | 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户密码, 默认为: "". 注意: 生产环境更换密码                       |             |
@@ -600,7 +599,7 @@ new Thread(() -> {
 | ums.oauth.suppressReflectWarning                | Boolean                 | false                                  | 抑制反射警告, 支持 JDK11, 默认: false , 在确认 WARNING: An illegal reflective access operation has occurred 安全后, 可以打开此设置, 可以抑制反射警告. | true/false                         |
 | **refreshToken 定时任务**                                    |                |                      |                                                              |                       |
 | ums.oauth.refreshTokenJobCron                                | String         | 0 * 2 * * ?          | A cron-like expression.<br/>       `0 * 2 * * ?` 分别对应: `second/minute/hour/day of month/month/day of week`<br/>       <br/>默认为: "0 * 2 * * ?", 凌晨 2 点启动定时任务, 支持分布式(分布式 IOC 容器中必须有 `RedisConnectionFactory`, 也就是说, 是否分布式执行依据 IOC 容器中是否有 `RedisConnectionFactory`) |                       |
-| ums.oauth.enableRefreshTokenJob                              | Boolean        | false                | 是否支持定时刷新 `AccessToken` 定时任务. 默认: false. 支持分布式(分布式 IOC 容器中必须有 `RedisConnectionFactory`, 也就是说, 是否分布式执行依据 IOC 容器中是否有 `RedisConnectionFactory`) | true/false            |
+| ums.oauth.enableRefreshTokenJob                              | Boolean        | false                | 是否支持定时刷新 `AccessToken` 定时任务, 考虑到很多应用都有自己的定时任务应用, 默认: `false`. `RefreshTokenJob` 接口的实现已注入 IOC 容器, 方便自定义定时任务接口时调用. 支持分布式(分布式 IOC 容器中必须有 `RedisConnectionFactory`, 也就是说, 是否分布式执行依据 IOC 容器中是否有 `RedisConnectionFactory`) | true/false            |
 | ums.oauth.batchCount                                         | Integer        | 1000                 | 定时刷新 `accessToken` 任务时, 批处理数据库的记录数. 注意: 分布式应用时, 此配置不同服务器配置必须是一样的. `batchCount` 大小需要根据实际生产环境进行优化 |                       |
 | ums.oauth.remainingExpireIn                                  | Integer        | 24                   | `accessToken` 的剩余有效期内进行刷新 `accessToken`, 默认: 24, 单位: 小时. 注意: 需要根据实际生产环境进行优化 |                       |
 | **justAuth**                                                 |                |                      |                                                              |                       |

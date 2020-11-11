@@ -1,5 +1,12 @@
 ## 1.0.12
 ### Fixes and Improvements:
+1. 改进: 考虑到很多应用都有自己的定时任务应用, 提取 Executor 配置放入 executor 包, 从定时任务 RefreshAccessTokenJob 中拆分出 RefreshAccessTokenJobHandler
+, RefreshTokenJob 接口的实现已注入 IOC 容器, 方便自定义定时任务接口时调用.
+2. 依赖: 依赖升级到 spring-security:5.4.1, spring-boot:2.3.5.RELEASE.
+3. 优化: 删除不必要的属性: ums.oauth.enabled.
+
+## 1.0.12
+### Fixes and Improvements:
 1. 修复: 不能对部分通过 Filter 实现的逻辑进行 MDC 日志链路追踪的 bug, 如: 第三方授权登录, 因为 interceptor 拦截在 Filter 之后.
 
 ## 1.0.11
