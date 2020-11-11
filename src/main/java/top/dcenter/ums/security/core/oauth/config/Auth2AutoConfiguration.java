@@ -24,11 +24,11 @@
 package top.dcenter.ums.security.core.oauth.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
@@ -40,7 +40,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.support.GenericWebApplicationContext;
+import top.dcenter.ums.security.core.oauth.job.RefreshAccessTokenJobHandler;
+import top.dcenter.ums.security.core.oauth.job.RefreshTokenJob;
+import top.dcenter.ums.security.core.oauth.job.RefreshTokenJobImpl;
 import top.dcenter.ums.security.core.oauth.justauth.Auth2RequestHolder;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 import top.dcenter.ums.security.core.oauth.properties.RepositoryProperties;
@@ -63,6 +67,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.QUERY_DATABASE_NAME_SQL;
 import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.QUERY_TABLE_EXIST_SQL_RESULT_SET_COLUMN_INDEX;
@@ -77,7 +83,7 @@ import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.SERVL
  */
 @SuppressWarnings({"AlibabaClassNamingShouldBeCamel"})
 @Configuration
-@ConditionalOnProperty(prefix = "ums.oauth", name = "enabled", havingValue = "true")
+@AutoConfigureAfter(value = {Auth2PropertiesAutoConfiguration.class})
 @Slf4j
 public class Auth2AutoConfiguration implements InitializingBean, ApplicationContextAware {
 
@@ -90,6 +96,21 @@ public class Auth2AutoConfiguration implements InitializingBean, ApplicationCont
         this.repositoryProperties = repositoryProperties;
         this.auth2Properties = auth2Properties;
         this.dataSource = dataSource;
+    }
+
+    @Bean
+    public RefreshTokenJob refreshTokenJob(UsersConnectionTokenRepository usersConnectionTokenRepository,
+                                           UsersConnectionRepository usersConnectionRepository,
+                                           @Qualifier("refreshTokenTaskExecutor") ExecutorService refreshTokenTaskExecutor) {
+        return new RefreshTokenJobImpl(usersConnectionRepository, usersConnectionTokenRepository,
+                                       auth2Properties, refreshTokenTaskExecutor);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-refresh-token-job", havingValue = "true")
+    public RefreshAccessTokenJobHandler refreshAccessTokenJobHandler(@Qualifier("jobTaskScheduledExecutor") ScheduledExecutorService jobTaskScheduledExecutor,
+                                                                     Auth2Properties auth2Properties) {
+        return new RefreshAccessTokenJobHandler(auth2Properties, jobTaskScheduledExecutor);
     }
 
     @Bean
@@ -131,7 +152,6 @@ public class Auth2AutoConfiguration implements InitializingBean, ApplicationCont
                                repositoryProperties.getTextEncryptorSalt());
     }
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Bean
     @ConditionalOnMissingBean(type = "top.dcenter.ums.security.core.oauth.signup.ConnectionService")
     public ConnectionService connectionSignUp(UmsUserDetailsService userDetailsService,
@@ -206,7 +226,7 @@ public class Auth2AutoConfiguration implements InitializingBean, ApplicationCont
                     if (tableCount < 1)
                     {
                         String creatUserConnectionTableSql = repositoryProperties.getCreatUserConnectionTableSql();
-                        try (final PreparedStatement preparedStatement = connection.prepareStatement(creatUserConnectionTableSql);) {
+                        try (final PreparedStatement preparedStatement = connection.prepareStatement(creatUserConnectionTableSql)) {
                             preparedStatement.executeUpdate();
                             log.info("{} 表创建成功，SQL：{}", repositoryProperties.getTableName(),
                                      creatUserConnectionTableSql);

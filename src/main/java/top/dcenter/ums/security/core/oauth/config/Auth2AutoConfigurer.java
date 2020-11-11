@@ -27,7 +27,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
@@ -62,7 +61,6 @@ import java.util.concurrent.ExecutorService;
  * @version V2.0  Created by 2020/10/12 12:31
  */
 @Configuration
-@ConditionalOnProperty(prefix = "ums.oauth", name = "enabled", havingValue = "true")
 @AutoConfigureAfter({Auth2AutoConfiguration.class, MdcPropertiesAutoConfiguration.class})
 public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> implements InitializingBean {
 
