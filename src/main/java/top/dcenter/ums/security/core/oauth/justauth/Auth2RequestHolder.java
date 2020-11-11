@@ -153,7 +153,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
          *  2. 以此获取所有 BaseAuth2Properties 子类对象, 检查其字段是否带有有效的 clientId 与 clientSecret 值,
          *     如果有效, 则存储再 PROVIDER_ID_AUTH_REQUEST_MAP 中.
          */
-        Class<? extends Auth2Properties> aClass = auth2Properties.getClass();
+        Class<Auth2Properties> aClass = Auth2Properties.class;
         Field[] declaredFields = aClass.getDeclaredFields();
         for (Field field : declaredFields)
         {
