@@ -150,7 +150,13 @@ public class AuthDefaultRequestAdapter extends AuthDefaultRequest implements Aut
             return (AuthToken) result;
         }
         catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            final String msg = "从第三方获取 accessToken 时方法调用异常: " + e.getMessage();
+            String errMsg = e.getMessage();
+            if (e instanceof InvocationTargetException)
+            {
+                InvocationTargetException invocationTargetException = ((InvocationTargetException) e);
+                errMsg = invocationTargetException.getTargetException().getMessage();
+            }
+            String msg = "从第三方获取 accessToken 时方法调用异常: " + errMsg;
             log.error(msg);
             throw new SimpleHttpException(msg, e);
         }
@@ -172,7 +178,13 @@ public class AuthDefaultRequestAdapter extends AuthDefaultRequest implements Aut
             return (AuthUser) result;
         }
         catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            final String msg = "从第三方获取用户信息时方法调用异常: " + e.getMessage();
+            String errMsg = e.getMessage();
+            if (e instanceof InvocationTargetException)
+            {
+                InvocationTargetException invocationTargetException = ((InvocationTargetException) e);
+                errMsg = invocationTargetException.getTargetException().getMessage();
+            }
+            String msg = "从第三方获取用户信息时方法调用异常: " + errMsg;
             log.error(msg);
             throw new SimpleHttpException(msg, e);
         }
