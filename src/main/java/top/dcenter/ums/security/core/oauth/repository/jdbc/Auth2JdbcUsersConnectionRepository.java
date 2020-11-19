@@ -213,7 +213,7 @@ public class Auth2JdbcUsersConnectionRepository implements UsersConnectionReposi
         {
             String msg = String.format("getConnection: userId=%s, connectionKey=%s. sql query error: %s",
                                        userId, connectionKey, e.getMessage());
-            log.error(msg, e);
+            log.error(msg);
             throw new NoSuchConnectionException(connectionKey);
         }
     }

@@ -70,7 +70,7 @@ public class WebAuthenticationDetailsDeserializer extends StdDeserializer<WebAut
         }
         catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             final String msg = String.format("WebAuthenticationDetails Jackson 反序列化错误: %s", e.getMessage());
-            log.error(msg, e);
+            log.error(msg);
             throw new IOException(msg, e);
         }
 

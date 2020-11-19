@@ -156,7 +156,7 @@ public class DefaultConnectionServiceImpl implements ConnectionService {
         }
         catch (Exception e)
         {
-            log.error(e.getMessage(), e);
+            log.error("更新第三方用户信息异常: " + e.getMessage());
             throw new UpdateConnectionException(ErrorCodeEnum.UPDATE_CONNECTION_DATA_FAILURE, connectionData, e);
         }
     }
