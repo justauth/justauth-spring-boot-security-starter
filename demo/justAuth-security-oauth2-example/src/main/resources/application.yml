@@ -37,7 +37,7 @@ spring:
 
   # =============== redis 设置 ===============
   redis:
-    host: 192.168.88.88
+    host: 192.168.50.2
     port: 6379
     password:
     database: 0
