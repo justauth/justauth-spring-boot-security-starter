@@ -6,6 +6,7 @@
 ![Redis](https://img.shields.io/badge/Redis-5.0.3-green.svg)
 ![SpringBoot](https://img.shields.io/badge/SpringBoot-2.3.5-green.svg)
 ![SpringSecurity](https://img.shields.io/badge/SpringSecurity-5.4.1-green.svg)
+![JustAuth](https://img.shields.io/badge/JustAuth-1.15.8-green.svg)
 ![license](https://img.shields.io/badge/license-MIT-yellow.svg)
 
 ## 一、`特性`
@@ -238,7 +239,7 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
         catch (Exception e)
         {
             String msg = String.format("Demo ======>: 登录用户名：%s, 登录失败: %s", username, e.getMessage());
-            log.error(msg, e);
+            log.error(msg);
             throw new UserNotExistException(ErrorCodeEnum.QUERY_USER_INFO_ERROR, e, username);
         }
     }
@@ -639,10 +640,6 @@ new Thread(() -> {
 | ums.oauth.baidu.providerId                                   | String         | baidu                | 第三方服务商 id                                              |                       |
 | ums.oauth.baidu.clientId                                     | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.baidu.clientSecret                                 | String         |                      | `client Secret`                                              |                       |
-| **csdn**: 注意：该平台已不支持                               |                |                      |                                                              |                       |
-| ums.oauth.csdn.providerId                                    | String         | csdn                 | 第三方服务商 id                                              |                       |
-| ums.oauth.csdn.clientId                                      | String         |                      | `client Id`                                                  |                       |
-| ums.oauth.csdn.clientSecret                                  | String         |                      | `client Secret`                                              |                       |
 | **coding**                                                   |                |                      |                                                              |                       |
 | ums.oauth.coding.providerId                                  | String         | coding               | 第三方服务商 id                                              |                       |
 | ums.oauth.coding.clientId                                    | String         |                      | `client Id`                                                  |                       |
@@ -752,10 +749,6 @@ new Thread(() -> {
 | ums.oauth.twitter.providerId                                 | String         | twitter              | 第三方服务商 id                                              |                       |
 | ums.oauth.twitter.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.twitter.clientSecret                               | String         |                      | `client Secret`                                              |                       |
-| **feishu**: 注意：该平台暂时存在问题，请不要使用。待修复完成后会重新发版by yadong.zhang |                |                      |                                                              |                       |
-| ums.oauth.feishu.providerId                                  | String         | feishu               | 第三方服务商 id                                              |                       |
-| ums.oauth.feishu.clientId                                    | String         |                      | `client Id`                                                  |                       |
-| ums.oauth.feishu.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **jd**                                                       |                |                      |                                                              |                       |
 | ums.oauth.jd.providerId                                      | String         | jd                   | 第三方服务商 id                                              |                       |
 | ums.oauth.jd.clientId                                        | String         |                      | `client Id`                                                  |                       |

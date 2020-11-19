@@ -28,15 +28,19 @@ import me.zhyd.oauth.cache.AuthDefaultStateCache;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
+import me.zhyd.oauth.request.*;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cglib.proxy.Enhancer;
+import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateRedisCache;
 import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateSessionCache;
 import top.dcenter.ums.security.core.oauth.justauth.enums.StateCacheType;
-import top.dcenter.ums.security.core.oauth.justauth.request.*;
+import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
+import top.dcenter.ums.security.core.oauth.justauth.request.AuthDefaultRequestAdapter;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 import top.dcenter.ums.security.core.oauth.properties.BaseAuth2Properties;
 import top.dcenter.ums.security.core.oauth.properties.JustAuthProperties;
@@ -183,7 +187,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
      *
      * @return {@link Auth2DefaultRequest}
      */
-    @SuppressWarnings({"AlibabaMethodTooLong", "deprecation"})
+    @SuppressWarnings({"AlibabaMethodTooLong"})
     private Auth2DefaultRequest getAuth2DefaultRequest(@NonNull AuthDefaultSource source,
                                                        @NonNull Auth2Properties auth2Properties,
                                                        @NonNull AuthStateCache authStateCache) throws IllegalAccessException {
@@ -201,88 +205,132 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
         switch (source) {
             case GITHUB:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
-                return new Auth2GithubRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthGithubRequest.class);
             case WEIBO:
-                return new Auth2WeiboRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthWeiboRequest.class);
             case GITEE:
-                return new Auth2GiteeRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthGiteeRequest.class);
             case DINGTALK:
-                return new Auth2DingTalkRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthDingTalkRequest.class);
             case BAIDU:
-                return new Auth2BaiduRequest(config, authStateCache);
-            case CSDN:
-                return new Auth2CsdnRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthBaiduRequest.class);
             case CODING:
                 config.setCodingGroupName(auth2Properties.getCoding().getCodingGroupName());
-                return new Auth2CodingRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthCodingRequest.class);
             case OSCHINA:
-                return new Auth2OschinaRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthOschinaRequest.class);
             case ALIPAY:
                 config.setAlipayPublicKey(auth2Properties.getAlipay().getAlipayPublicKey());
-                return new Auth2AlipayRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthAlipayRequest.class);
             case QQ:
                 config.setUnionId(auth2Properties.getQq().getUnionId());
-                return new Auth2QqRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthQqRequest.class);
             case WECHAT_OPEN:
-                return new Auth2WeChatOpenRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthWeChatOpenRequest.class);
             case WECHAT_MP:
-                return new Auth2WeChatMpRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthWeChatMpRequest.class);
             case TAOBAO:
-                return new Auth2TaobaoRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthTaobaoRequest.class);
             case GOOGLE:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
-                return new Auth2GoogleRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthGoogleRequest.class);
             case FACEBOOK:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
-                return new Auth2FacebookRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthFacebookRequest.class);
             case DOUYIN:
-                return new Auth2DouyinRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthDouyinRequest.class);
             case LINKEDIN:
-                return new Auth2LinkedinRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthLinkedinRequest.class);
             case MICROSOFT:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
-                return new Auth2MicrosoftRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthMicrosoftRequest.class);
             case MI:
-                return new Auth2MiRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthMiRequest.class);
             case TOUTIAO:
-                return new Auth2ToutiaoRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthToutiaoRequest.class);
             case TEAMBITION:
-                return new Auth2TeambitionRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthTeambitionRequest.class);
             case RENREN:
-                return new Auth2RenrenRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthRenrenRequest.class);
             case PINTEREST:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
-                return new Auth2PinterestRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthPinterestRequest.class);
             case STACK_OVERFLOW:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
                 config.setStackOverflowKey(auth2Properties.getStackOverflow().getStackOverflowKey());
-                return new Auth2StackOverflowRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthStackOverflowRequest.class);
             case HUAWEI:
-                return new Auth2HuaweiRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthHuaweiRequest.class);
             case WECHAT_ENTERPRISE:
                 config.setAgentId(auth2Properties.getWechatEnterprise().getAgentId());
-                return new Auth2WeChatEnterpriseRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthWeChatEnterpriseRequest.class);
             case KUJIALE:
-                return new Auth2KujialeRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthKujialeRequest.class);
             case GITLAB:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
-                return new Auth2GitlabRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthGitlabRequest.class);
             case MEITUAN:
-                return new Auth2MeituanRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthMeituanRequest.class);
             case ELEME:
-                return new Auth2ElemeRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthElemeRequest.class);
             case TWITTER:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
-                return new Auth2TwitterRequest(config, authStateCache);
-            case FEISHU:
-                return new Auth2FeishuRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthTwitterRequest.class);
             case JD:
-                return new Auth2JdRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthJdRequest.class);
             case ALIYUN:
-                return new Auth2AliyunRequest(config, authStateCache);
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache, AuthAliyunRequest.class);
             default:
                 return null;
         }
+    }
+
+    /**
+     * 获取 {@link AuthDefaultRequest} 的适配器
+     * @param config                {@link AuthDefaultRequest} 的 {@link AuthConfig}
+     * @param source                {@link AuthDefaultRequest} 的 {@link AuthConfig}
+     * @param authStateCache        {@link AuthDefaultRequest} 的 {@link AuthStateCache}
+     * @param clz                   {@link AuthDefaultRequest} 子类的 Class
+     * @return                      {@link AuthDefaultRequest} 相对应的适配器
+     */
+    private AuthDefaultRequestAdapter getAuthDefaultRequestAdapter(@NonNull AuthConfig config,
+                                                                   @NonNull AuthDefaultSource source,
+                                                                   @NonNull AuthStateCache authStateCache,
+                                                                   @NonNull Class<? extends AuthDefaultRequest> clz) {
+        final AuthDefaultRequestAdapter adapter = new AuthDefaultRequestAdapter(config, source, authStateCache);
+        Class<?>[] argumentTypes = new Class[]{AuthConfig.class, AuthStateCache.class};
+        Object[] arguments = new Object[]{config, authStateCache};
+        final AuthDefaultRequest proxyObject = createProxy(clz, argumentTypes, arguments, adapter);
+        adapter.setAuthDefaultRequest(proxyObject);
+        return adapter;
+    }
+
+    /**
+     * 创建 {@code targetClass} 的代理对象, 主要是替换 {@link AuthDefaultRequest} 的 {@code getRealState(state)} 方法
+     * 为 {@link AuthDefaultRequestAdapter#getRealState(String)} 方法.
+     * @param targetClass       代理的目标对象 Class
+     * @param argumentTypes     目标对象构造参数类型数组
+     * @param arguments         目标对象构造参数值数组与 argumentTypes 一一对应
+     * @param adapter           {@link AuthDefaultRequestAdapter}
+     * @return                  targetClass 的代理对象
+     */
+    private AuthDefaultRequest createProxy(Class<? extends AuthDefaultRequest> targetClass,
+                                           Class<?>[] argumentTypes,
+                                           Object[] arguments,
+                                           AuthDefaultRequestAdapter adapter) {
+
+        final Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(targetClass);
+        enhancer.setCallback((MethodInterceptor) (target, method, args, methodProxy) -> {
+            // 替换 AuthDefaultRequest 的 getRealState(state) 方法为 AuthDefaultRequestAdapter 的 getRealState(state) 方法
+            if (target instanceof AuthDefaultRequest && !(target instanceof AuthDefaultRequestAdapter)
+                    && "getRealState".equals(method.getName())) {
+                return adapter.getRealState((String) args[0]);
+            }
+            return methodProxy.invokeSuper(target, args);
+        });
+
+        return (AuthDefaultRequest) enhancer.create(argumentTypes, arguments);
     }
 
     /**

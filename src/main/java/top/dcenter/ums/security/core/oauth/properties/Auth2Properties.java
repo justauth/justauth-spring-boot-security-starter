@@ -72,10 +72,6 @@ public class Auth2Properties {
      */
     private final BaiduProperties baidu = new BaiduProperties();
     /**
-     * 字段名称与其所代表的第三方的 providerId 相同. 注意：该平台已不支持
-     */
-    private final CsdnProperties csdn = new CsdnProperties();
-    /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     private final CodingProperties coding = new CodingProperties();
@@ -175,10 +171,6 @@ public class Auth2Properties {
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     private final TwitterProperties twitter = new TwitterProperties();
-    /**
-     * 字段名称与其所代表的第三方的 providerId 相同. 注意：该平台暂时存在问题，请不要使用。待修复完成后会重新发版by yadong.zhang
-     */
-    private final FeishuProperties feishu = new FeishuProperties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
