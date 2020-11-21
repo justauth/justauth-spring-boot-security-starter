@@ -1,3 +1,8 @@
+## 1.1.3
+### Fixes and Improvements:
+1. 优化: Auth2RequestHolder.getAuth2DefaultRequest(..) 与 Auth2RequestHolder.getProviderIdBySource(..) 方法.
+2. 优化: 解决 log 中异常信息不详细.
+
 ## 1.1.2
 ### Fixes and Improvements:
 1. 改进: 通过适配器模式对 AuthDefaultRequest 子类进行适配取代对 AuthDefaultRequest 子类的逐个继承的方式. 因 CSDN 与 FEISHU 不支持第三方授权登录故删除此第三方的支持.
