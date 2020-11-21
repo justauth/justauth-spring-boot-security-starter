@@ -226,8 +226,10 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
             case GITHUB: case GOOGLE: case FACEBOOK: case MICROSOFT: case PINTEREST: case GITLAB: case TWITTER:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
                 break;
-            default:
+            case CSDN: case FEISHU:
                 isNotSupport = true;
+                break;
+            default:
         }
 
         if (isNotSupport) {
