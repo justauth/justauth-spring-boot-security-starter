@@ -1,3 +1,7 @@
+## 1.1.4
+### Fixes and Improvements:
+1. 修复: 不能加载部分第三方的 AuthDefaultRequest 的 bug
+
 ## 1.1.3
 ### Fixes and Improvements:
 1. 优化: Auth2RequestHolder.getAuth2DefaultRequest(..) 与 Auth2RequestHolder.getProviderIdBySource(..) 方法.
