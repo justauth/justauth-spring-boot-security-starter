@@ -238,9 +238,9 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
 
     /**
      * 获取 {@link AuthDefaultRequest} 的适配器
-     * @param config                {@link AuthDefaultRequest} 的 {@link AuthConfig}
-     * @param source                {@link AuthDefaultRequest} 的 {@link AuthConfig}
-     * @param authStateCache        {@link AuthDefaultRequest} 的 {@link AuthStateCache}
+     * @param config                {@link AuthConfig}
+     * @param source                {@link AuthDefaultSource}
+     * @param authStateCache        {@link AuthStateCache}
      * @return                      {@link AuthDefaultRequest} 相对应的适配器
      */
     @NonNull
@@ -430,9 +430,9 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
     }
 
     /**
-     * 根据传入的字符串数组转换为类名格式的字符串
+     * 根据传入的字符串数组转换为类名格式的字符串, 另外 DingTalk -> DingTalk, WECHAT -> WeChat.
      * @param splits    字符串数组, 例如: [WECHAT, OPEN]
-     * @return  如传入的数组是: [WECHAT, OPEN] 那么返回 AuthWechatOpenRequest
+     * @return  返回类名格式的字符串, 如传入的数组是: [STACK, OVERFLOW] 那么返回 AuthStackOverflowRequest
      */
     @NonNull
     private static String toAuthRequestClassName(String[] splits) {
@@ -460,9 +460,9 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
     }
 
     /**
-     * 根据传入的字符串数组转换为类名格式的字符串
+     * 根据传入的字符串数组转换为驼峰格式的字符串
      * @param splits    字符串数组, 例如: [WECHAT, OPEN]
-     * @return  如传入的数组是: [WECHAT, OPEN] 那么返回 AuthWechatOpenRequest
+     * @return  驼峰格式的字符串, 如传入的数组是: [WECHAT, OPEN] 那么返回 wechatOpen
      */
     @NonNull
     private static String toProviderId(String[] splits) {
