@@ -117,9 +117,8 @@ class RedisHashCacheWriter implements IRedisHashCacheWriter {
 
 			if (shouldExpireWithin(ttl)) {
 				connection.multi();
-				connection.expire(key, ttl.getSeconds());
 				connection.hSet(key, field, value);
-				connection.expire(key, ttl.getSeconds());
+				connection.pExpire(key, ttl.toMillis());
 				connection.exec();
 			} else {
 				connection.hSet(key, field, value);
@@ -255,7 +254,7 @@ class RedisHashCacheWriter implements IRedisHashCacheWriter {
 				}
 
 				byte[][] keys = ofNullable(connection.keys(pattern)).orElse(Collections.emptySet())
-						.toArray(new byte[0][]);
+				                                                    .toArray(new byte[0][]);
 
 				if (keys.length > 0) {
 					connection.del(keys);
@@ -354,7 +353,7 @@ class RedisHashCacheWriter implements IRedisHashCacheWriter {
 			Thread.currentThread().interrupt();
 
 			throw new PessimisticLockingFailureException(String.format("Interrupted while waiting to unlock cache %s", name),
-					ex);
+			                                             ex);
 		}
 	}
 
