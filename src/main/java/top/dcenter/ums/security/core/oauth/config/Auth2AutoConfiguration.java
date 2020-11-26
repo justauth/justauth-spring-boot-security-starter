@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -41,8 +40,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.util.StringUtils;
-import org.springframework.web.context.support.GenericWebApplicationContext;
-import top.dcenter.ums.security.core.oauth.job.RefreshAccessTokenJobHandler;
+import org.springframework.web.context.WebApplicationContext;
 import top.dcenter.ums.security.core.oauth.job.RefreshTokenJob;
 import top.dcenter.ums.security.core.oauth.job.RefreshTokenJobImpl;
 import top.dcenter.ums.security.core.oauth.justauth.Auth2RequestHolder;
@@ -68,7 +66,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.QUERY_DATABASE_NAME_SQL;
 import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.QUERY_TABLE_EXIST_SQL_RESULT_SET_COLUMN_INDEX;
@@ -104,13 +101,6 @@ public class Auth2AutoConfiguration implements InitializingBean, ApplicationCont
                                            @Qualifier("refreshTokenTaskExecutor") ExecutorService refreshTokenTaskExecutor) {
         return new RefreshTokenJobImpl(usersConnectionRepository, usersConnectionTokenRepository,
                                        auth2Properties, refreshTokenTaskExecutor);
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-refresh-token-job", havingValue = "true")
-    public RefreshAccessTokenJobHandler refreshAccessTokenJobHandler(@Qualifier("jobTaskScheduledExecutor") ScheduledExecutorService jobTaskScheduledExecutor,
-                                                                     Auth2Properties auth2Properties) {
-        return new RefreshAccessTokenJobHandler(auth2Properties, jobTaskScheduledExecutor);
     }
 
     @Bean
@@ -188,7 +178,7 @@ public class Auth2AutoConfiguration implements InitializingBean, ApplicationCont
                 }
                 catch (Exception e)
                 {
-                    contextPath = Objects.requireNonNull(((GenericWebApplicationContext) this.applicationContext).getServletContext()).getContextPath();
+                    contextPath = Objects.requireNonNull(((WebApplicationContext) this.applicationContext).getServletContext()).getContextPath();
                 }
                 field.set(null, contextPath);
             }

@@ -30,21 +30,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.NonNull;
-import org.springframework.scheduling.annotation.Scheduled;
 import top.dcenter.ums.security.core.oauth.config.Auth2AutoConfiguration;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 功能: <br>
- * 1. 给 targetClass 的 methodName 方法上的 @Scheduled 的 cron 重新赋值为 cronValue<br>
+ * 1. 通过 ObjectMapper 转换对象到 JSON 字符串<br>
  * 2. 获取 servletContextPath<br>
  * @author YongWu zheng
  * @version V1.0  Created by 2020/9/17 18:32
@@ -79,9 +72,9 @@ public class MvcUtil {
     }
 
     /**
-     * 通过 {@link ObjectMapper} 转换对象到 JSONString, 主要目的用于日志输出对象字符串时使用, 减少 try catch 嵌套, 转换失败记录日志并返回空字符串.
+     * 通过 {@link ObjectMapper} 转换对象到 JSON 字符串, 主要目的用于日志输出对象字符串时使用, 减少 try catch 嵌套, 转换失败记录日志并返回空字符串.
      * @param obj   Object
-     * @return  返回 JSONString, 转换失败记录日志并返回空字符串.
+     * @return  返回 JSON 字符串, 转换失败记录日志并返回空字符串.
      */
     public static String toJsonString(Object obj) {
         try
@@ -93,45 +86,6 @@ public class MvcUtil {
             String msg = String.format("Object2JsonString 失败: %s, Object=%s", e.getMessage(), obj);
             log.error(msg, e);
             return "";
-        }
-    }
-
-    /**
-     * 给 targetClass 的 methodName 方法上的 @Scheduled 的 cron 重新赋值为 cronValue
-     *
-     * @param methodName            method name
-     * @param cronValue             corn value
-     * @param targetClass           method 的 class
-     * @param parameterTypes        the parameter array
-     * @throws Exception    Exception
-     */
-    @SuppressWarnings("unchecked")
-    public static void setScheduledCron(@NonNull String methodName, @NonNull String cronValue,
-                                        @NonNull Class<?> targetClass, Class<?>... parameterTypes) throws Exception {
-
-        Method method = targetClass.getDeclaredMethod(methodName, parameterTypes);
-        method.setAccessible(true);
-
-        // 获取 annotationClass 注解
-        final Scheduled annotation = method.getDeclaredAnnotation(Scheduled.class);
-        if (null != annotation) {
-            // 获取代理处理器
-            InvocationHandler invocationHandler = Proxy.getInvocationHandler(annotation);
-            // 获取私有 memberValues 属性
-            Field memberValuesField = invocationHandler.getClass().getDeclaredField("memberValues");
-            memberValuesField.setAccessible(true);
-            // 获取实例的属性map
-            Map<String, Object> memberValuesValue = (Map<String, Object>) memberValuesField.get(invocationHandler);
-            // 修改属性值
-            memberValuesValue.put("cron", cronValue);
-        }
-        else
-        {
-            String msg = String.format("设置 %s#%s() 方法的 cron 映射值时发生错误.",
-                                       targetClass.getName(),
-                                       methodName);
-            log.error(msg);
-            throw new RuntimeException(msg);
         }
     }
 

@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 public class ExecutorProperties {
 
     /**
+     * https://docs.spring.io/spring-boot/docs/2.4.0-SNAPSHOT/reference/html/spring-boot-features.html#boot-features-task-execution-scheduling
      * 启动第三方授权登录用户的 accessToken 的定时任务时的 Executor 属性,<br>
      * 注意: 需要根据实际生产环境进行优化
      */
