@@ -29,9 +29,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import top.dcenter.ums.security.core.executor.properties.ExecutorProperties;
 
 import java.util.Collection;
@@ -50,8 +47,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"unused"})
 @Configuration
 @AutoConfigureAfter(value = {ExecutorPropertiesAutoConfiguration.class})
-@EnableScheduling
-public class ExecutorAutoConfiguration implements SchedulingConfigurer, DisposableBean {
+public class ExecutorAutoConfiguration implements DisposableBean {
 
     private final ExecutorProperties executorProperties;
     private ScheduledExecutorService jobTaskScheduledExecutor;
@@ -60,11 +56,6 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
 
     public ExecutorAutoConfiguration(ExecutorProperties executorProperties) {
         this.executorProperties = executorProperties;
-    }
-
-    @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        taskRegistrar.setScheduler(jobTaskScheduledExecutor);
     }
 
     @Bean()
@@ -191,9 +182,13 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         }
     }
 
+    /**
+     * 实现 基于 SLF4J MDC 机制的日志链路追踪功能. <br>
+     * {@link MdcScheduledThreadPoolTaskExecutor#remove(Runnable)} 类内部调用有效, 通过实例调用此方法失效
+     */
     private static class MdcScheduledThreadPoolTaskExecutor extends ScheduledThreadPoolExecutor {
 
-        Map<Object, Object> taskObjectMap = new ConcurrentHashMap<>();
+        ThreadLocal<Boolean> isMdcInit = new ThreadLocal<>();
 
         public MdcScheduledThreadPoolTaskExecutor(int corePoolSize) {
             super(corePoolSize);
@@ -211,14 +206,12 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
             super(corePoolSize, threadFactory, handler);
         }
 
-
         @Override
         @NonNull
         public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Runnable r = () -> run(command, context);
-            taskObjectMap.put(command, r);
+            final Runnable r = decorateRunnable(command, context);
             return super.schedule(r, delay, unit);
         }
 
@@ -227,8 +220,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Callable<V> c = () -> call(callable, context);
-            taskObjectMap.put(callable, c);
+            final Callable<V> c = decorateCallable(callable, context);
             return super.schedule(c, delay, unit);
         }
 
@@ -237,8 +229,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Runnable r = () -> run(command, context);
-            taskObjectMap.put(command, r);
+            final Runnable r = decorateRunnable(command, context);
             return super.scheduleAtFixedRate(r, initialDelay, period, unit);
         }
 
@@ -247,8 +238,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Runnable r = () -> run(command, context);
-            taskObjectMap.put(command, r);
+            final Runnable r = decorateRunnable(command, context);
             return super.scheduleWithFixedDelay(r, initialDelay, delay, unit);
         }
 
@@ -256,8 +246,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public void execute(Runnable command) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Runnable r = () -> run(command, context);
-            taskObjectMap.put(command, r);
+            final Runnable r = decorateRunnable(command, context);
             super.execute(r);
         }
 
@@ -266,8 +255,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public Future<?> submit(Runnable task) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Runnable r = () -> run(task, context);
-            taskObjectMap.put(task, r);
+            final Runnable r = decorateRunnable(task, context);
             return super.submit(r);
         }
 
@@ -276,8 +264,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> Future<T> submit(Runnable task, T result) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Runnable r = () -> run(task, context);
-            taskObjectMap.put(task, r);
+            final Runnable r = decorateRunnable(task, context);
             return super.submit(r, result);
         }
 
@@ -286,8 +273,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> Future<T> submit(Callable<T> task) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Callable<T> c = () -> call(task, context);
-            taskObjectMap.put(task, c);
+            final Callable<T> c = decorateCallable(task, context);
             return super.submit(c);
         }
 
@@ -296,7 +282,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            return super.invokeAny(tasks.stream().map(task -> convert(task, context)).collect(Collectors.toList()));
+            return super.invokeAny(tasks.stream().map(task -> decorateCallable(task, context)).collect(Collectors.toList()));
 
         }
 
@@ -304,7 +290,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            return super.invokeAny(tasks.stream().map(task -> convert(task, context)).collect(Collectors.toList()),
+            return super.invokeAny(tasks.stream().map(task -> decorateCallable(task, context)).collect(Collectors.toList()),
                                    timeout, unit);
         }
 
@@ -313,7 +299,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            return super.invokeAll(tasks.stream().map(task -> convert(task, context)).collect(Collectors.toList()));
+            return super.invokeAll(tasks.stream().map(task -> decorateCallable(task, context)).collect(Collectors.toList()));
         }
 
         @Override
@@ -321,18 +307,8 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            return super.invokeAll(tasks.stream().map(task -> convert(task, context)).collect(Collectors.toList()),
+            return super.invokeAll(tasks.stream().map(task -> decorateCallable(task, context)).collect(Collectors.toList()),
                                    timeout, unit);
-        }
-
-        @Override
-        public boolean remove(Runnable task) {
-            try {
-                return super.remove((Runnable) taskObjectMap.get(task));
-            }
-            finally {
-                taskObjectMap.remove(task);
-            }
         }
 
         /**
@@ -343,12 +319,13 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
          */
         private void run(Runnable runnable, Map<String, String> context) {
             // 设置 MDC 内容给子线程
-            MDC.setContextMap(context);
+            if (context != null) {
+                MDC.setContextMap(context);
+            }
             try {
                 runnable.run();
             }
             finally {
-                taskObjectMap.remove(runnable);
                 // 清空 MDC 内容
                 MDC.clear();
             }
@@ -362,29 +339,34 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
          */
         private <V> V call(Callable<V> task, Map<String, String> context) throws Exception {
             // 设置 MDC 内容给子线程
-            MDC.setContextMap(context);
+            if (context != null) {
+                MDC.setContextMap(context);
+            }
             try {
                 return task.call();
             }
             finally {
-                taskObjectMap.remove(task);
                 // 清空 MDC 内容
                 MDC.clear();
             }
         }
 
-        private <V> Callable<V> convert(Callable<V> task, Map<String, String> context) {
-            final Callable<V> t = () -> call(task, context);
-            taskObjectMap.put(task, t);
-            return t;
+        private Runnable decorateRunnable(Runnable runnable, Map<String, String> context) {
+            return () -> run(runnable, context);
+        }
+
+        private <V> Callable<V> decorateCallable(Callable<V> task, Map<String, String> context) {
+            return () -> call(task, context);
         }
 
     }
 
 
+    /**
+     * 实现 基于 SLF4J MDC 机制的日志链路追踪功能. <br>
+     * {@link MdcThreadPoolTaskExecutor#remove(Runnable)} 类内部调用有效, 通过实例调用此方法失效
+     */
     private static class MdcThreadPoolTaskExecutor extends ThreadPoolExecutor {
-
-        Map<Object, Object> taskObjectMap = new ConcurrentHashMap<>();
 
         public MdcThreadPoolTaskExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
             super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
@@ -406,8 +388,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public void execute(@NonNull Runnable runnable) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Runnable r = () -> run(runnable, context);
-            taskObjectMap.put(runnable, r);
+            final Runnable r = decorateRunnable(runnable, context);
             super.execute(r);
         }
 
@@ -416,8 +397,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public Future<?> submit(@NonNull Runnable task) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Runnable r = () -> run(task, context);
-            taskObjectMap.put(task, r);
+            final Runnable r = decorateRunnable(task, context);
             return super.submit(r);
         }
 
@@ -426,8 +406,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> Future<T> submit(@NonNull Callable<T> task) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Callable<T> c = () -> call(task, context);
-            taskObjectMap.put(task, c);
+            final Callable<T> c = decorateCallable(task, context);
             return super.submit(c);
         }
 
@@ -436,27 +415,8 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> Future<T> submit(Runnable task, T result) {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Runnable r = () -> run(task, context);
-            taskObjectMap.put(task, r);
+            final Runnable r = decorateRunnable(task, context);
             return super.submit(r, result);
-        }
-
-        @Override
-        protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
-            // 获取父线程 MDC 中的内容
-            final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Runnable r = () -> run(runnable, context);
-            taskObjectMap.put(runnable, r);
-            return super.newTaskFor(r, value);
-        }
-
-        @Override
-        protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
-            // 获取父线程 MDC 中的内容
-            final Map<String, String> context = MDC.getCopyOfContextMap();
-            final Callable<T> c = () -> call(callable, context);
-            taskObjectMap.put(callable, c);
-            return super.newTaskFor(c);
         }
 
         @Override
@@ -464,14 +424,14 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            return super.invokeAny(tasks.stream().map(task -> convert(task, context)).collect(Collectors.toList()));
+            return super.invokeAny(tasks.stream().map(task -> decorateCallable(task, context)).collect(Collectors.toList()));
         }
 
         @Override
         public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            return super.invokeAny(tasks.stream().map(task -> convert(task, context)).collect(Collectors.toList()),
+            return super.invokeAny(tasks.stream().map(task -> decorateCallable(task, context)).collect(Collectors.toList()),
                                    timeout, unit);
         }
 
@@ -480,7 +440,7 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            return super.invokeAll(tasks.stream().map(task -> convert(task, context)).collect(Collectors.toList()));
+            return super.invokeAll(tasks.stream().map(task -> decorateCallable(task, context)).collect(Collectors.toList()));
         }
 
         @Override
@@ -488,18 +448,8 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
         public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
             // 获取父线程 MDC 中的内容
             final Map<String, String> context = MDC.getCopyOfContextMap();
-            return super.invokeAll(tasks.stream().map(task -> convert(task, context)).collect(Collectors.toList()),
+            return super.invokeAll(tasks.stream().map(task -> decorateCallable(task, context)).collect(Collectors.toList()),
                                    timeout, unit);
-        }
-
-        @Override
-        public boolean remove(Runnable task) {
-            try {
-                return super.remove((Runnable) taskObjectMap.get(task));
-            }
-            finally {
-                taskObjectMap.remove(task);
-            }
         }
 
         /**
@@ -510,12 +460,13 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
          */
         private void run(Runnable runnable, Map<String, String> context) {
             // 设置 MDC 内容给子线程
-            MDC.setContextMap(context);
+            if (context != null) {
+                MDC.setContextMap(context);
+            }
             try {
                 runnable.run();
             }
             finally {
-                taskObjectMap.remove(runnable);
                 // 清空 MDC 内容
                 MDC.clear();
             }
@@ -529,21 +480,24 @@ public class ExecutorAutoConfiguration implements SchedulingConfigurer, Disposab
          */
         private <V> V call(Callable<V> task, Map<String, String> context) throws Exception {
             // 设置 MDC 内容给子线程
-            MDC.setContextMap(context);
+            if (context != null) {
+                MDC.setContextMap(context);
+            }
             try {
                 return task.call();
             }
             finally {
-                taskObjectMap.remove(task);
                 // 清空 MDC 内容
                 MDC.clear();
             }
         }
 
-        private <V> Callable<V> convert(Callable<V> task, Map<String, String> context) {
-            final Callable<V> t = () -> call(task, context);
-            taskObjectMap.put(task, t);
-            return t;
+        private Runnable decorateRunnable(Runnable runnable, Map<String, String> context) {
+            return () -> run(runnable, context);
+        }
+
+        private <V> Callable<V> decorateCallable(Callable<V> task, Map<String, String> context) {
+            return () -> call(task, context);
         }
     }
 
