@@ -25,6 +25,8 @@ package top.dcenter.ums.security.core.mdc.properties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import top.dcenter.ums.security.core.mdc.MdcIdType;
+import top.dcenter.ums.security.core.mdc.MdcIdGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -48,6 +50,14 @@ public class MdcProperties {
     @Setter
     @Getter
     private Boolean enable = true;
+
+    /**
+     * 基于 SLF4J MDC 机制实现日志链路追踪 id 的类型, 默认为 uuid.<br>
+     * 当需要自定义 id 时, type = {@link MdcIdType#CUSTOMIZE_ID}, 再实现 {@link MdcIdGenerator#getMdcId()} 方法, 注入 IOC 容器即可.
+     */
+    @Setter
+    @Getter
+    private MdcIdType type = MdcIdType.UUID;
 
     /**
      * 需要添加 MDC 日志的链路追踪的 url, 默认: /**, 并在日志文件的 pattern 中添加 %X{MDC_TRACE_ID}

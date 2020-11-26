@@ -20,20 +20,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package top.dcenter.ums.security.core.mdc.config;
+package top.dcenter.ums.security.core.mdc;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import top.dcenter.ums.security.core.mdc.properties.MdcProperties;
+import me.zhyd.oauth.utils.UuidUtils;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 /**
- * 基于 SLF4J MDC 机制实现日志的链路追踪属性配置
+ * 基于 SLF4J MDC 机制实现日志链路追踪 id 的类型枚举
  * @author YongWu zheng
- * @version V2.0  Created by 2020/10/31 20:25
+ * @version V2.0  Created by 2020.11.26 20:25
  */
-@Configuration()
-@Order(98)
-@EnableConfigurationProperties({MdcProperties.class})
-public class MdcPropertiesAutoConfiguration {
+public enum MdcIdType implements MdcIdGenerator {
+    /**
+     * UUID
+     */
+    UUID {
+        @Override
+        public String getMdcId() {
+            return UuidUtils.getUUID();
+        }
+    },
+    /**
+     * 线程 id
+     */
+    THREAD_ID {
+        @Override
+        public String getMdcId() {
+            return Thread.currentThread().getId() + "";
+        }
+    },
+    /**
+     * session id
+     */
+    SESSION_ID {
+        @Override
+        public String getMdcId() {
+            RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+            if (requestAttributes == null) {
+                return UuidUtils.getUUID();
+            }
+            return requestAttributes.getSessionId();
+        }
+    },
+    /**
+     * 自定义 id
+     */
+    CUSTOMIZE_ID
+
 }

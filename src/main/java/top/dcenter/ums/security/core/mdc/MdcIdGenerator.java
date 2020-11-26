@@ -20,20 +20,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package top.dcenter.ums.security.core.mdc.config;
+package top.dcenter.ums.security.core.mdc;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import top.dcenter.ums.security.core.mdc.properties.MdcProperties;
+import me.zhyd.oauth.utils.UuidUtils;
 
 /**
- * 基于 SLF4J MDC 机制实现日志的链路追踪属性配置
+ * 自定义 MDC 的日志链路追踪 Id, 接口, 当 ums.mdc.type = {@link MdcIdType#CUSTOMIZE_ID} 时会调用此接口 {@link #getMdcId()}.
  * @author YongWu zheng
- * @version V2.0  Created by 2020/10/31 20:25
+ * @version V2.0  Created by 2020.11.26 20:32
  */
-@Configuration()
-@Order(98)
-@EnableConfigurationProperties({MdcProperties.class})
-public class MdcPropertiesAutoConfiguration {
+public interface MdcIdGenerator {
+    /**
+     * 自定义 MDC 的日志链路追踪 Id, 默认为 uuid, , 当 ums.mdc.type = {@link MdcIdType#CUSTOMIZE_ID} 时会调用此接口.
+     * @return  返回自定义的日志链路追踪
+     */
+    default String getMdcId() {
+        return UuidUtils.getUUID();
+    }
 }

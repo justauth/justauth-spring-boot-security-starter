@@ -22,12 +22,14 @@
  */
 package top.dcenter.ums.security.core.mdc.filter;
 
-import me.zhyd.oauth.utils.UuidUtils;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UrlPathHelper;
+import top.dcenter.ums.security.core.mdc.MdcIdType;
+import top.dcenter.ums.security.core.mdc.MdcIdGenerator;
 import top.dcenter.ums.security.core.mdc.properties.MdcProperties;
 
 import javax.servlet.FilterChain;
@@ -38,8 +40,10 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import static top.dcenter.ums.security.core.mdc.utils.MdcUtil.getMdcId;
+
 /**
- * MDC 机制实现日志的链路追踪: 在输出日志中加上 mdcKey
+ * 基于 SLF4J MDC 机制实现日志链路追踪: 在输出日志中加上 MDC_TRACE_ID
  * @author YongWu zheng
  * @version V2.0  Created by 2020/10/31 18:19
  */
@@ -50,12 +54,18 @@ public class MdcLogFilter extends OncePerRequestFilter {
      */
     public static final String MDC_KEY = "MDC_TRACE_ID";
 
+    @SuppressWarnings("SpringJavaAutowiredMembersInspection")
+    @Autowired(required = false)
+    private MdcIdGenerator mdcIdGenerator;
+
     private final Set<String> includeUrls;
     private final Set<String> excludeUrls;
     private final AntPathMatcher matcher;
     private final UrlPathHelper helper;
+    private final MdcIdType idType;
 
     public MdcLogFilter(MdcProperties mdcProperties) {
+        this.idType = mdcProperties.getType();
         this.matcher = new AntPathMatcher();
         this.includeUrls = new HashSet<>();
         this.excludeUrls = new HashSet<>();
@@ -76,11 +86,11 @@ public class MdcLogFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        if (isMdc(request)) {
-            String token = UuidUtils.getUUID();
+        if (isEnableMdc(request)) {
+            String token = getMdcId(idType, mdcIdGenerator);
             MDC.put(MDC_KEY, token);
             filterChain.doFilter(request, response);
-            MDC.remove(MDC_KEY);
+            MDC.clear();
             return;
         }
 
@@ -88,7 +98,7 @@ public class MdcLogFilter extends OncePerRequestFilter {
 
     }
 
-    private boolean isMdc(HttpServletRequest request) {
+    private boolean isEnableMdc(HttpServletRequest request) {
         final String requestUri = this.helper.getPathWithinApplication(request);
         for (String excludeUrl : this.excludeUrls) {
             if (this.matcher.match(excludeUrl, requestUri)) {
