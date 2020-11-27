@@ -4,7 +4,7 @@
 ![Maven](https://img.shields.io/badge/Maven-3.6.3-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-5.7.27-green.svg)
 ![Redis](https://img.shields.io/badge/Redis-5.0.3-green.svg)
-![SpringBoot](https://img.shields.io/badge/SpringBoot-2.3.5-green.svg)
+![SpringBoot](https://img.shields.io/badge/SpringBoot-2.3.4-green.svg)
 ![SpringSecurity](https://img.shields.io/badge/SpringSecurity-5.4.1-green.svg)
 ![JustAuth](https://img.shields.io/badge/JustAuth-1.15.8-green.svg)
 ![license](https://img.shields.io/badge/license-MIT-yellow.svg)
@@ -20,6 +20,7 @@
 5. 支持基于 SLF4J MDC 机制的日志链路追踪功能.
 
 微信群：UMS 添加微信(z56133)备注(UMS) 
+
 ------
 ## 二、`maven`：
 
@@ -553,6 +554,16 @@ jackson2JsonRedisSerializer.setObjectMapper(om);
     </filter>
 </appender>
 ```
+
+- 自定义 `SLF4J MDC` 机制实现日志链路追踪 id 的类型: 可通过属性 ums.mdc.type 定义:
+```yaml
+# 基于 SLF4J MDC 机制实现日志链路追踪 id 的类型, 默认为 uuid. 当需要自定义 id 时, type = MdcIdType.CUSTOMIZE_ID, 再实现 MdcIdGenerator.getMdcId() 方法, 注入 IOC 容器即可.
+ums:
+  mdc:
+    type: UUID/THREAD_ID/SESSION_ID/CUSTOMIZE_ID
+```
+当 ums.mdc.type = CUSTOMIZE_ID 时 需要实现接口 [MdcIdGenerator](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/core/src/main/java/top/dcenter/ums/security/core/mdc/MdcIdGenerator.java) 并注入 IOC 容器.
+
 - 多线程使用问题: 父线程新建子线程之前调用 `MDC.getCopyOfContextMap()` 方法获取 `MDC context`, 子线程在执行操作前先调用 
 `MDC.setContextMap(context)` 方法将父线程的 `MDC context` 设置到子线程中. ThreadPoolTaskExecutor 的配置请参考 [ScheduleAutoConfiguration](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/core/src/main/java/top/dcenter/ums/security/core/oauth/config/ScheduleAutoConfiguration.java).
 - 多线程传递 MDC context 简单示例:  
@@ -584,6 +595,7 @@ new Thread(() -> {
 | **属性**                                         | **类型**                | **默认值**                             | **描述**                                                     | **可选项**                         |
 | ------------------------------------------------ | ----------------------- | -------------------------------------- | ------------------------------------------------------------ | ---------------------------------- |
 | ums.mdc.enabled | Boolean | true | 是否支持基于 SLF4J MDC 机制日志的链路追踪, 默认: true | true/false     |
+| ums.mdc.type | MdcIdType | UUID | 基于 `SLF4J MDC` 机制实现日志链路追踪 id 的类型, 默认为 uuid. 当需要自定义 id 时, `type = MdcIdType.CUSTOMIZE_ID`, 再实现 `MdcIdGenerator.getMdcId()` 方法, 注入 IOC 容器即可. | `UUID/THREAD_ID/SESSION_ID/CUSTOMIZE_ID`     |
 | ums.mdc.includeUrls | List<String> | /** | 需要添加 MDC 日志的链路追踪的 url, 默认: /**, 并在日志文件的 pattern 中添加 %X{MDC_TRACE_ID} |      |
 | ums.mdc.excludeUrls | List<String> |      | 不需要 MDC 日志的链路追踪的 url, 如: 静态路径 |      |
 

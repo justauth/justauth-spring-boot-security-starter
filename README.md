@@ -4,7 +4,7 @@
 ![Maven](https://img.shields.io/badge/Maven-3.6.3-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-5.7.27-green.svg)
 ![Redis](https://img.shields.io/badge/Redis-5.0.3-green.svg)
-![SpringBoot](https://img.shields.io/badge/SpringBoot-2.3.5-green.svg)
+![SpringBoot](https://img.shields.io/badge/SpringBoot-2.3.4-green.svg)
 ![SpringSecurity](https://img.shields.io/badge/SpringSecurity-5.4.1-green.svg)
 ![JustAuth](https://img.shields.io/badge/JustAuth-1.15.8-green.svg)
 ![license](https://img.shields.io/badge/license-MIT-yellow.svg)
@@ -440,8 +440,8 @@ hello world!<br>
 ```
 ### 5. 访问前端页面
 
-- 浏览器访问 `http://localhost:9090/demo/login.html`, 至此集成了：第三方登录([justAuth-spring-security-starter](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter)); 实现快速开发。
-- 详细配置配置在: [justAuth-security-oauth2-example](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/tree/master/demo/justAuth-security-oauth2-example)
+- 浏览器访问 `http://localhost:9090/demo/login.html`, 至此集成了：第三方登录([justAuth-spring-security-starter](https://github.com/justauth/justauth-spring-boot-security-starter)); 实现快速开发。
+- 详细配置配置在: [justAuth-security-oauth2-example](https://github.com/justauth/justauth-spring-boot-security-starter/tree/master/demo/justAuth-security-oauth2-example)
 ------
 
 ## 四、使用说明:
@@ -457,7 +457,7 @@ hello world!<br>
 ```
 ### 2. `必须实现的接口`    
 
-   - 本地用户服务: [UmsUserDetailsService](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)    
+   - 本地用户服务: [UmsUserDetailsService](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)    
 ### 3. `必须添加 Auth2AutoConfigurer 到 HttpSecurity` 
 
 ```java
@@ -497,28 +497,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 ------
 ## 五、接口说明: 
 
-- [UmsUserDetailsService](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java): `必须实现`
+- [UmsUserDetailsService](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java): `必须实现`
 
-- [Auth2StateCoder](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2StateCoder.java): `用户需要时实现`, 对第三方授权登录流程中的 state 进行自定义编解码. 可以传递必要的信息, 
+- [Auth2StateCoder](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2StateCoder.java): `用户需要时实现`, 对第三方授权登录流程中的 state 进行自定义编解码. 可以传递必要的信息, 
   如: 第三方登录成功的跳转地址等 注意此接口的两个方法必须同时实现对应的编解码逻辑, 实现此接口后注入 IOC 容器即可, 如有前端向后端获取 authorizeUrl
   时向后端传递额外参数 且用作注册时的信息, 需配合 UmsUserDetailsService.registerUser(AuthUser, String, String, String) 方法实现.
 
-- [Auth2UserService](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2UserService.java): 获取第三方用户信息的接口, 一般**不需要用户实现**, 除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+- [Auth2UserService](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2UserService.java): 获取第三方用户信息的接口, 一般**不需要用户实现**, 除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
 
-- [UsersConnectionRepository](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionRepository.java): 第三方授权登录的第三方用户信息增删改查, 绑定与解绑及查询是否绑定与解绑接口, 一般**不需要用户实现**. 
+- [UsersConnectionRepository](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionRepository.java): 第三方授权登录的第三方用户信息增删改查, 绑定与解绑及查询是否绑定与解绑接口, 一般**不需要用户实现**. 
   除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
 
-- [UsersConnectionTokenRepository](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionTokenRepository.java): 第三方授权登录用户 accessToken 信息表增删改查接口, 一般**不需要用户实现**. 
+- [UsersConnectionTokenRepository](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionTokenRepository.java): 第三方授权登录用户 accessToken 信息表增删改查接口, 一般**不需要用户实现**. 
   除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
 
-- [ConnectionService](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/signup/ConnectionService.java): 第三方授权登录用户的注册, 绑定, 更新第三方用户信息与 accessToken 信息的接口, 一般**不需要用户实现**.
+- [ConnectionService](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/signup/ConnectionService.java): 第三方授权登录用户的注册, 绑定, 更新第三方用户信息与 accessToken 信息的接口, 一般**不需要用户实现**.
   除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
 
 ------
 ## 六、`Jackson 序列化与反序列化`
 
 - 添加一些 Authentication 与 UserDetails 子类的反序列化器, 以解决 redis 缓存不能反序列化此类型的问题,
-具体配置 redis 反序列器的配置请看 [RedisCacheAutoConfiguration.getJackson2JsonRedisSerializer()](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/config/RedisCacheAutoConfiguration.java) 方法.
+具体配置 redis 反序列器的配置请看 [RedisCacheAutoConfiguration.getJackson2JsonRedisSerializer()](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/config/RedisCacheAutoConfiguration.java) 方法.
 
 ```java
 // 示例
@@ -528,7 +528,7 @@ ObjectMapper objectMapper = new ObjectMapper();
 objectMapper.registerModules(new CoreJackson2Module(), new WebJackson2Module(), new Auth2Jackson2Module());
 jackson2JsonRedisSerializer.setObjectMapper(om);
 ```
-- 注意: [UmsUserDetailsService](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)
+- 注意: [UmsUserDetailsService](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)
 的注册用户方法返回的 `UserDetails` 的默认实现 `User` 已实现反序列化器, 如果是开发者**自定义的子类**, **需开发者自己实现反序列化器**.
 
 ------
@@ -550,8 +550,18 @@ jackson2JsonRedisSerializer.setObjectMapper(om);
     </filter>
 </appender>
 ```
+- 自定义 `SLF4J MDC` 机制实现日志链路追踪 id 的类型: 可通过属性 ums.mdc.type 定义:
+```yaml
+# 基于 SLF4J MDC 机制实现日志链路追踪 id 的类型, 默认为 uuid. 当需要自定义 id 时, type = MdcIdType.CUSTOMIZE_ID, 再实现 MdcIdGenerator.getMdcId() 方法, 注入 IOC 容器即可.
+ums:
+  mdc:
+    type: UUID/THREAD_ID/SESSION_ID/CUSTOMIZE_ID
+```
+当 ums.mdc.type = CUSTOMIZE_ID 时 需要实现接口 [MdcIdGenerator](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/core/src/main/java/top/dcenter/ums/security/core/mdc/MdcIdGenerator.java) 并注入 IOC 容器.
+
+
 - 多线程使用问题: 父线程新建子线程之前调用 `MDC.getCopyOfContextMap()` 方法获取 `MDC context`, 子线程在执行操作前先调用 
-`MDC.setContextMap(context)` 方法将父线程的 `MDC context` 设置到子线程中. ThreadPoolTaskExecutor 的配置请参考 [ScheduleAutoConfiguration](https://github.com/ZeroOrInfinity/justAuth-spring-security-starter/blob/master/core/src/main/java/top/dcenter/ums/security/core/oauth/config/ScheduleAutoConfiguration.java).
+`MDC.setContextMap(context)` 方法将父线程的 `MDC context` 设置到子线程中. ThreadPoolTaskExecutor 的配置请参考 [ScheduleAutoConfiguration](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/core/src/main/java/top/dcenter/ums/security/core/oauth/config/ScheduleAutoConfiguration.java).
 - 多线程传递 MDC context 简单示例:  
 ```java
 final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -582,6 +592,7 @@ new Thread(() -> {
 | **属性**                                         | **类型**                | **默认值**                             | **描述**                                                     | **可选项**                         |
 | ------------------------------------------------ | ----------------------- | -------------------------------------- | ------------------------------------------------------------ | ---------------------------------- |
 | ums.mdc.enabled | Boolean | true | 是否支持基于 SLF4J MDC 机制日志的链路追踪, 默认: true | true/false     |
+| ums.mdc.type | MdcIdType | UUID | 基于 `SLF4J MDC` 机制实现日志链路追踪 id 的类型, 默认为 uuid. 当需要自定义 id 时, `type = MdcIdType.CUSTOMIZE_ID`, 再实现 `MdcIdGenerator.getMdcId()` 方法, 注入 IOC 容器即可. | `UUID/THREAD_ID/SESSION_ID/CUSTOMIZE_ID`     |
 | ums.mdc.includeUrls | List<String> | /** | 需要添加 MDC 日志的链路追踪的 url, 默认: /**, 并在日志文件的 pattern 中添加 %X{MDC_TRACE_ID} |      |
 | ums.mdc.excludeUrls | List<String> |      | 不需要 MDC 日志的链路追踪的 url, 如: 静态路径 |      |
 
