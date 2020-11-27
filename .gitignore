@@ -59,3 +59,6 @@ target/test-classes/
 /demo/justAuth-security-oauth2-example/target/
 /.idea/
 !/.gitignore
+/src/main/java/top/dcenter/ums/security/core/oauth/repository/jdbc/cache/DefaultCacheStatisticsCollector.java
+/src/main/java/top/dcenter/ums/security/core/oauth/repository/jdbc/cache/MutableCacheStatistics.java
+/src/main/java/top/dcenter/ums/security/core/oauth/repository/jdbc/cache/RedisHashCacheWriter_24.java

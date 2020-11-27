@@ -30,10 +30,19 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.util.StringUtils;
 import top.dcenter.ums.security.core.oauth.config.Auth2AutoConfiguration;
+import top.dcenter.ums.security.core.oauth.consts.SecurityConstants;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.HEADER_ACCEPT;
 
 /**
  * 功能: <br>
@@ -86,6 +95,41 @@ public class MvcUtil {
             String msg = String.format("Object2JsonString 失败: %s, Object=%s", e.getMessage(), obj);
             log.error(msg, e);
             return "";
+        }
+    }
+
+    public static final String HEADER_X_REQUESTED_WITH_NAME = "X-Requested-With";
+    public static final String X_REQUESTED_WITH = "XMLHttpRequest";
+
+    /**
+     * 判断是否为 ajax 请求或者支持接收 json 格式
+     * @param request   request
+     * @return  但为 ajax 请求或者支持接收 json 格式返回 true
+     */
+    public static boolean isAjaxOrJson(HttpServletRequest request) {
+        //判断是否为ajax请求 或 支持接收 json 格式
+        String xRequestedWith = request.getHeader(HEADER_X_REQUESTED_WITH_NAME);
+        String accept = request.getHeader(HEADER_ACCEPT);
+        return (StringUtils.hasText(accept) && accept.contains(MediaType.APPLICATION_JSON_VALUE))
+                || (xRequestedWith != null && xRequestedWith.equalsIgnoreCase(X_REQUESTED_WITH));
+    }
+
+    /**
+     * 向客户端响应 json 格式
+     * @param response  response
+     * @param status    响应的状态码
+     * @param result    相应的结果字符串
+     * @throws IOException IOException
+     */
+    public static void responseWithJson(HttpServletResponse response, int status,
+                                        String result) throws IOException {
+        if (!response.isCommitted()) {
+            response.setStatus(status);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding(SecurityConstants.CHARSET_UTF8);
+            PrintWriter writer = response.getWriter();
+            writer.write(result);
+            writer.flush();
         }
     }
 

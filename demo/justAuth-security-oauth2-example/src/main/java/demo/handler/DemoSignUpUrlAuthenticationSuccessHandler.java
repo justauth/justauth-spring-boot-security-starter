@@ -22,6 +22,7 @@
  */
 package demo.handler;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
@@ -30,11 +31,15 @@ import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
+import top.dcenter.ums.security.core.vo.ResponseResult;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static top.dcenter.ums.security.core.oauth.util.MvcUtil.isAjaxOrJson;
+import static top.dcenter.ums.security.core.oauth.util.MvcUtil.responseWithJson;
+import static top.dcenter.ums.security.core.oauth.util.MvcUtil.toJsonString;
 
 /**
  * 演示 signUpUrl 设置为 null 时的一种处理方式
@@ -48,7 +53,7 @@ public class DemoSignUpUrlAuthenticationSuccessHandler extends SavedRequestAware
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response, Authentication authentication)
-            throws ServletException, IOException {
+            throws IOException {
 
 
         // start: 判断是否为临时用户, 进行相关逻辑的处理
@@ -62,27 +67,37 @@ public class DemoSignUpUrlAuthenticationSuccessHandler extends SavedRequestAware
         }
         // end: 判断是否为临时用户, 进行相关逻辑的处理
 
-        SavedRequest savedRequest = requestCache.getRequest(request, response);
-
-        if (savedRequest == null) {
-            super.onAuthenticationSuccess(request, response, authentication);
-
-            return;
+        String targetUrl = null;
+        if (isAlwaysUseDefaultTargetUrl()) {
+            targetUrl = getDefaultTargetUrl();
         }
-        String targetUrlParameter = getTargetUrlParameter();
-        if (isAlwaysUseDefaultTargetUrl()
-                || (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
-            requestCache.removeRequest(request, response);
-            super.onAuthenticationSuccess(request, response, authentication);
-
-            return;
+        else {
+            String targetUrlParameter = getTargetUrlParameter();
+            if (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter))) {
+                targetUrl = targetUrlParameter;
+            }
+            else {
+                // Use the DefaultSavedRequest URL
+                SavedRequest savedRequest = requestCache.getRequest(request, response);
+                if (savedRequest != null) {
+                    targetUrl = savedRequest.getRedirectUrl();
+                }
+            }
         }
 
         clearAuthenticationAttributes(request);
 
-        // Use the DefaultSavedRequest URL
-        String targetUrl = savedRequest.getRedirectUrl();
+        if (!StringUtils.hasText(targetUrl)) {
+            targetUrl = getDefaultTargetUrl();
+        }
+
         logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
+
+        if (isAjaxOrJson(request)) {
+            responseWithJson(response, HttpStatus.OK.value(), toJsonString(ResponseResult.success("url", targetUrl)));
+            return;
+        }
+
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 

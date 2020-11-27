@@ -43,6 +43,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static top.dcenter.ums.security.core.oauth.util.MvcUtil.isAjaxOrJson;
+import static top.dcenter.ums.security.core.oauth.util.MvcUtil.responseWithJson;
+import static top.dcenter.ums.security.core.oauth.util.MvcUtil.toJsonString;
+import static top.dcenter.ums.security.core.vo.RedirectVo.redirect;
+
 /**
  * This {@code Filter} initiates the authorization code grant or implicit grant flow by
  * redirecting the End-User's user-agent to the Authorization Server's Authorization
@@ -212,6 +217,11 @@ public class Auth2DefaultRequestRedirectFilter extends OncePerRequestFilter {
 			state = this.auth2StateCoder.encode(state, request);
 		}
 		String authorize = authorizationRequest.authorize(state);
+
+		if (isAjaxOrJson(request)) {
+			responseWithJson(response, HttpStatus.OK.value(), toJsonString(redirect(authorize)));
+			return;
+		}
 
 		this.authorizationRedirectStrategy.sendRedirect(request, response, authorize);
 	}
