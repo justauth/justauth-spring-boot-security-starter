@@ -1,3 +1,9 @@
+## 1.1.6
+### Fixes and Improvements:
+1. 改进: 增加两个自定义 OAuth2 Login 入口与相对应的属性(ums.oauth.customize 和 ums.oauth.gitlabPrivate). 三个相关的抽象类 AuthCustomizeRequest/AuthCustomizeSource/AuthGitlabPrivateSource.
+2. 示例: 增加自定义 OAuth2 Login 示例.
+3. 日志: 增加异常日志.
+
 ## 1.1.5
 ### Fixes and Improvements:
 1. 修复: 定时任务失效的问题. 主要因为 MdcScheduledThreadPoolTaskExecutor 覆写了 newTaskFor(..) 方法导致, 删除不必要的覆写方法, 简化其他的实现逻辑, 在增加 MDC
