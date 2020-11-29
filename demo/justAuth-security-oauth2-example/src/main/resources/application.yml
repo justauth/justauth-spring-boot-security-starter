@@ -95,6 +95,10 @@ ums:
     gitee:
       client-id: dcc38c801ee88f43cfc1d5c52ec579751c12610c37b87428331bd6694056648e
       client-secret: f7384969d0e93088cdab546a1cea026442c16e2476cedec02e202cc89ee773ae
+    # 自定义 OAuth2 Login
+    customize:
+      client-id: c971cf1634460e18310a5d7cb0f55d7d143a72015b2f29aee6a0e8911efac7eb
+      client-secret: 309c9521721e3eb385a99a6bde2755f3107c7e15f3b8e0527c9f3ea4d1ce33bb
     # 第三方登录授权登录 url 前缀, 不包含 ServletContextPath，默认为 /auth2/authorization.
     auth-login-url-prefix: /auth2/authorization
     # 第三方登录回调处理 url 前缀 ，也就是 RedirectUrl 的前缀, 不包含 ServletContextPath，默认为 /auth2/login.
@@ -113,7 +117,7 @@ ums:
     # A cron-like expression. 0 * 2 * * ? 分别对应: second/minute/hour/day of month/month/day of week,
     # 默认为: "0 * 2 * * ?", 凌晨 2 点启动定时任务, 支持分布式(分布式 IOC 容器中必须有 {@link RedisConnectionFactory},
     # 也就是说, 是否分布式执行依据 IOC 容器中是否有 {@link RedisConnectionFactory})
-    refresh-token-job-cron: 0/55 * * * * ?
+    refresh-token-job-cron: 0 0/5 * * * ?
     # 定时刷新 accessToken 任务时, 批处理数据库的记录数. 注意: 分布式应用时, 此配置不同服务器配置必须是一样的. batchCount 大小需要根据实际生产环境进行优化
     batch-count: 1000
     # accessToken 的剩余有效期内进行刷新 accessToken, 默认: 24, 单位: 小时. 注意: 需要根据实际生产环境进行优化
