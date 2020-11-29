@@ -489,7 +489,7 @@ public class Auth2JdbcUsersConnectionRepository implements UsersConnectionReposi
     private MultiValueMap<String, ConnectionData> getConnectionMap(List<ConnectionData> connectionList) {
         MultiValueMap<String, ConnectionData> connections = new LinkedMultiValueMap<>();
 
-        Collection<String> registeredProviderIds = Auth2RequestHolder.getProviderIds();
+        Collection<String> registeredProviderIds = Auth2RequestHolder.getValidProviderIds();
         for (String registeredProviderId : registeredProviderIds)
         {
             connections.put(registeredProviderId, Collections.emptyList());

@@ -26,7 +26,7 @@ package top.dcenter.ums.security.core.oauth.justauth.request;
 import com.xkcoding.http.config.HttpConfig;
 import com.xkcoding.http.exception.SimpleHttpException;
 import me.zhyd.oauth.cache.AuthStateCache;
-import me.zhyd.oauth.config.AuthDefaultSource;
+import me.zhyd.oauth.config.AuthSource;
 import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.model.AuthCallback;
@@ -58,8 +58,8 @@ import java.time.Instant;
  * 6. {@link #login(AuthCallback)},<br>
  * 7. {@link #getProviderId()},<br>
  * 8. {@link #refreshToken(AuthTokenPo)},<br>
- * 9. {@link #determineState(AuthStateCache, String, AuthDefaultSource)},<br>
- * 10. {@link #removeStateCacheOfSessionCache(AuthStateCache, AuthDefaultSource)},<br>
+ * 9. {@link #determineState(AuthStateCache, String, AuthSource)},<br>
+ * 10. {@link #removeStateCacheOfSessionCache(AuthStateCache, AuthSource)},<br>
  * 11. {@link #generateState()},<br>
  * 12. {@link #getAuthTokenPo(Integer, Long, AuthResponse)},<br>
  * 13. {@link #expireIn2Timestamp(Integer, Integer, AuthTokenPo)},<br>
@@ -86,10 +86,10 @@ public interface Auth2DefaultRequest {
     String getProviderId();
 
     /**
-     * 获取 {@link AuthDefaultSource}
-     * @return  {@link AuthDefaultSource}
+     * 获取 {@link AuthSource}
+     * @return  {@link AuthSource}
      */
-    AuthDefaultSource getAuthSource();
+    AuthSource getAuthSource();
 
     /**
      * 获取 {@link AuthStateCache}
@@ -150,10 +150,10 @@ public interface Auth2DefaultRequest {
      * 根据缓存 key 的策略, 来决定 state.
      * @param authStateCache    {@link AuthStateCache}
      * @param state             state
-     * @param source            {@link AuthDefaultSource}
+     * @param source            {@link AuthSource}
      * @return  返回 state
      */
-    static String determineState(@NonNull AuthStateCache authStateCache, @NonNull String state, @NonNull AuthDefaultSource source) {
+    static String determineState(@NonNull AuthStateCache authStateCache, @NonNull String state, @NonNull AuthSource source) {
         if (authStateCache instanceof Auth2StateCache)
         {
             Auth2StateCache stateCache = ((Auth2StateCache) authStateCache);
@@ -161,7 +161,7 @@ public interface Auth2DefaultRequest {
             switch (cacheKeyStrategy)
             {
                 case PROVIDER_ID:
-                    return source.name();
+                    return source.getName();
                 case UUID:
                 default:
                     break;
@@ -173,14 +173,14 @@ public interface Auth2DefaultRequest {
     /**
      * 移除 stateCache 缓存
      * @param authStateCache    {@link AuthStateCache}
-     * @param source            {@link AuthDefaultSource}
+     * @param source            {@link AuthSource}
      */
     static void removeStateCacheOfSessionCache(@NonNull AuthStateCache authStateCache,
-                                             @NonNull AuthDefaultSource source) {
+                                             @NonNull AuthSource source) {
         if (authStateCache instanceof AuthStateSessionCache)
         {
             AuthStateSessionCache stateCache = ((AuthStateSessionCache) authStateCache);
-            stateCache.remove(source.name());
+            stateCache.remove(source.getName());
         }
     }
 

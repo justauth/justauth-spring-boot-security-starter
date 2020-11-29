@@ -179,6 +179,14 @@ public class Auth2Properties {
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     private final AliyunProperties aliyun = new AliyunProperties();
+    /**
+     * 字段名称与其所代表的第三方的 providerId 相同.
+     */
+    private final CustomizeProperties customize = new CustomizeProperties();
+    /**
+     * 字段名称与其所代表的第三方的 providerId 相同.
+     */
+    private final GitlabPrivateProperties gitlabPrivate = new GitlabPrivateProperties();
 
 
     // =================== OAuth2 属性 ===================
@@ -720,6 +728,26 @@ public class Auth2Properties {
          * 阿里云 第三方服务商 id，默认是 aliyun。
          */
         private String providerId = "aliyun";
+
+    }
+
+    @Getter
+    @Setter
+    public static class CustomizeProperties extends BaseAuth2Properties {
+        /**
+         * 自定义 第三方服务商 id，默认是 customize。
+         */
+        private String providerId = "customize";
+
+    }
+
+    @Getter
+    @Setter
+    public static class GitlabPrivateProperties extends BaseAuth2Properties {
+        /**
+         * 自定义 Gitlab private 第三方服务商 id，默认是 gitlabPrivate。
+         */
+        private String providerId = "gitlabPrivate";
 
     }
 }

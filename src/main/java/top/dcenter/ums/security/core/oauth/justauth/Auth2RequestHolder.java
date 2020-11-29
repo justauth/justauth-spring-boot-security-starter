@@ -28,6 +28,7 @@ import me.zhyd.oauth.cache.AuthDefaultStateCache;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
+import me.zhyd.oauth.config.AuthSource;
 import me.zhyd.oauth.request.AuthDefaultRequest;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -41,7 +42,10 @@ import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateRedisCache;
 import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateSessionCache;
 import top.dcenter.ums.security.core.oauth.justauth.enums.StateCacheType;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
+import top.dcenter.ums.security.core.oauth.justauth.request.AuthCustomizeRequest;
 import top.dcenter.ums.security.core.oauth.justauth.request.AuthDefaultRequestAdapter;
+import top.dcenter.ums.security.core.oauth.justauth.source.AuthCustomizeSource;
+import top.dcenter.ums.security.core.oauth.justauth.source.AuthGitlabPrivateSource;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 import top.dcenter.ums.security.core.oauth.properties.BaseAuth2Properties;
 import top.dcenter.ums.security.core.oauth.properties.JustAuthProperties;
@@ -49,6 +53,7 @@ import top.dcenter.ums.security.core.oauth.util.MvcUtil;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -62,7 +67,7 @@ import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.URL_S
  * @version V1.0  Created by 2020-10-06 18:09
  */
 @Slf4j
-public class Auth2RequestHolder implements InitializingBean, ApplicationContextAware {
+public final class Auth2RequestHolder implements InitializingBean, ApplicationContextAware {
 
     /**
      * 字段分隔符
@@ -87,17 +92,49 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
     private static final Map<String, Auth2DefaultRequest> PROVIDER_ID_AUTH_REQUEST_MAP = new ConcurrentHashMap<>();
 
     /**
-     * key 为 {@link AuthDefaultSource}, value 为 providerId
+     * key 为 {@link AuthSource}, value 为 providerId
      */
-    private static final Map<AuthDefaultSource, String> SOURCE_PROVIDER_ID_MAP = new ConcurrentHashMap<>();
+    private static final Map<AuthSource, String> SOURCE_PROVIDER_ID_MAP = new ConcurrentHashMap<>();
 
     private ApplicationContext applicationContext;
+
+    /**
+     * 自定义 OAuth2 Login source, 应用启动时自动注入, 如果未实现此为 null 值,
+     * 注意: {@link AuthCustomizeSource} 与 {@link AuthCustomizeRequest} 必须同时实现.
+     */
+    private volatile static AuthCustomizeSource authCustomizeSource = null;
+    /**
+     * 自定义 OAuth2 Login source, 应用启动时自动注入, 如果未实现此为 null 值,
+     * 注意: {@link AuthGitlabPrivateSource} 与 {@link AuthCustomizeRequest} 必须同时实现.
+     */
+    private volatile static AuthGitlabPrivateSource authGitlabPrivateSource = null;
+
+    /**
+     * 当 {@link #authCustomizeSource} 为 null 时, authCustomizeSource 将会被设置到  {@link #authCustomizeSource}; 否则什么都不做.
+     * @param authCustomizeSource auth2 Customize Source
+     */
+    public static synchronized void setAuthCustomizeSource(AuthCustomizeSource authCustomizeSource) {
+        if (Auth2RequestHolder.authCustomizeSource == null) {
+            Auth2RequestHolder.authCustomizeSource = authCustomizeSource;
+        }
+    }
+
+    /**
+     * 当 {@link #authGitlabPrivateSource} 为 null 时, authGitlabPrivateSource 将会被设置到  {@link #authGitlabPrivateSource}; 否则什么都不做.
+     * @param authGitlabPrivateSource   auth2 GitlabPrivate Source
+     */
+    public static synchronized void setAuthGitlabPrivateSource(AuthGitlabPrivateSource authGitlabPrivateSource) {
+        if (Auth2RequestHolder.authGitlabPrivateSource == null) {
+            Auth2RequestHolder.authGitlabPrivateSource = authGitlabPrivateSource;
+        }
+    }
 
     /**
      * 根据 providerId 获取 {@link Auth2DefaultRequest}
      * @param providerId    providerId
      * @return  返回 {@link Auth2DefaultRequest},  当没有对应的 {@link Auth2DefaultRequest} 时, 返回 null
      */
+    @Nullable
     public static Auth2DefaultRequest getAuth2DefaultRequest(String providerId) {
         if (PROVIDER_ID_AUTH_REQUEST_MAP.size() < 1 || providerId == null)
         {
@@ -107,11 +144,11 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
     }
 
     /**
-     * 根据 {@link AuthDefaultSource} 获取 providerId
-     * @param source    {@link AuthDefaultSource}
+     * 根据 {@link AuthSource} 获取 providerId
+     * @param source    {@link AuthSource}
      * @return  返回 providerId, 没有对应的第三方则返回 null
      */
-    public static String getProviderId(AuthDefaultSource source) {
+    public static String getProviderId(AuthSource source) {
         if (SOURCE_PROVIDER_ID_MAP.size() < 1 || null == source)
         {
             return null;
@@ -123,8 +160,16 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
      * 获取有效的 providerIds
      * @return  有效的 providerId Set
      */
-    public static Collection<String> getProviderIds() {
-        return SOURCE_PROVIDER_ID_MAP.values();
+    public static Collection<String> getValidProviderIds() {
+        return Collections.unmodifiableCollection(PROVIDER_ID_AUTH_REQUEST_MAP.keySet());
+    }
+
+    /**
+     * 获取有效的 providerIds
+     * @return  有效的 providerId Set
+     */
+    public static Collection<String> getAllProviderIds() {
+        return Collections.unmodifiableCollection(SOURCE_PROVIDER_ID_MAP.values());
     }
 
     @Override
@@ -134,6 +179,20 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
 
     @Override
     public void afterPropertiesSet() throws Exception {
+
+        try {
+            Auth2RequestHolder.setAuthCustomizeSource(applicationContext.getBean(AuthCustomizeSource.class));
+        }
+        catch (Exception e) {
+            log.info("没有自定义实现 {}", AuthCustomizeSource.class.getName());
+        }
+
+        try {
+            Auth2RequestHolder.setAuthGitlabPrivateSource(applicationContext.getBean(AuthGitlabPrivateSource.class));
+        }
+        catch (Exception e) {
+            log.info("没有自定义实现 {}", AuthGitlabPrivateSource.class.getName());
+        }
 
         // 获取 auth2Properties
         Auth2Properties auth2Properties = applicationContext.getBean(Auth2Properties.class);
@@ -166,15 +225,36 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
             if (baseProperties instanceof BaseAuth2Properties)
             {
                 String providerId = field.getName();
-                String[] splits = MvcUtil.splitByCharacterTypeCamelCase(providerId, true);
-                AuthDefaultSource source = AuthDefaultSource.valueOf(String.join(FIELD_SEPARATOR, splits).toUpperCase());
 
-                SOURCE_PROVIDER_ID_MAP.put(source, providerId);
+                String[] splits = MvcUtil.splitByCharacterTypeCamelCase(providerId, true);
+                AuthSource source = null;
+                try {
+                    source = AuthDefaultSource.valueOf(String.join(FIELD_SEPARATOR, splits).toUpperCase());
+                    SOURCE_PROVIDER_ID_MAP.put(source, providerId);
+                }
+                catch (Exception e) {
+                    if (Auth2RequestHolder.authCustomizeSource != null
+                            && getProviderIdBySource(Auth2RequestHolder.authCustomizeSource).equals(providerId)) {
+                        source = Auth2RequestHolder.authCustomizeSource;
+                        SOURCE_PROVIDER_ID_MAP.put(Auth2RequestHolder.authCustomizeSource, providerId);
+                    }
+                    else if (Auth2RequestHolder.authGitlabPrivateSource != null
+                            && getProviderIdBySource(Auth2RequestHolder.authGitlabPrivateSource).equals(providerId)) {
+                        source = Auth2RequestHolder.authGitlabPrivateSource;
+                        SOURCE_PROVIDER_ID_MAP.put(Auth2RequestHolder.authCustomizeSource, providerId);
+                    }
+
+                }
 
                 BaseAuth2Properties baseAuth2Properties = ((BaseAuth2Properties) baseProperties);
                 if (baseAuth2Properties.getClientId() != null && baseAuth2Properties.getClientSecret() != null)
                 {
-                    Auth2DefaultRequest auth2DefaultRequest = getAuth2DefaultRequest(source, auth2Properties,authStateCache);
+                    if (source == null) {
+                        throw new RuntimeException(String.format("获取不到 %s 相对应的 me.zhyd.oauth.config.AuthSource",
+                                                                 providerId));
+                    }
+
+                    Auth2DefaultRequest auth2DefaultRequest = getAuth2DefaultRequest(source, auth2Properties, authStateCache);
                     if (null != auth2DefaultRequest) {
                         PROVIDER_ID_AUTH_REQUEST_MAP.put(providerId, auth2DefaultRequest);
                     }
@@ -190,7 +270,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
      * @return {@link Auth2DefaultRequest}
      */
     @Nullable
-    private Auth2DefaultRequest getAuth2DefaultRequest(@NonNull AuthDefaultSource source,
+    private Auth2DefaultRequest getAuth2DefaultRequest(@NonNull AuthSource source,
                                                        @NonNull Auth2Properties auth2Properties,
                                                        @NonNull AuthStateCache authStateCache) throws IllegalAccessException, ClassNotFoundException {
 
@@ -204,11 +284,19 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
         // 设置是否忽略 state 检测
         config.setIgnoreCheckState(justAuth.getIgnoreCheckState());
 
+        if (source instanceof AuthCustomizeSource || source instanceof AuthGitlabPrivateSource) {
+            return this.getAuthDefaultRequestAdapter(config, source, authStateCache);
+        }
+
+        if (!(source instanceof AuthDefaultSource)) {
+            return null;
+        }
+
         // 是否支持第三方授权登录
         boolean isNotSupport = false;
 
         //noinspection AlibabaSwitchStatement
-        switch (source) {
+        switch ((AuthDefaultSource) source) {
             case CODING:
                 config.setCodingGroupName(auth2Properties.getCoding().getCodingGroupName());
                 break;
@@ -239,17 +327,27 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
     }
 
     /**
+     * 根据 {@link AuthSource} 获取对应的 {@link Auth2Properties} 字段名称(即 providerId)
+     * @param source    {@link AuthSource}
+     * @return  {@link AuthSource} 对应的 {@link Auth2Properties} 字段名称(即 providerId)
+     */
+    @SuppressWarnings("unused")
+    public static String getProviderIdBySource(@NonNull AuthSource source) {
+        String[] splits = source.getName().split(FIELD_SEPARATOR);
+        return toProviderId(splits);
+    }
+
+    /**
      * 获取 {@link AuthDefaultRequest} 的适配器
-     * @param config                {@link AuthConfig}
-     * @param source                {@link AuthDefaultSource}
-     * @param authStateCache        {@link AuthStateCache}
+     * @param config                {@link AuthDefaultRequest} 的 {@link AuthConfig}
+     * @param source                {@link AuthDefaultRequest} 的 {@link AuthSource}
+     * @param authStateCache        {@link AuthDefaultRequest} 的 {@link AuthStateCache}
      * @return                      {@link AuthDefaultRequest} 相对应的适配器
      */
     @NonNull
     private AuthDefaultRequestAdapter getAuthDefaultRequestAdapter(@NonNull AuthConfig config,
-                                                                   @NonNull AuthDefaultSource source,
+                                                                   @NonNull AuthSource source,
                                                                    @NonNull AuthStateCache authStateCache) throws ClassNotFoundException {
-
         final AuthDefaultRequestAdapter adapter = new AuthDefaultRequestAdapter(config, source, authStateCache);
         Class<?>[] argumentTypes = new Class[]{AuthConfig.class, AuthStateCache.class};
         Object[] arguments = new Object[]{config, authStateCache};
@@ -321,17 +419,16 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
 
     }
 
-
     /**
      * 根据 auth2Properties 与 source 构建 {@link AuthConfig} 对象.
      * @param auth2Properties   auth2Properties
-     * @param source            source
+     * @param source            {@link AuthSource}
      * @return  返回 {@link AuthConfig} 对象
      * @throws IllegalAccessException   IllegalAccessException
      * @throws NullPointerException     NullPointerException
      */
     private AuthConfig getAuthConfig(@NonNull Auth2Properties auth2Properties,
-                                     @NonNull AuthDefaultSource source) throws IllegalAccessException, NullPointerException {
+                                     @NonNull AuthSource source) throws IllegalAccessException, NullPointerException {
         AuthConfig.AuthConfigBuilder builder = AuthConfig.builder();
 
         // 根据 AuthDefaultSource 获取对应的 Auth2Properties 字段名称(即providerId)
@@ -355,7 +452,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
         // 获取 providerProperties 对象中 providerId
         String providerId = "";
 
-        requireNonNull(providerProperties, String.format("获取不到 %s 类型所对应的 BaseAuth2Properties 的子类", source.name()));
+        requireNonNull(providerProperties, String.format("获取不到 %s 类型所对应的 BaseAuth2Properties 的子类", source.getName()));
 
         declaredFields = providerProperties.getClass().getDeclaredFields();
         for (Field field : declaredFields)
@@ -364,7 +461,7 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
             if (PROVIDER_ID_FIELD_NAME.equals(field.getName()))
             {
                 providerId = (String) field.get(providerProperties);
-                requireNonNull(providerId, String.format("获取不到 %s 类型所对应的 %s 的值", source.name(), PROVIDER_ID_FIELD_NAME));
+                requireNonNull(providerId, String.format("获取不到 %s 类型所对应的 %s 的值", source.getName(), PROVIDER_ID_FIELD_NAME));
             }
         }
 
@@ -377,13 +474,13 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
             if (CLIENT_ID_FIELD_NAME.equals(field.getName()))
             {
                 String clientId = (String) field.get(providerProperties);
-                requireNonNull(clientId, String.format("获取不到 %s 类型所对应的 %s 的值", source.name(), CLIENT_ID_FIELD_NAME));
+                requireNonNull(clientId, String.format("获取不到 %s 类型所对应的 %s 的值", source.getName(), CLIENT_ID_FIELD_NAME));
                 builder.clientId(clientId);
             }
             if (CLIENT_SECRET_FIELD_NAME.equals(field.getName()))
             {
                 String clientSecret = (String) field.get(providerProperties);
-                requireNonNull(clientSecret, String.format("获取不到 %s 类型所对应的 %s 的值", source.name(), CLIENT_SECRET_FIELD_NAME));
+                requireNonNull(clientSecret, String.format("获取不到 %s 类型所对应的 %s 的值", source.getName(), CLIENT_SECRET_FIELD_NAME));
                 builder.clientSecret(clientSecret);
             }
         }
@@ -393,17 +490,6 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
                 + auth2Properties.getRedirectUrlPrefix() + URL_SEPARATOR + providerId;
 
         return builder.redirectUri(redirectUri).build();
-    }
-
-    /**
-     * 根据 {@link AuthDefaultSource} 获取对应的 {@link Auth2Properties} 字段名称(即 providerId)
-     * @param source    {@link AuthDefaultSource}
-     * @return  {@link AuthDefaultSource} 对应的 {@link Auth2Properties} 字段名称(即 providerId)
-     */
-    @SuppressWarnings("unused")
-    public static String getProviderIdBySource(@NonNull AuthDefaultSource source) {
-        String[] splits = source.name().split(FIELD_SEPARATOR);
-        return toProviderId(splits);
     }
 
     /**
@@ -420,13 +506,31 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
     public static final String AUTH_REQUEST_SUFFIX = "Request";
 
     /**
-     * 根据 {@link AuthDefaultSource} 获取对应的 {@link AuthDefaultRequest} 子类的 Class
-     * @param source    {@link AuthDefaultSource}
-     * @return  返回 {@link AuthDefaultSource} 对应的 {@link AuthDefaultRequest} 子类的 Class
+     * 根据 {@link AuthSource} 获取对应的 {@link AuthDefaultRequest} 子类的 Class
+     * @param source    {@link AuthSource}
+     * @return  返回 {@link AuthSource} 对应的 {@link AuthDefaultRequest} 子类的 Class
      */
     @NonNull
-    public static Class<?> getAuthRequestClassBySource(@NonNull AuthDefaultSource source) throws ClassNotFoundException {
-        String[] splits = source.name().split(FIELD_SEPARATOR);
+    public static Class<?> getAuthRequestClassBySource(@NonNull AuthSource source) throws ClassNotFoundException {
+        if (source instanceof AuthCustomizeSource) {
+            if (Auth2RequestHolder.authCustomizeSource == null) {
+                throw new RuntimeException("必须实现 top.dcenter.ums.security.core.oauth.justauth.source.AuthCustomizeSource 且注入 IOC 容器");
+            }
+            return Auth2RequestHolder.authCustomizeSource.getCustomizeRequestClass();
+        }
+
+        if (source instanceof AuthGitlabPrivateSource) {
+            if (Auth2RequestHolder.authGitlabPrivateSource == null) {
+                throw new RuntimeException("必须实现 top.dcenter.ums.security.core.oauth.justauth.source.AuthCustomizeSource 且注入 IOC 容器");
+            }
+            return Auth2RequestHolder.authGitlabPrivateSource.getCustomizeRequestClass();
+        }
+
+        if (!(source instanceof AuthDefaultSource)) {
+            throw new RuntimeException("AuthSource 必须是 me.zhyd.oauth.config.AuthDefaultSource 或 top.dcenter.ums.security.core.oauth.justauth.source.AuthCustomizeSource 子类");
+        }
+
+        String[] splits = ((AuthDefaultSource) source).name().split(FIELD_SEPARATOR);
         String authRequestClassName = AUTH_REQUEST_PACKAGE + toAuthRequestClassName(splits);
         return Class.forName(authRequestClassName);
     }
@@ -468,6 +572,9 @@ public class Auth2RequestHolder implements InitializingBean, ApplicationContextA
      */
     @NonNull
     private static String toProviderId(String[] splits) {
+        if (splits.length == 1) {
+            return splits[0].trim().toLowerCase();
+        }
         StringBuilder sb = new StringBuilder();
         for (String split : splits) {
             split = split.toLowerCase();
