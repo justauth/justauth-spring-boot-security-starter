@@ -170,6 +170,7 @@ public class Auth2DefaultRequestRedirectFilter extends OncePerRequestFilter {
 			return;
 		}
 		catch (Exception ex) {
+			logger.error(ex.getMessage(), ex);
 			this.unsuccessfulRedirectForAuthorization(request, response, ex);
 			return;
 		}
