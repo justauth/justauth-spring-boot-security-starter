@@ -17,6 +17,7 @@ package top.dcenter.ums.security.core.oauth.filter.login;
 
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
@@ -124,12 +125,17 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
      * @param filterProcessesUrl the {@code URI} where this {@code Filter} will process
      * the authentication requests, not null
      * @param signUpUrl          第三方授权登录后如未注册用户不支持自动注册功能, 则跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现
+     * @param authenticationDetailsSource      {@link AuthenticationDetailsSource}
      * @since 5.1
      */
-    public Auth2LoginAuthenticationFilter(@NonNull String filterProcessesUrl, @Nullable String signUpUrl) {
+    public Auth2LoginAuthenticationFilter(@NonNull String filterProcessesUrl, @Nullable String signUpUrl,
+                                          @Nullable AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource) {
         super(filterProcessesUrl + "/*");
         this.authorizationRequestResolver = new Auth2DefaultRequestResolver(filterProcessesUrl);
         this.signUpUrl = signUpUrl;
+        if (authenticationDetailsSource != null) {
+            setAuthenticationDetailsSource(authenticationDetailsSource);
+        }
     }
 
     @Override
@@ -154,9 +160,10 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
 
-        Object authenticationDetails = this.authenticationDetailsSource.buildDetails(request);
         Auth2LoginAuthenticationToken authenticationRequest = new Auth2LoginAuthenticationToken(auth2DefaultRequest, request);
-        authenticationRequest.setDetails(authenticationDetails);
+
+        // Allow subclasses to set the "details" property
+        setDetails(request, authenticationRequest);
 
         // 通过 AuthenticationManager 转到相应的 Provider 对 Auth2LoginAuthenticationToken 进行认证
         return this.getAuthenticationManager().authenticate(authenticationRequest);
@@ -190,6 +197,18 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
         }
 
         getSuccessHandler().onAuthenticationSuccess(request, response, authResult);
+    }
+
+    /**
+     * Provided so that subclasses may configure what is put into the auth
+     * request's details property.
+     *
+     * @param request that an auth request is being created for
+     * @param authRequest the auth request object that should have its details
+     * set
+     */
+    protected void setDetails(HttpServletRequest request, Auth2LoginAuthenticationToken authRequest) {
+        authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
     }
 
     @SuppressWarnings("unused")

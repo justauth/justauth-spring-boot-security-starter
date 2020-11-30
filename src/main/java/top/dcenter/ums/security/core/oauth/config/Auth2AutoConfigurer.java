@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,8 +36,8 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
-import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter;
 import top.dcenter.ums.security.core.mdc.config.MdcPropertiesAutoConfiguration;
 import top.dcenter.ums.security.core.mdc.filter.MdcLogFilter;
@@ -51,6 +52,7 @@ import top.dcenter.ums.security.core.oauth.service.Auth2UserService;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
 import top.dcenter.ums.security.core.oauth.signup.ConnectionService;
 
+import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
@@ -60,6 +62,7 @@ import java.util.concurrent.ExecutorService;
  * @author YongWu zheng
  * @version V2.0  Created by 2020/10/12 12:31
  */
+@SuppressWarnings("jol")
 @Configuration
 @AutoConfigureAfter({Auth2AutoConfiguration.class, MdcPropertiesAutoConfiguration.class})
 public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> implements InitializingBean {
@@ -82,7 +85,10 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
     private AuthenticationSuccessHandler authenticationSuccessHandler;
     @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
     @Autowired(required = false)
-    private PersistentTokenBasedRememberMeServices persistentTokenBasedRememberMeServices;
+    private RememberMeServices rememberMeServices;
+    @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection"})
+    @Autowired(required = false)
+    private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
 
     public Auth2AutoConfigurer(Auth2Properties auth2Properties, MdcProperties mdcProperties,
                                UmsUserDetailsService umsUserDetailsService,
@@ -116,7 +122,7 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
         // 添加第三方登录回调接口过滤器
         String filterProcessesUrl = auth2Properties.getRedirectUrlPrefix();
         Auth2LoginAuthenticationFilter auth2LoginAuthenticationFilter =
-                new Auth2LoginAuthenticationFilter(filterProcessesUrl, auth2Properties.getSignUpUrl());
+                new Auth2LoginAuthenticationFilter(filterProcessesUrl, auth2Properties.getSignUpUrl(), authenticationDetailsSource);
         AuthenticationManager sharedObject = http.getSharedObject(AuthenticationManager.class);
         auth2LoginAuthenticationFilter.setAuthenticationManager(sharedObject);
         if (authenticationFailureHandler != null)
@@ -130,11 +136,11 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
             auth2LoginAuthenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
         }
 
-        // 添加 PersistentTokenBasedRememberMeServices
-        if (persistentTokenBasedRememberMeServices != null)
+        // 添加 RememberMeServices
+        if (rememberMeServices != null)
         {
             // 添加rememberMe功能配置
-            auth2LoginAuthenticationFilter.setRememberMeServices(persistentTokenBasedRememberMeServices);
+            auth2LoginAuthenticationFilter.setRememberMeServices(rememberMeServices);
         }
 
         http.addFilterAfter(postProcess(auth2LoginAuthenticationFilter), OAuth2AuthorizationRequestRedirectFilter.class);
