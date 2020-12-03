@@ -333,7 +333,7 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
 
     /**
      * 根据 source 获取对应的自定义 scopes
-     * @param scopes    用户自定义的所有第三方的 scopes, 格式: providerId:scope 如: [qq:write, qq:read, gitee:email, github:read]
+     * @param scopes    用户自定义的所有第三方的 scopes, 格式: source:scope 如: [QQ:write, QQ:read, GITEE:email, GITHUB:read]
      * @param source    {@link AuthSource}
      * @return 返回 source 相对应的 scopes
      */
@@ -342,11 +342,11 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
         if (CollectionUtils.isEmpty(scopes)) {
             return new ArrayList<>(0);
         }
-        final String providerId = getProviderIdBySource(source);
+        final String sourceName = source.getName() + ":";
 
         return scopes.stream()
-                     .filter(scope -> scope.startsWith(providerId))
-                     .map(scope -> scope.substring(providerId.length() + 1))
+                     .filter(scope -> scope.startsWith(sourceName))
+                     .map(scope -> scope.substring(sourceName.length()))
                      .collect(Collectors.toList());
     }
 
