@@ -1,3 +1,9 @@
+## 1.1.7
+### Fixes and Improvements:
+1. 改进: JustAuthProperties 中的 scopes 属性格式(providerId:scope), 使其可以针对不同的第三方服务商进行不同的自定义 scope 配置.
+2. 改进: 初始化 details 逻辑, 方便自定义初始化 details.
+
+
 ## 1.1.6
 ### Fixes and Improvements:
 1. 改进: 增加两个自定义 OAuth2 Login 入口与相对应的属性(ums.oauth.customize 和 ums.oauth.gitlabPrivate). 三个相关的抽象类 AuthCustomizeRequest/AuthCustomizeSource/AuthGitlabPrivateSource.

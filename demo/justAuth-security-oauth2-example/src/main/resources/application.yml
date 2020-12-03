@@ -143,8 +143,13 @@ ums:
       cacheType: session
       # JustAuth state 缓存 key 前缀
       cacheKeyPrefix: 'JUST_AUTH:'
-      # 支持自定义授权平台的 scope 内容
+      # 支持自定义授权平台的 scope 内容, 格式为: providerId:scope, 例如: [qq:write, qq:read, gitee:email, github:read]
       scopes:
+      # 示例
+      # - qq:write
+      # - qq:read
+      # - gitee:email
+      # - github:read
     # 用于 JustAuth 的代理(HttpClient)设置
     proxy:
       # 是否支持代理, 默认为: false.
