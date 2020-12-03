@@ -38,6 +38,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
 import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateRedisCache;
 import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateSessionCache;
 import top.dcenter.ums.security.core.oauth.justauth.enums.StateCacheType;
@@ -52,10 +53,13 @@ import top.dcenter.ums.security.core.oauth.properties.JustAuthProperties;
 import top.dcenter.ums.security.core.oauth.util.MvcUtil;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.URL_SEPARATOR;
@@ -277,7 +281,8 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
         JustAuthProperties justAuth = auth2Properties.getJustAuth();
         AuthConfig config = getAuthConfig(auth2Properties, source);
         // 设置自定义 scopes
-        config.setScopes(justAuth.getScopes());
+        List<String> scopes = getScopesBySource(justAuth.getScopes(), source);
+        config.setScopes(scopes);
         // 设置是否启用代理
         Auth2Properties.HttpConfigProperties proxy = auth2Properties.getProxy();
         config.setHttpConfig(proxy.getHttpConfig());
@@ -324,6 +329,25 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
             return null;
         }
         return this.getAuthDefaultRequestAdapter(config, source, authStateCache);
+    }
+
+    /**
+     * 根据 source 获取对应的自定义 scopes
+     * @param scopes    用户自定义的所有第三方的 scopes, 格式: providerId:scope 如: [qq:write, qq:read, gitee:email, github:read]
+     * @param source    {@link AuthSource}
+     * @return 返回 source 相对应的 scopes
+     */
+    @NonNull
+    private List<String> getScopesBySource(@Nullable List<String> scopes, @NonNull AuthSource source) {
+        if (CollectionUtils.isEmpty(scopes)) {
+            return new ArrayList<>(0);
+        }
+        final String providerId = getProviderIdBySource(source);
+
+        return scopes.stream()
+                     .filter(scope -> scope.startsWith(providerId))
+                     .map(scope -> scope.substring(providerId.length() + 1))
+                     .collect(Collectors.toList());
     }
 
     /**

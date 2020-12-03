@@ -79,8 +79,17 @@ public class JustAuthProperties {
     private String cacheKeyPrefix = "JUST_AUTH:";
 
     /**
-     * 支持自定义授权平台的 scope 内容
-     *
+     * 支持自定义授权平台的 scope 内容, 格式为: providerId:scope, 例如: [qq:write, qq:read, gitee:email, github:read]
+     * <pre>
+     * ums:
+     *   oauth:
+     *     just-auth:
+     *       scopes:
+     *         - qq:write
+     *         - qq:read
+     *         - gitee:email
+     *         - github:read
+     * </pre>
      * @since 1.15.7
      */
     private List<String> scopes;
