@@ -19,8 +19,8 @@
 4. 支持第三方绑定与解绑及查询接口(top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository).
 5. 支持基于 SLF4J MDC 机制的日志链路追踪功能.
 
-微信群：UMS 添加微信(z56133)备注(UMS) 
-
+### 微信群：UMS 添加微信(z56133)备注(UMS) 
+![weixin](doc/weixin.png)
 ------
 ## 二、`maven`：
 
