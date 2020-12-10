@@ -53,140 +53,173 @@ public class Auth2Properties {
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final GithubProperties github = new GithubProperties();
-
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties github = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final WeiboProperties weibo = new WeiboProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties weibo = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final GiteeProperties gitee = new GiteeProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties gitee = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final DingtalkProperties dingtalk = new DingtalkProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties dingtalk = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final BaiduProperties baidu = new BaiduProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties baidu = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final CodingProperties coding = new CodingProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties coding = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final OschinaProperties oschina = new OschinaProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties oschina = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final AlipayProperties alipay = new AlipayProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties alipay = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final QqProperties qq = new QqProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties qq = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final WechatOpenProperties wechatOpen = new WechatOpenProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties wechatOpen = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final WechatMpProperties wechatMp = new WechatMpProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties wechatMp = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final TaobaoProperties taobao = new TaobaoProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties taobao = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final GoogleProperties google = new GoogleProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties google = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final FacebookProperties facebook = new FacebookProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties facebook = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final DouyinProperties douyin = new DouyinProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties douyin = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final LinkedinProperties linkedin = new LinkedinProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties linkedin = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final MicrosoftProperties microsoft = new MicrosoftProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties microsoft = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final MiProperties mi = new MiProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties mi = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final ToutiaoProperties toutiao = new ToutiaoProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties toutiao = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final TeambitionProperties teambition = new TeambitionProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties teambition = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final RenrenProperties renren = new RenrenProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties renren = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final PinterestProperties pinterest = new PinterestProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties pinterest = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final StackOverflowProperties stackOverflow = new StackOverflowProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties stackOverflow = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final HuaweiProperties huawei = new HuaweiProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties huawei = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final WechatEnterpriseProperties wechatEnterprise = new WechatEnterpriseProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties wechatEnterprise = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final KujialeProperties kujiale = new KujialeProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties kujiale = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final GitlabProperties gitlab = new GitlabProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties gitlab = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final MeituanProperties meituan = new MeituanProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties meituan = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final ElemeProperties eleme = new ElemeProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties eleme = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final TwitterProperties twitter = new TwitterProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties twitter = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final JdProperties jd = new JdProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties jd = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final AliyunProperties aliyun = new AliyunProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties aliyun = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final CustomizeProperties customize = new CustomizeProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties customize = new BaseAuth2Properties();
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
-    private final GitlabPrivateProperties gitlabPrivate = new GitlabPrivateProperties();
+    @NestedConfigurationProperty
+    private final BaseAuth2Properties gitlabPrivate = new BaseAuth2Properties();
 
 
     // =================== OAuth2 属性 ===================
@@ -354,400 +387,4 @@ public class Auth2Properties {
 
     }
 
-    @Getter
-    @Setter
-    public static class GithubProperties extends BaseAuth2Properties {
-        /**
-         * GITHUB 第三方服务商 id，默认是 github。
-         */
-        private String providerId = "github";
-
-    }
-
-    @Getter
-    @Setter
-    public static class WeiboProperties extends BaseAuth2Properties {
-        /**
-         * 新浪微博 第三方服务商 id，默认是 weibo。
-         */
-        private String providerId = "weibo";
-
-    }
-
-    @Getter
-    @Setter
-    public static class GiteeProperties extends BaseAuth2Properties {
-        /**
-         * gitee 服务提供商标识, 默认为 gitee
-         */
-        private String providerId = "gitee";
-
-    }
-
-    @Getter
-    @Setter
-    public static class DingtalkProperties extends BaseAuth2Properties {
-        /**
-         * 钉钉 第三方服务商 id，默认是 dingtalk。
-         */
-        private String providerId = "dingtalk";
-
-    }
-
-    @Getter
-    @Setter
-    public static class BaiduProperties extends BaseAuth2Properties {
-        /**
-         * 百度 第三方服务商 id，默认是 baidu。
-         */
-        private String providerId = "baidu";
-
-    }
-
-    @Getter
-    @Setter
-    public static class CsdnProperties extends BaseAuth2Properties {
-        /**
-         * csdn 第三方服务商 id，默认是 csdn。
-         */
-        private String providerId = "csdn";
-
-    }
-
-    @Getter
-    @Setter
-    public static class CodingProperties extends BaseAuth2Properties {
-        /**
-         * 服务提供商标识, 默认为 coding
-         */
-        private String providerId = "coding";
-        /**
-         * 使用 Coding 登录时，需要传该值。
-         * <p>
-         * 团队域名前缀，比如以“ https://justauth.coding.net/ ”为例，{@code codingGroupName} = justauth
-         *
-         * @since 1.15.5
-         */
-        private String codingGroupName;
-
-    }
-
-    @Getter
-    @Setter
-    public static class OschinaProperties extends BaseAuth2Properties {
-        /**
-         * OSCHINA 第三方服务商 id，默认是 oschina。
-         */
-        private String providerId = "oschina";
-
-    }
-
-    @Getter
-    @Setter
-    public static class AlipayProperties extends BaseAuth2Properties {
-        /**
-         * 支付宝 服务提供商标识, 默认为 alipay
-         */
-        private String providerId = "alipay";
-        /**
-         * 支付宝公钥：当选择支付宝登录时，该值可用
-         * 对应“RSA2(SHA256)密钥”中的“支付宝公钥”
-         */
-        private String alipayPublicKey;
-
-    }
-
-    @Getter
-    @Setter
-    public static class QqProperties extends BaseAuth2Properties {
-        /**
-         * QQ 服务提供商标识, 默认为 qq
-         */
-        private String providerId = "qq";
-        /**
-         * 是否需要申请 unionId，默认: false. 目前只针对qq登录
-         * 注：qq授权登录时，获取 unionId 需要单独发送邮件申请权限。如果个人开发者账号中申请了该权限，可以将该值置为true，在获取openId时就会同步获取unionId
-         * 参考链接：http://wiki.connect.qq.com/unionid%E4%BB%8B%E7%BB%8D
-         * <p>
-         * 1.7.1版本新增参数
-         */
-        private Boolean unionId = false;
-    }
-
-    @Getter
-    @Setter
-    public static class WechatOpenProperties extends BaseAuth2Properties {
-        /**
-         * 微信开放平台 第三方服务商 id，默认是 wechatOpen。
-         */
-        private String providerId = "wechatOpen";
-
-    }
-
-    @Getter
-    @Setter
-    public static class WechatMpProperties extends BaseAuth2Properties {
-        /**
-         * 微信公众平台 第三方服务商 id，默认是 wechatMp。
-         */
-        private String providerId = "wechatMp";
-
-    }
-
-    @Getter
-    @Setter
-    public static class TaobaoProperties extends BaseAuth2Properties {
-        /**
-         * 淘宝 第三方服务商 id，默认是 taobao。
-         */
-        private String providerId = "taobao";
-
-    }
-
-    @Getter
-    @Setter
-    public static class GoogleProperties extends BaseAuth2Properties {
-        /**
-         * Google 第三方服务商 id，默认是 google。
-         */
-        private String providerId = "google";
-
-    }
-    @Getter
-    @Setter
-    public static class FacebookProperties extends BaseAuth2Properties {
-        /**
-         * Facebook 第三方服务商 id，默认是 facebook。
-         */
-        private String providerId = "facebook";
-
-    }
-
-    @Getter
-    @Setter
-    public static class DouyinProperties extends BaseAuth2Properties {
-        /**
-         * 抖音 第三方服务商 id，默认是 douyin。
-         */
-        private String providerId = "douyin";
-
-    }
-
-    @Getter
-    @Setter
-    public static class LinkedinProperties extends BaseAuth2Properties {
-        /**
-         * 领英 第三方服务商 id，默认是 linkedin。
-         */
-        private String providerId = "linkedin";
-
-    }
-
-    @Getter
-    @Setter
-    public static class MicrosoftProperties extends BaseAuth2Properties {
-        /**
-         * 微软 第三方服务商 id，默认是 microsoft。
-         */
-        private String providerId = "microsoft";
-
-    }
-
-    @Getter
-    @Setter
-    public static class MiProperties extends BaseAuth2Properties {
-        /**
-         * 小米 第三方服务商 id，默认是 mi。
-         */
-        private String providerId = "mi";
-
-    }
-
-    @Getter
-    @Setter
-    public static class ToutiaoProperties extends BaseAuth2Properties {
-        /**
-         * 今日头条 第三方服务商 id，默认是 toutiao。
-         */
-        private String providerId = "toutiao";
-
-    }
-
-    @Getter
-    @Setter
-    public static class TeambitionProperties extends BaseAuth2Properties {
-        /**
-         * Teambition 第三方服务商 id，默认是 teambition。
-         */
-        private String providerId = "teambition";
-
-    }
-
-    @Getter
-    @Setter
-    public static class RenrenProperties extends BaseAuth2Properties {
-        /**
-         * 人人网 第三方服务商 id，默认是 renren。
-         */
-        private String providerId = "renren";
-
-    }
-
-    @Getter
-    @Setter
-    public static class PinterestProperties extends BaseAuth2Properties {
-        /**
-         * Pinterest 第三方服务商 id，默认是 pinterest。
-         */
-        private String providerId = "pinterest";
-
-    }
-
-    @Getter
-    @Setter
-    public static class StackOverflowProperties extends BaseAuth2Properties {
-
-        /**
-         * Stack Overflow 服务提供商标识, 默认为 stackOverflow
-         */
-        private String providerId = "stackOverflow";
-
-        /**
-         * Stack Overflow Key
-         * <p>
-         *
-         * @since 1.9.0
-         */
-        private String stackOverflowKey;
-
-    }
-
-    @Getter
-    @Setter
-    public static class HuaweiProperties extends BaseAuth2Properties {
-        /**
-         * 华为 第三方服务商 id，默认是 huawei。
-         */
-        private String providerId = "huawei";
-
-    }
-
-    /**
-     * @author YongWu zheng
-     */
-    @Getter
-    @Setter
-    public static class WechatEnterpriseProperties extends BaseAuth2Properties {
-        /**
-         * 企业微信 第三方服务商 id，默认是 wechatEnterprise。
-         */
-        private String providerId = "wechatEnterprise";
-        /**
-         * 企业微信，授权方的网页应用ID
-         *
-         * @since 1.10.0
-         */
-        private String agentId;
-
-    }
-
-    @Getter
-    @Setter
-    public static class GitlabProperties extends BaseAuth2Properties {
-        /**
-         * Gitlab 第三方服务商 id，默认是 gitlab。
-         */
-        private String providerId = "gitlab";
-
-    }
-
-    @Getter
-    @Setter
-    public static class KujialeProperties extends BaseAuth2Properties {
-        /**
-         * 酷家乐 第三方服务商 id，默认是 kujiale。
-         */
-        private String providerId = "kujiale";
-
-    }
-
-    @Getter
-    @Setter
-    public static class ElemeProperties extends BaseAuth2Properties {
-        /**
-         * 饿了么 第三方服务商 id，默认是 eleme。
-         */
-        private String providerId = "eleme";
-
-    }
-
-    @Getter
-    @Setter
-    public static class MeituanProperties extends BaseAuth2Properties {
-        /**
-         * 美团 第三方服务商 id，默认是 meituan。
-         */
-        private String providerId = "meituan";
-
-    }
-
-    @Getter
-    @Setter
-    public static class TwitterProperties extends BaseAuth2Properties {
-        /**
-         * Twitter 第三方服务商 id，默认是 twitter。
-         */
-        private String providerId = "twitter";
-
-    }
-
-    @Getter
-    @Setter
-    public static class FeishuProperties extends BaseAuth2Properties {
-        /**
-         * 飞书 第三方服务商 id，默认是 feishu。
-         */
-        private String providerId = "feishu";
-
-    }
-
-    @Getter
-    @Setter
-    public static class JdProperties extends BaseAuth2Properties {
-        /**
-         * 京东 第三方服务商 id，默认是 jd。
-         */
-        private String providerId = "jd";
-
-    }
-
-    @Getter
-    @Setter
-    public static class AliyunProperties extends BaseAuth2Properties {
-        /**
-         * 阿里云 第三方服务商 id，默认是 aliyun。
-         */
-        private String providerId = "aliyun";
-
-    }
-
-    @Getter
-    @Setter
-    public static class CustomizeProperties extends BaseAuth2Properties {
-        /**
-         * 自定义 第三方服务商 id，默认是 customize。
-         */
-        private String providerId = "customize";
-
-    }
-
-    @Getter
-    @Setter
-    public static class GitlabPrivateProperties extends BaseAuth2Properties {
-        /**
-         * 自定义 Gitlab private 第三方服务商 id，默认是 gitlabPrivate。
-         */
-        private String providerId = "gitlabPrivate";
-
-    }
 }

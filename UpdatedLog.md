@@ -1,3 +1,7 @@
+## 1.1.8
+### Fixes and Improvements:
+1. release v1.1.8 优化 Auth2Properties 与 BaseAuth2Properties.
+
 ## 1.1.7
 ### Fixes and Improvements:
 1. 改进: JustAuthProperties 中的 scopes 属性格式(providerId:scope), 使其可以针对不同的第三方服务商进行不同的自定义 scope 配置.

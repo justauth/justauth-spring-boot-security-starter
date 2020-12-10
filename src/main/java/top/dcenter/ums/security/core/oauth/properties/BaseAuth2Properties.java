@@ -33,8 +33,42 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public abstract class BaseAuth2Properties {
+public class BaseAuth2Properties {
 
     private String clientId;
     private String clientSecret;
+    /**
+     * 使用 Coding 登录时，需要传该值。
+     * <p>
+     * 团队域名前缀，比如以“ https://justauth.coding.net/ ”为例，{@code codingGroupName} = justauth
+     *
+     * @since 1.15.5
+     */
+    private String codingGroupName;
+    /**
+     * 支付宝公钥：当选择支付宝登录时，该值可用
+     * 对应“RSA2(SHA256)密钥”中的“支付宝公钥”
+     */
+    private String alipayPublicKey;
+    /**
+     * 是否需要申请 unionId，默认: false. 目前只针对qq登录
+     * 注：qq授权登录时，获取 unionId 需要单独发送邮件申请权限。如果个人开发者账号中申请了该权限，可以将该值置为true，在获取openId时就会同步获取unionId
+     * 参考链接：http://wiki.connect.qq.com/unionid%E4%BB%8B%E7%BB%8D
+     * <p>
+     * 1.7.1版本新增参数
+     */
+    private Boolean unionId = false;
+    /**
+     * Stack Overflow Key
+     * <p>
+     *
+     * @since 1.9.0
+     */
+    private String stackOverflowKey;
+    /**
+     * 企业微信，授权方的网页应用ID
+     *
+     * @since 1.10.0
+     */
+    private String agentId;
 }

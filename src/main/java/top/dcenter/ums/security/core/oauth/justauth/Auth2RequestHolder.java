@@ -85,10 +85,6 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
      * CLIENT_SECRET_FIELD_NAME
      */
     private static final String CLIENT_SECRET_FIELD_NAME = "clientSecret";
-    /**
-     * PROVIDER_ID_FIELD_NAME
-     */
-    private static final String PROVIDER_ID_FIELD_NAME = "providerId";
 
     /**
      * key 为 providerId, value 为 {@link Auth2DefaultRequest} 的子类对象
@@ -456,7 +452,7 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
         AuthConfig.AuthConfigBuilder builder = AuthConfig.builder();
 
         // 根据 AuthDefaultSource 获取对应的 Auth2Properties 字段名称(即providerId)
-        String fieldName = getProviderId(source);
+        String providerId = getProviderId(source);
 
         // 获取字段 fieldName(即providerId) 的值
         Class<? extends Auth2Properties> aClass = auth2Properties.getClass();
@@ -466,28 +462,14 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
         for (Field field : declaredFields)
         {
             field.setAccessible(true);
-            if (field.getName().equals(fieldName))
+            if (field.getName().equals(providerId))
             {
                 providerProperties = field.get(auth2Properties);
                 break;
             }
         }
 
-        // 获取 providerProperties 对象中 providerId
-        String providerId = "";
-
         requireNonNull(providerProperties, String.format("获取不到 %s 类型所对应的 BaseAuth2Properties 的子类", source.getName()));
-
-        declaredFields = providerProperties.getClass().getDeclaredFields();
-        for (Field field : declaredFields)
-        {
-            field.setAccessible(true);
-            if (PROVIDER_ID_FIELD_NAME.equals(field.getName()))
-            {
-                providerId = (String) field.get(providerProperties);
-                requireNonNull(providerId, String.format("获取不到 %s 类型所对应的 %s 的值", source.getName(), PROVIDER_ID_FIELD_NAME));
-            }
-        }
 
         // 设置 clientId 与 clientSecret
         Class<BaseAuth2Properties> baseClass = BaseAuth2Properties.class;
