@@ -1,3 +1,7 @@
+## 1.1.9
+### Fixes and Improvements:
+1. release v1.1.9 优化 Auth2Properties.
+
 ## 1.1.8
 ### Fixes and Improvements:
 1. release v1.1.8 优化 Auth2Properties 与 BaseAuth2Properties.

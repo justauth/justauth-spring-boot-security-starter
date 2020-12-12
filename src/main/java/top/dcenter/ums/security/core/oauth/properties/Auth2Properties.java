@@ -46,6 +46,7 @@ import java.time.Duration;
  */
 @SuppressWarnings({"jol"})
 @Getter
+@Setter
 @ConfigurationProperties("ums.oauth")
 public class Auth2Properties {
 
@@ -54,172 +55,172 @@ public class Auth2Properties {
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties github = new BaseAuth2Properties();
+    private BaseAuth2Properties github;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties weibo = new BaseAuth2Properties();
+    private BaseAuth2Properties weibo;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties gitee = new BaseAuth2Properties();
+    private BaseAuth2Properties gitee;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties dingtalk = new BaseAuth2Properties();
+    private BaseAuth2Properties dingtalk;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties baidu = new BaseAuth2Properties();
+    private BaseAuth2Properties baidu;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties coding = new BaseAuth2Properties();
+    private BaseAuth2Properties coding;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties oschina = new BaseAuth2Properties();
+    private BaseAuth2Properties oschina;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties alipay = new BaseAuth2Properties();
+    private BaseAuth2Properties alipay;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties qq = new BaseAuth2Properties();
+    private BaseAuth2Properties qq;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties wechatOpen = new BaseAuth2Properties();
+    private BaseAuth2Properties wechatOpen;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties wechatMp = new BaseAuth2Properties();
+    private BaseAuth2Properties wechatMp;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties taobao = new BaseAuth2Properties();
+    private BaseAuth2Properties taobao;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties google = new BaseAuth2Properties();
+    private BaseAuth2Properties google;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties facebook = new BaseAuth2Properties();
+    private BaseAuth2Properties facebook;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties douyin = new BaseAuth2Properties();
+    private BaseAuth2Properties douyin;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties linkedin = new BaseAuth2Properties();
+    private BaseAuth2Properties linkedin;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties microsoft = new BaseAuth2Properties();
+    private BaseAuth2Properties microsoft;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties mi = new BaseAuth2Properties();
+    private BaseAuth2Properties mi;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties toutiao = new BaseAuth2Properties();
+    private BaseAuth2Properties toutiao;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties teambition = new BaseAuth2Properties();
+    private BaseAuth2Properties teambition;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties renren = new BaseAuth2Properties();
+    private BaseAuth2Properties renren;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties pinterest = new BaseAuth2Properties();
+    private BaseAuth2Properties pinterest;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties stackOverflow = new BaseAuth2Properties();
+    private BaseAuth2Properties stackOverflow;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties huawei = new BaseAuth2Properties();
+    private BaseAuth2Properties huawei;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties wechatEnterprise = new BaseAuth2Properties();
+    private BaseAuth2Properties wechatEnterprise;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties kujiale = new BaseAuth2Properties();
+    private BaseAuth2Properties kujiale;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties gitlab = new BaseAuth2Properties();
+    private BaseAuth2Properties gitlab;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties meituan = new BaseAuth2Properties();
+    private BaseAuth2Properties meituan;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties eleme = new BaseAuth2Properties();
+    private BaseAuth2Properties eleme;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties twitter = new BaseAuth2Properties();
+    private BaseAuth2Properties twitter;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties jd = new BaseAuth2Properties();
+    private BaseAuth2Properties jd;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties aliyun = new BaseAuth2Properties();
+    private BaseAuth2Properties aliyun;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties customize = new BaseAuth2Properties();
+    private BaseAuth2Properties customize;
     /**
      * 字段名称与其所代表的第三方的 providerId 相同.
      */
     @NestedConfigurationProperty
-    private final BaseAuth2Properties gitlabPrivate = new BaseAuth2Properties();
+    private BaseAuth2Properties gitlabPrivate;
 
 
     // =================== OAuth2 属性 ===================
@@ -227,14 +228,12 @@ public class Auth2Properties {
      * 抑制反射警告, 支持 JDK11, 默认: false ,
      * 在确认 WARNING: An illegal reflective access operation has occurred 安全后, 可以打开此设置, 可以抑制反射警告.
      */
-    @Setter
     private Boolean suppressReflectWarning = false;
 
     /**
      * 第三方授权登录后如未注册用户是否支持自动注册功能, 默认: true<br>
      * {@code https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22KP3}
      */
-    @Setter
     private Boolean autoSignUp = true;
 
     /**
@@ -246,44 +245,37 @@ public class Auth2Properties {
      * {@link AuthenticationSuccessHandler} 上处理返回 json; 判断是否为临时用户的条件是: {@link Authentication#getPrincipal()}
      * 是否为 {@link TemporaryUser} 类型.<br>
      */
-    @Setter
     private String signUpUrl = "/signUp.html";
 
     /**
      * 第三方登录回调的域名, 例如：https://localhost 默认为 "http://127.0.0.1"，
      * redirectUrl 直接由 {domain}/{servletContextPath}/{redirectUrlPrefix}/{providerId}(ums.oauth.[qq/gitee/weibo])组成
      */
-    @Setter
     private String domain = "http://127.0.0.1";
 
     /**
      * 第三方登录回调处理 url 前缀 ，也就是 RedirectUrl 的前缀, 不包含 ServletContextPath，默认为 /auth2/login.<br><br>
      */
-    @Setter
     private String redirectUrlPrefix = "/auth2/login";
 
     /**
      * 第三方登录授权登录 url 前缀, 不包含 ServletContextPath，默认为 /auth2/authorization.<br><br>
      */
-    @Setter
     private String authLoginUrlPrefix = "/auth2/authorization";
 
     /**
      * 第三方授权登录成功后的默认权限, 多个权限用逗号分开, 默认为: "ROLE_USER"
      */
-    @Setter
     private String defaultAuthorities = "ROLE_USER";
 
     /**
      * 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户密码, 默认为: "".<br>
      *     注意: 生产环境更换密码
      */
-    @Setter
     private String temporaryUserPassword = "";
     /**
      * 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户的默认权限, 多个权限用逗号分开, 默认为: "ROLE_TEMPORARY_USER"
      */
-    @Setter
     private String temporaryUserAuthorities = "ROLE_TEMPORARY_USER";
 
     // =================== refreshToken 定时任务 属性 ===================
@@ -296,7 +288,6 @@ public class Auth2Properties {
      * 是否分布式执行依据 IOC 容器中是否有 {@link RedisConnectionFactory})
      * @see org.springframework.scheduling.support.CronSequenceGenerator
      */
-    @Setter
     private String refreshTokenJobCron = "0 * 2 * * ?";
 
     /**
@@ -305,27 +296,24 @@ public class Auth2Properties {
      * 支持分布式(分布式 IOC 容器中必须有 {@link RedisConnectionFactory}, 也就是说,
      * 是否分布式执行依据 IOC 容器中是否有 {@link RedisConnectionFactory})
      */
-    @Setter
     private Boolean enableRefreshTokenJob = false;
 
     /**
      * 定时刷新 accessToken 任务时, 批处理数据库的记录数.<br>
      * 注意: 分布式应用时, 此配置不同服务器配置必须是一样的. batchCount 大小需要根据实际生产环境进行优化
      */
-    @Setter
     private Integer batchCount = 1000;
 
     /**
      * accessToken 的剩余有效期内进行刷新 accessToken, 默认: 24, 单位: 小时.<br>
      * 注意: 需要根据实际生产环境进行优化
      */
-    @Setter
     private Integer remainingExpireIn = 24;
 
     // =================== justAuth 属性 ===================
 
     @NestedConfigurationProperty
-    private final JustAuthProperties justAuth = new JustAuthProperties();
+    private JustAuthProperties justAuth;
     /**
      * 针对国外服务可以单独设置代理
      * HttpConfig config = new HttpConfig();
@@ -334,7 +322,7 @@ public class Auth2Properties {
      *
      * @since 1.15.5
      */
-    private final HttpConfigProperties proxy = new HttpConfigProperties();
+    private HttpConfigProperties proxy;
 
 
     @Getter
