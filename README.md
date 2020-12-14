@@ -629,7 +629,7 @@ new Thread(() -> {
 | ums.oauth.justAuth.timeout                                   | Duration       | PT180S               | 默认 state 缓存过期时间：3分钟(PT180S) 鉴于授权过程中，根据个人的操作习惯，或者授权平台的不同（google等），每个授权流程的耗时也有差异，不过单个授权流程一般不会太长 本缓存工具默认的过期时间设置为3分钟，即程序默认认为3分钟内的授权有效，超过3分钟则默认失效，失效后删除 |                       |
 | ums.oauth.justAuth.cacheType                                 | StateCacheType | SESSION              | JustAuth state 缓存类型, 默认 session                        | DEFAULT/SESSION/REDIS |
 | ums.oauth.justAuth.cacheKeyPrefix                            | String         | JUST_AUTH:           | JustAuth state 缓存 key 前缀                                 |                       |
-| ums.oauth.justAuth.scopes                                    | List<String>   |                      | 支持自定义授权平台的 scope 内容                              |                       |
+| ums.oauth.justAuth.scopes                                    | List<String>   |                      | 支持自定义授权平台的 `scope` 内容, 格式为: `source:scope`, 例如: `[QQ:write, QQ:read, GITEE:email, GITHUB:read]`   |                       |
 | **proxy**                                                    |                |                      |                                                              |                       |
 | ums.oauth.proxy.enable                                       | Boolean        | false                | 是否支持代理, 默认为: false. 当为 false 时, 其他属性都失效.  | true/false            |
 | ums.oauth.proxy.proxy                                        | Proxy.Type     | HTTP                 | 针对国外服务可以单独设置代理类型, 默认 Proxy.Type.HTTP       | HTTP/DIRECT/SOCKS     |
@@ -638,148 +638,150 @@ new Thread(() -> {
 | ums.oauth.proxy.timeout                                      | Duration       | PT3S                 | 代理超时, 默认 PT3S                                          |                       |
 | ums.oauth.proxy.foreignTimeout                               | Duration       | PT15S                | 用于国外网站代理超时, 默认 PT15S                             |                       |
 | **github**                                                   |                |                      |                                                              |                       |
-| ums.oauth.github.providerId                                  | String         | github               | 第三方服务商 id                                              |                       |
+| ums.oauth.github.providerId                                  | String         | github               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.github.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.github.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **weibo**                                                    |                |                      |                                                              |                       |
-| ums.oauth.weibo.providerId                                   | String         | weibo                | 第三方服务商 id                                              |                       |
+| ums.oauth.weibo.providerId                                   | String         | weibo                | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.weibo.clientId                                     | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.weibo.clientSecret                                 | String         |                      | `client Secret`                                              |                       |
 | **gitee**                                                    |                |                      |                                                              |                       |
-| ums.oauth.gitee.providerId                                   | String         | gitee                | 第三方服务商 id                                              |                       |
+| ums.oauth.gitee.providerId                                   | String         | gitee                | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.gitee.clientId                                     | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.gitee.clientSecret                                 | String         |                      | `client Secret`                                              |                       |
 | **dingtalk**                                                 |                |                      |                                                              |                       |
-| ums.oauth.dingtalk.providerId                                | String         | dingtalk             | 第三方服务商 id                                              |                       |
+| ums.oauth.dingtalk.providerId                                | String         | dingtalk             | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.dingtalk.clientId                                  | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.dingtalk.clientSecret                              | String         |                      | `client Secret`                                              |                       |
 | **baidu**                                                    |                |                      |                                                              |                       |
-| ums.oauth.baidu.providerId                                   | String         | baidu                | 第三方服务商 id                                              |                       |
+| ums.oauth.baidu.providerId                                   | String         | baidu                | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.baidu.clientId                                     | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.baidu.clientSecret                                 | String         |                      | `client Secret`                                              |                       |
 | **coding**                                                   |                |                      |                                                              |                       |
-| ums.oauth.coding.providerId                                  | String         | coding               | 第三方服务商 id                                              |                       |
+| ums.oauth.coding.providerId                                  | String         | coding               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.coding.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.coding.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.coding.codingGroupName                             | String         |                      | 使用 Coding 登录时，需要传该值。<br/>团队域名前缀，比如以“ https://justauth.coding.net/ ”为例，``codingGroupName = justauth` |                       |
 | **oschina**                                                  |                |                      |                                                              |                       |
-| ums.oauth.oschina.providerId                                 | String         | oschina              | 第三方服务商 id                                              |                       |
+| ums.oauth.oschina.providerId                                 | String         | oschina              | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.oschina.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.oschina.clientSecret                               | String         |                      | `client Secret`                                              |                       |
 | **alipay**                                                   |                |                      |                                                              |                       |
-| ums.oauth.alipay.providerId                                  | String         | alipay               | 第三方服务商 id                                              |                       |
+| ums.oauth.alipay.providerId                                  | String         | alipay               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.alipay.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.alipay.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.alipay.alipayPublicKey                             | String         |                      | 支付宝公钥：当选择支付宝登录时，该值可用 对应“RSA2(SHA256)密钥”中的“支付宝公钥” |                       |
 | **qq**                                                       |                |                      |                                                              |                       |
-| ums.oauth.qq.providerId                                      | String         | qq                   | 第三方服务商 id                                              |                       |
+| ums.oauth.qq.providerId                                      | String         | qq                   | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.qq.clientId                                        | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.qq.clientSecret                                    | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.qq.unionId                                         | String         |                      | 是否需要申请 unionId，默认: false. 目前只针对qq登录 注：qq授权登录时，获取 unionId 需要单独发送邮件申请权限。如果个人开发者账号中申请了该权限，可以将该值置为true，在获取openId时就会同步获取unionId 参考链接：http://wiki.connect.qq.com/unionid%E4%BB%8B%E7%BB%8D |                       |
 | **wechatOpen**                                               |                |                      |                                                              |                       |
-| ums.oauth.wechatOpen.providerId                              | String         | wechatOpen           | 第三方服务商 id                                              |                       |
+| ums.oauth.wechatOpen.providerId                              | String         | wechatOpen           | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.wechatOpen.clientId                                | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.wechatOpen.clientSecret                            | String         |                      | `client Secret`                                              |                       |
 | **wechatMp**                                                 |                |                      |                                                              |                       |
-| ums.oauth.wechatMp.providerId                                | String         | wechatMp             | 第三方服务商 id                                              |                       |
+| ums.oauth.wechatMp.providerId                                | String         | wechatMp             | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.wechatMp.clientId                                  | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.wechatMp.clientSecret                              | String         |                      | `client Secret`                                              |                       |
 | **taobao**                                                   |                |                      |                                                              |                       |
-| ums.oauth.taobao.providerId                                  | String         | taobao               | 第三方服务商 id                                              |                       |
+| ums.oauth.taobao.providerId                                  | String         | taobao               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.taobao.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.taobao.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **google**                                                   |                |                      |                                                              |                       |
-| ums.oauth.google.providerId                                  | String         | google               | 第三方服务商 id                                              |                       |
+| ums.oauth.google.providerId                                  | String         | google               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.google.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.google.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **facebook**                                                 |                |                      |                                                              |                       |
-| ums.oauth.facebook.providerId                                | String         | facebook             | 第三方服务商 id                                              |                       |
+| ums.oauth.facebook.providerId                                | String         | facebook             | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.facebook.clientId                                  | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.facebook.clientSecret                              | String         |                      | `client Secret`                                              |                       |
 | **github**                                                   |                |                      |                                                              |                       |
-| ums.oauth.github.providerId                                  | String         | github               | 第三方服务商 id                                              |                       |
+| ums.oauth.github.providerId                                  | String         | github               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.github.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.github.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **douyin**                                                   |                |                      |                                                              |                       |
-| ums.oauth.douyin.providerId                                  | String         | douyin               | 第三方服务商 id                                              |                       |
+| ums.oauth.douyin.providerId                                  | String         | douyin               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.douyin.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.douyin.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **linkedin**                                                 |                |                      |                                                              |                       |
-| ums.oauth.linkedin.providerId                                | String         | linkedin             | 第三方服务商 id                                              |                       |
+| ums.oauth.linkedin.providerId                                | String         | linkedin             | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.linkedin.clientId                                  | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.linkedin.clientSecret                              | String         |                      | `client Secret`                                              |                       |
 | **microsoft**                                                |                |                      |                                                              |                       |
-| ums.oauth.microsoft.providerId                               | String         | microsoft            | 第三方服务商 id                                              |                       |
+| ums.oauth.microsoft.providerId                               | String         | microsoft            | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.microsoft.clientId                                 | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.microsoft.clientSecret                             | String         |                      | `client Secret`                                              |                       |
 | **mi**                                                       |                |                      |                                                              |                       |
-| ums.oauth.mi.providerId                                      | String         | mi                   | 第三方服务商 id                                              |                       |
+| ums.oauth.mi.providerId                                      | String         | mi                   | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.mi.clientId                                        | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.mi.clientSecret                                    | String         |                      | `client Secret`                                              |                       |
 | **toutiao**                                                  |                |                      |                                                              |                       |
-| ums.oauth.toutiao.providerId                                 | String         | toutiao              | 第三方服务商 id                                              |                       |
+| ums.oauth.toutiao.providerId                                 | String         | toutiao              | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.toutiao.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.toutiao.clientSecret                               | String         |                      | `client Secret`                                              |                       |
 | **teambition**                                               |                |                      |                                                              |                       |
-| ums.oauth.teambition.providerId                              | String         | teambition           | 第三方服务商 id                                              |                       |
+| ums.oauth.teambition.providerId                              | String         | teambition           | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.teambition.clientId                                | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.teambition.clientSecret                            | String         |                      | `client Secret`                                              |                       |
 | **renren**                                                   |                |                      |                                                              |                       |
-| ums.oauth.renren.providerId                                  | String         | renren               | 第三方服务商 id                                              |                       |
+| ums.oauth.renren.providerId                                  | String         | renren               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.renren.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.renren.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **pinterest**                                                |                |                      |                                                              |                       |
-| ums.oauth.pinterest.providerId                               | String         | pinterest            | 第三方服务商 id                                              |                       |
+| ums.oauth.pinterest.providerId                               | String         | pinterest            | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.pinterest.clientId                                 | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.pinterest.clientSecret                             | String         |                      | `client Secret`                                              |                       |
 | **stackOverflow**                                            |                |                      |                                                              |                       |
-| ums.oauth.stackOverflow.providerId                           | String         | stackOverflow        | 第三方服务商 id                                              |                       |
+| ums.oauth.stackOverflow.providerId                           | String         | stackOverflow        | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.stackOverflow.clientId                             | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.stackOverflow.clientSecret                         | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.stackOverflow.stackOverflowKey                     | String         |                      | Stack Overflow Key                                           |                       |
 | **huawei**                                                   |                |                      |                                                              |                       |
-| ums.oauth.huawei.providerId                                  | String         | huawei               | 第三方服务商 id                                              |                       |
+| ums.oauth.huawei.providerId                                  | String         | huawei               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.huawei.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.huawei.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **wechatEnterprise**                                         |                |                      |                                                              |                       |
-| ums.oauth.wechatEnterprise.providerId                        | String         | wechatEnterprise     | 第三方服务商 id                                              |                       |
+| ums.oauth.wechatEnterprise.providerId                        | String         | wechatEnterprise     | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.wechatEnterprise.clientId                          | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.wechatEnterprise.clientSecret                      | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.wechatEnterprise.agentId                           | String         |                      | 企业微信，授权方的网页应用ID                                 |                       |
 | **kujiale**                                                  |                |                      |                                                              |                       |
-| ums.oauth.kujiale.providerId                                 | String         | kujiale              | 第三方服务商 id                                              |                       |
+| ums.oauth.kujiale.providerId                                 | String         | kujiale              | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.kujiale.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.kujiale.clientSecret                               | String         |                      | `client Secret`                                              |                       |
 | **gitlab**                                                   |                |                      |                                                              |                       |
-| ums.oauth.gitlab.providerId                                  | String         | gitlab               | 第三方服务商 id                                              |                       |
+| ums.oauth.gitlab.providerId                                  | String         | gitlab               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.gitlab.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.gitlab.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **meituan**                                                  |                |                      |                                                              |                       |
-| ums.oauth.meituan.providerId                                 | String         | meituan              | 第三方服务商 id                                              |                       |
+| ums.oauth.meituan.providerId                                 | String         | meituan              | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.meituan.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.meituan.clientSecret                               | String         |                      | `client Secret`                                              |                       |
 | **eleme**                                                    |                |                      |                                                              |                       |
-| ums.oauth.eleme.providerId                                   | String         | eleme                | 第三方服务商 id                                              |                       |
+| ums.oauth.eleme.providerId                                   | String         | eleme                | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.eleme.clientId                                     | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.eleme.clientSecret                                 | String         |                      | `client Secret`                                              |                       |
 | **twitter**                                                  |                |                      |                                                              |                       |
-| ums.oauth.twitter.providerId                                 | String         | twitter              | 第三方服务商 id                                              |                       |
+| ums.oauth.twitter.providerId                                 | String         | twitter              | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.twitter.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.twitter.clientSecret                               | String         |                      | `client Secret`                                              |                       |
 | **jd**                                                       |                |                      |                                                              |                       |
-| ums.oauth.jd.providerId                                      | String         | jd                   | 第三方服务商 id                                              |                       |
+| ums.oauth.jd.providerId                                      | String         | jd                   | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.jd.clientId                                        | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.jd.clientSecret                                    | String         |                      | `client Secret`                                              |                       |
 | **aliyun**                                                   |                |                      |                                                              |                       |
-| ums.oauth.aliyun.providerId                                  | String         | aliyun               | 第三方服务商 id                                              |                       |
+| ums.oauth.aliyun.providerId                                  | String         | aliyun               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.aliyun.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.aliyun.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **customize**                                                   |                |                      |                                                              |                       |
-| ums.oauth.customize.providerId                                  | String         | aliyun               | 第三方服务商 id                                              |                       |
+| ums.oauth.customize.providerId                                  | String         | customize               | 第三方服务商 id, 通过 customizeProviderId 更改                                           |                       |
 | ums.oauth.customize.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.customize.clientSecret                                | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.customize.customizeProviderId                                | String         |                      | 自定义第三方授权登录, 当 `Auth2Properties#customize` 时有效, 此字段必须以驼峰方式命名. 比如此字段的值为 `umsCustomize`, 那么 `/auth2/authorization/customize` 会替换为 `/auth2/authorization/umsCustomize`                                              |                       |
+| ums.oauth.customize.customizeIsForeign                                | Boolean         | false                     | 自定义第三方授权登录, 当 `Auth2Properties#customize` 时有效, 设置第三方是否在国外, 默认: `false`. 如果为 `false` 时, 设置 `HttpConfig` 的超时时间为 `ums.oauth.proxy.timeout` 的值. 如果为 `true` 时, 设置 `HttpConfig` 的超时时间为 `ums.oauth.proxy.foreignTimeout` 的值.                                             | true/false                      |
 | **gitlabPrivate**                                                   |                |                      |                                                              |                       |
-| ums.oauth.gitlabPrivate.providerId                                  | String         | aliyun               | 第三方服务商 id                                              |                       |
+| ums.oauth.gitlabPrivate.providerId                                  | String         | gitlabPrivate               | 第三方服务商 id, 不可更改                                           |                       |
 | ums.oauth.gitlabPrivate.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.gitlabPrivate.clientSecret                                | String         |                      | `client Secret`                                              |                       |
     

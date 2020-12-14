@@ -1,5 +1,9 @@
 ## 1.1.9
 ### Fixes and Improvements:
+1. 改进: 使自定义第三方授权登录可以自定义 providerId.
+
+## 1.1.9
+### Fixes and Improvements:
 1. release v1.1.9 优化 Auth2Properties.
 
 ## 1.1.8
