@@ -23,6 +23,7 @@
 
 package demo.config;
 
+import demo.handler.DemoSignUpUrlAuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +32,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import top.dcenter.ums.security.core.oauth.config.Auth2AutoConfigurer;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 
@@ -39,6 +41,7 @@ import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
  * @author YongWu zheng
  * @version V2.0  Created by 2020/10/18 22:39
  */
+@SuppressWarnings("ALL")
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -46,6 +49,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private Auth2AutoConfigurer auth2AutoConfigurer;
     @Autowired
     private Auth2Properties auth2Properties;
+
+    private AuthenticationSuccessHandler authenticationSuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -66,7 +71,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.formLogin()
             .loginPage("/login.html")
-            .defaultSuccessUrl("/index.html");
+            .successHandler(this.authenticationSuccessHandler);
         http.logout().logoutSuccessUrl("/login.html");
 
         http.csrf().disable();
@@ -87,4 +92,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests().anyRequest().permitAll();
     }
+
+    @Bean
+    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+        DemoSignUpUrlAuthenticationSuccessHandler demoSignUpUrlAuthenticationSuccessHandler = new DemoSignUpUrlAuthenticationSuccessHandler();
+        demoSignUpUrlAuthenticationSuccessHandler.setDefaultTargetUrl("/index.html");
+        this.authenticationSuccessHandler = demoSignUpUrlAuthenticationSuccessHandler;
+        return demoSignUpUrlAuthenticationSuccessHandler;
+    }
+
 }

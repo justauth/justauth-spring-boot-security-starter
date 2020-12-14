@@ -28,7 +28,6 @@ import org.springframework.security.web.authentication.SavedRequestAwareAuthenti
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
 import top.dcenter.ums.security.core.vo.ResponseResult;
@@ -46,7 +45,6 @@ import static top.dcenter.ums.security.core.oauth.util.MvcUtil.toJsonString;
  * @author YongWu zheng
  * @version V2.0  Created by 2020/10/30 10:19
  */
-@Component
 public class DemoSignUpUrlAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
     private RequestCache requestCache = new HttpSessionRequestCache();
 

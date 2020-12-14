@@ -32,12 +32,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 演示对 state 的加密解密, 传递参数
+ * 演示对 state 的加密解密, 进行传递参数
  * @author YongWu zheng
  * @version V2.0  Created by 2020/10/26 18:50
  */
 @Component
-public class Auth2StatCoderImpl implements Auth2StateCoder {
+public class Auth2StateCoderImpl implements Auth2StateCoder {
 
     @Override
     public String encode(@NonNull String state, @NonNull HttpServletRequest request) {

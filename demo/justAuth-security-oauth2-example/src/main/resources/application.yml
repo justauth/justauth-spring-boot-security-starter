@@ -99,6 +99,13 @@ ums:
     customize:
       client-id: c971cf1634460e18310a5d7cb0f55d7d143a72015b2f29aee6a0e8911efac7eb
       client-secret: 309c9521721e3eb385a99a6bde2755f3107c7e15f3b8e0527c9f3ea4d1ce33bb
+      # 自定义第三方授权登录时, 当 Auth2Properties#customize 时有效, 此字段必须以驼峰方式命名.
+      # 比如此字段的值为 umsCustomize, 那么 /auth2/authorization/customize 会替换为 /auth2/authorization/umsCustomize
+      customize-provider-id: giteeCustomize
+      # 自定义第三方授权登录, 当 Auth2Properties#customize 时有效, 设置第三方是否在国外, 默认: false.
+      # 如果为 false 时, 设置 {@link HttpConfig} 的超时时间为 ums.oauth.proxy.timeout 的值.
+      # 如果为 true 时, 设置 {@link HttpConfig} 的超时时间为 ums.oauth.proxy.foreignTimeout 的值.
+      customize-is-foreign: false
     # 第三方登录授权登录 url 前缀, 不包含 ServletContextPath，默认为 /auth2/authorization.
     auth-login-url-prefix: /auth2/authorization
     # 第三方登录回调处理 url 前缀 ，也就是 RedirectUrl 的前缀, 不包含 ServletContextPath，默认为 /auth2/login.
