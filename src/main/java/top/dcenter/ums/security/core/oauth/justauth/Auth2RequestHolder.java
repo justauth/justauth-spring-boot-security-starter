@@ -61,8 +61,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static java.lang.String.join;
 import static java.util.Objects.requireNonNull;
+import static org.springframework.util.StringUtils.hasText;
 import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.URL_SEPARATOR;
+import static top.dcenter.ums.security.core.oauth.util.MvcUtil.splitByCharacterTypeCamelCase;
 
 /**
  * JustAuth内置的各api需要的url， 用枚举类分平台类型管理
@@ -184,14 +187,18 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
             Auth2RequestHolder.setAuthCustomizeSource(applicationContext.getBean(AuthCustomizeSource.class));
         }
         catch (Exception e) {
-            log.info("没有自定义实现 {}", AuthCustomizeSource.class.getName());
+            if (log.isDebugEnabled()) {
+                log.debug("没有自定义实现 {}", AuthCustomizeSource.class.getName());
+            }
         }
 
         try {
             Auth2RequestHolder.setAuthGitlabPrivateSource(applicationContext.getBean(AuthGitlabPrivateSource.class));
         }
         catch (Exception e) {
-            log.info("没有自定义实现 {}", AuthGitlabPrivateSource.class.getName());
+            if (log.isDebugEnabled()) {
+                log.debug("没有自定义实现 {}", AuthGitlabPrivateSource.class.getName());
+            }
         }
 
         // 获取 auth2Properties
@@ -226,16 +233,25 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
             {
                 String providerId = field.getName();
 
-                String[] splits = MvcUtil.splitByCharacterTypeCamelCase(providerId, true);
+                String[] splits = splitByCharacterTypeCamelCase(providerId, true);
                 AuthSource source = null;
                 try {
-                    source = AuthDefaultSource.valueOf(String.join(FIELD_SEPARATOR, splits).toUpperCase());
+                    source = AuthDefaultSource.valueOf(join(FIELD_SEPARATOR, splits).toUpperCase());
                     SOURCE_PROVIDER_ID_MAP.put(source, providerId);
                 }
                 catch (Exception e) {
                     if (Auth2RequestHolder.authCustomizeSource != null
                             && getProviderIdBySource(Auth2RequestHolder.authCustomizeSource).equals(providerId)) {
                         source = Auth2RequestHolder.authCustomizeSource;
+                        providerId = ((BaseAuth2Properties) baseProperties).getCustomizeProviderId();
+                        // 重新设置 AuthCustomizeSource 的 name 字段的值, 比如 providerId = customUms, 那么 name = CUSTOM_UMS
+                        Class<? extends AuthCustomizeSource> authCustomizeSourceClass =
+                                Auth2RequestHolder.authCustomizeSource.getClass();
+                        Field nameField = authCustomizeSourceClass.getSuperclass().getDeclaredField("name");
+                        nameField.setAccessible(true);
+                        nameField.set(Auth2RequestHolder.authCustomizeSource,
+                                  join(FIELD_SEPARATOR, splitByCharacterTypeCamelCase(providerId, true)).toUpperCase());
+
                         SOURCE_PROVIDER_ID_MAP.put(Auth2RequestHolder.authCustomizeSource, providerId);
                     }
                     else if (Auth2RequestHolder.authGitlabPrivateSource != null
@@ -286,6 +302,9 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
         config.setIgnoreCheckState(justAuth.getIgnoreCheckState());
 
         if (source instanceof AuthCustomizeSource || source instanceof AuthGitlabPrivateSource) {
+            if (auth2Properties.getCustomize().getCustomizeIsForeign()) {
+                config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
+            }
             return this.getAuthDefaultRequestAdapter(config, source, authStateCache);
         }
 
@@ -466,6 +485,14 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
             {
                 providerProperties = field.get(auth2Properties);
                 break;
+            }
+            else if ("customize".equals(field.getName())) {
+                BaseAuth2Properties baseAuth2Properties = (BaseAuth2Properties) field.get(auth2Properties);
+                String customizeProviderId = baseAuth2Properties.getCustomizeProviderId();
+                if (hasText(customizeProviderId) && customizeProviderId.equals(providerId)) {
+                    providerProperties = baseAuth2Properties;
+                    break;
+                }
             }
         }
 

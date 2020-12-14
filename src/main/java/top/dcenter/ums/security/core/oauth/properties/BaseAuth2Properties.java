@@ -23,6 +23,7 @@
 
 package top.dcenter.ums.security.core.oauth.properties;
 
+import com.xkcoding.http.config.HttpConfig;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -71,4 +72,16 @@ public class BaseAuth2Properties {
      * @since 1.10.0
      */
     private String agentId;
+    /**
+     * 自定义第三方授权登录, 当 {@code Auth2Properties#customize} 时有效, 此字段必须以驼峰方式命名.
+     * 比如此字段的值为 umsCustomize, 那么 /auth2/authorization/customize 会替换为 /auth2/authorization/umsCustomize
+     */
+    private String customizeProviderId;
+
+    /**
+     * 自定义第三方授权登录, 当 {@code Auth2Properties#customize} 时有效, 设置第三方是否在国外, 默认: false.
+     * 如果为 false 时, 设置 {@link HttpConfig} 的超时时间为 ums.oauth.proxy.timeout 的值.
+     * 如果为 true 时, 设置 {@link HttpConfig} 的超时时间为 ums.oauth.proxy.foreignTimeout 的值.
+     */
+    private Boolean customizeIsForeign = Boolean.FALSE;
 }
