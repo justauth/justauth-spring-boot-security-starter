@@ -155,7 +155,7 @@ public class Auth2AutoConfiguration implements InitializingBean, ApplicationCont
 
     @Bean
     public Auth2RequestHolder auth2RequestHolder() {
-        return new Auth2RequestHolder();
+        return Auth2RequestHolder.getInstance();
     }
 
     @SuppressWarnings("AlibabaMethodTooLong")

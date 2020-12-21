@@ -62,6 +62,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static java.lang.String.join;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static org.springframework.util.StringUtils.hasText;
 import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.URL_SEPARATOR;
@@ -75,6 +77,28 @@ import static top.dcenter.ums.security.core.oauth.util.MvcUtil.splitByCharacterT
  */
 @Slf4j
 public final class Auth2RequestHolder implements InitializingBean, ApplicationContextAware {
+
+    private Auth2RequestHolder() {}
+
+    private volatile static Auth2RequestHolder INSTANCE;
+
+    /**
+     * 获取单例模式 {@link Auth2RequestHolder}
+     * @return 返回  {@link Auth2RequestHolder}
+     */
+    public static Auth2RequestHolder getInstance() {
+        if (nonNull(INSTANCE)) {
+            return INSTANCE;
+        }
+        synchronized (Auth2RequestHolder.class) {
+            if (isNull(INSTANCE)) {
+                //noinspection UnnecessaryLocalVariable
+                final Auth2RequestHolder auth2RequestHolder = new Auth2RequestHolder();
+                INSTANCE = auth2RequestHolder;
+            }
+            return INSTANCE;
+        }
+    }
 
     /**
      * 字段分隔符
@@ -331,6 +355,8 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
                 break;
             case STACK_OVERFLOW:
                 config.setStackOverflowKey(auth2Properties.getStackOverflow().getStackOverflowKey());
+                config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
+                break;
             case GITHUB: case GOOGLE: case FACEBOOK: case MICROSOFT: case PINTEREST: case GITLAB: case TWITTER:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
                 break;

@@ -52,7 +52,9 @@ import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.HEADE
  * @version V1.0  Created by 2020/9/17 18:32
  */
 @Slf4j
-public class MvcUtil {
+public final class MvcUtil {
+
+    private MvcUtil() { }
 
     /**
      * servletContextPath, 在应用启动时通过 {@link Auth2AutoConfiguration} 自动注入.
