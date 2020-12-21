@@ -22,6 +22,8 @@
  */
 package top.dcenter.ums.security.core.mdc.filter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -48,6 +50,8 @@ import static top.dcenter.ums.security.core.mdc.utils.MdcUtil.getMdcId;
  * @version V2.0  Created by 2020/10/31 18:19
  */
 public class MdcLogFilter extends OncePerRequestFilter {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /**
      * 在输出日志中加上指定的 MDC_TRACE_ID
@@ -89,7 +93,15 @@ public class MdcLogFilter extends OncePerRequestFilter {
         if (isEnableMdc(request)) {
             String token = getMdcId(idType, mdcIdGenerator);
             MDC.put(MDC_KEY, token);
-            filterChain.doFilter(request, response);
+            try {
+                filterChain.doFilter(request, response);
+            }
+            catch (Exception e) {
+                log.error(e.getMessage(), e);
+                request.setAttribute(MDC_KEY, token);
+                MDC.clear();
+                throw e;
+            }
             MDC.clear();
             return;
         }
