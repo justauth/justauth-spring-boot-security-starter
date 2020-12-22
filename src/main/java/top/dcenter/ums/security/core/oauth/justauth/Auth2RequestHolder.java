@@ -32,6 +32,7 @@ import me.zhyd.oauth.config.AuthSource;
 import me.zhyd.oauth.request.AuthDefaultRequest;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.context.ApplicationContext;
@@ -39,6 +40,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.context.WebApplicationContext;
 import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateRedisCache;
 import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateSessionCache;
 import top.dcenter.ums.security.core.oauth.justauth.enums.StateCacheType;
@@ -50,7 +52,6 @@ import top.dcenter.ums.security.core.oauth.justauth.source.AuthGitlabPrivateSour
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 import top.dcenter.ums.security.core.oauth.properties.BaseAuth2Properties;
 import top.dcenter.ums.security.core.oauth.properties.JustAuthProperties;
-import top.dcenter.ums.security.core.oauth.util.MvcUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -545,7 +546,7 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
         }
 
         // 构建 redirectUri
-        String redirectUri = auth2Properties.getDomain() + MvcUtil.getServletContextPath()
+        String redirectUri = auth2Properties.getDomain() + getServletContextPath()
                 + auth2Properties.getRedirectUrlPrefix() + URL_SEPARATOR + providerId;
 
         return builder.redirectUri(redirectUri).build();
@@ -592,6 +593,26 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
         String[] splits = ((AuthDefaultSource) source).name().split(FIELD_SEPARATOR);
         String authRequestClassName = AUTH_REQUEST_PACKAGE + toAuthRequestClassName(splits);
         return Class.forName(authRequestClassName);
+    }
+
+    /**
+     * 获取 servletContextPath
+     * @return servletContextPath
+     */
+    private String getServletContextPath() {
+        String contextPath;
+        try
+        {
+            contextPath = requireNonNull(((AnnotationConfigServletWebServerApplicationContext) applicationContext)
+                                                 .getServletContext()).getContextPath();
+
+        }
+        catch (Exception e)
+        {
+            contextPath =
+                    requireNonNull(((WebApplicationContext) applicationContext).getServletContext()).getContextPath();
+        }
+        return contextPath;
     }
 
     /**

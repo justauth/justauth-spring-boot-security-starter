@@ -35,11 +35,6 @@ public class SecurityConstants {
     // =================== 认证授权相关 ===================
 
     /**
-     * {@code top.dcenter.ums.security.core.util.MvcUtil} 的 servletContextPath 字段名称
-     */
-    public static final String SERVLET_CONTEXT_PATH_PARAM_NAME = "servletContextPath";
-
-    /**
      * 当请求需要身份认证时，默认跳转的url
      */
     public static final String DEFAULT_UN_AUTHENTICATION_ROUTING_URL = "/authentication/require";

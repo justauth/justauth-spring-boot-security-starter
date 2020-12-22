@@ -32,7 +32,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
-import top.dcenter.ums.security.core.oauth.config.Auth2AutoConfiguration;
 import top.dcenter.ums.security.core.oauth.consts.SecurityConstants;
 
 import javax.servlet.http.HttpServletRequest;
@@ -55,20 +54,6 @@ import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.HEADE
 public final class MvcUtil {
 
     private MvcUtil() { }
-
-    /**
-     * servletContextPath, 在应用启动时通过 {@link Auth2AutoConfiguration} 自动注入.
-     */
-    @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
-    private static String servletContextPath = "";
-
-    /**
-     * 获取 servletContextPath
-     * @return servletContextPath
-     */
-    public static String getServletContextPath() {
-        return servletContextPath;
-    }
 
     /**
      * jackson 封装
