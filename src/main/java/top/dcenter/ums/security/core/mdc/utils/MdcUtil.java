@@ -23,6 +23,7 @@
 package top.dcenter.ums.security.core.mdc.utils;
 
 import org.slf4j.MDC;
+import org.springframework.lang.Nullable;
 import top.dcenter.ums.security.core.mdc.MdcIdGenerator;
 import top.dcenter.ums.security.core.mdc.MdcIdType;
 
@@ -38,6 +39,20 @@ import static top.dcenter.ums.security.core.mdc.filter.MdcLogFilter.MDC_KEY;
 public final class MdcUtil {
 
     private MdcUtil() {}
+
+    /**
+     * 获取当前线程的 MDC 日志链路追踪 ID.
+     * @return  返回 MDC 日志链路追踪 ID, 如果不存在, 返回 null
+     */
+    @Nullable
+    public static String getMdcTraceId() {
+        try {
+            return MDC.get(MDC_KEY);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
 
     /**
      * 获取基于 SLF4J MDC 机制实现日志链路追踪 ID
