@@ -1,4 +1,13 @@
-## 1.1.9
+## 1.1.11
+### Fixes and Improvements:
+1. 修复: 补全 AuthToken 与 UserConnection 建表语句, 与刷新 access Token 定时任务处理逻辑相匹配.
+2. 改进: 添加 Auth2ControllerAdviceHandler 异常处理器且在返回异常信息中添加 MDC 调用链路追踪 ID.
+3. 优化: ServletContextPath 获取方式.
+4. 安全性: 在工具类/Holder 的类上添加 final 字段并把无参构造方法设置为 private.
+5. 日志: 添加 MDC 统一的异常日志.
+
+
+## 1.1.10
 ### Fixes and Improvements:
 1. 改进: 使自定义第三方授权登录可以自定义 providerId.
 
