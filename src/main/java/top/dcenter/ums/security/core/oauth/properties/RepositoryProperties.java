@@ -164,20 +164,21 @@ public class RepositoryProperties {
     private String creatUserConnectionTableSql =
             // @formatter:off
             "CREATE TABLE %s (" +
-            "\t%s varchar(255) NOT NULL,\n" +
-            "\t%s varchar(255) NOT NULL,\n" +
-            "\t%s varchar(255) NOT NULL,\n" +
-            "\t%s int NOT NULL,\n" +
-            "\t%s varchar(255),\n" +
-            "\t%s varchar(512),\n" +
-            "\t%s varchar(512),\n" +
-            "\t%s varchar(512) NOT NULL,\n" +
-            "\t%s varchar(512),\n" +
-            "\t%s varchar(512),\n" +
-            "\t%s bigint,\n" +
+            "\t%s varchar(36) NOT NULL COMMENT '本地用户id',\n" +
+            "\t%s varchar(20) NOT NULL COMMENT '第三方服务商',\n" +
+            "\t%s varchar(36) NOT NULL COMMENT '第三方用户id',\n" +
+            "\t%s int(11) NOT NULL COMMENT 'userId 绑定同一个 providerId 的排序',\n" +
+            "\t%s varchar(64) COMMENT '第三方用户名',\n" +
+            "\t%s varchar(256) COMMENT '主页',\n" +
+            "\t%s varchar(256) COMMENT '头像',\n" +
+            "\t%s varchar(64) NOT NULL COMMENT 'accessToken',\n" +
+            "\t%s bigint(20) COMMENT 'auth_token.id',\n" +
+            "\t%s varchar(64) COMMENT 'refreshToken',\n" +
+            "\t%s bigint(20) DEFAULT '-1' COMMENT '过期时间, 基于 1970-01-01T00:00:00Z, 无过期时间默认为 -1',\n" +
             "\tPRIMARY KEY (%s, %s, %s),\n" +
             "\tunique KEY `idx_userId_providerId_rank`(%s, %s, %s),\n" +
-            "\tKEY `idx_providerId_providerUserId_rank` (%s, %s, %s)\n" +
+            "\tKEY `idx_providerId_providerUserId_rank` (%s, %s, %s),\n" +
+            "\tKEY `idx_tokenId` (%s)\n" +
             "\t) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
             // @formatter:off
     /**
@@ -230,7 +231,8 @@ public class RepositoryProperties {
                              rankColumnName,
                              providerIdColumnName,
                              providerUserIdColumnName,
-                             rankColumnName);
+                             rankColumnName,
+                             tokenIdColumnName);
     }
 
     /**

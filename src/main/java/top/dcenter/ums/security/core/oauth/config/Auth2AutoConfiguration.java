@@ -207,24 +207,27 @@ public class Auth2AutoConfiguration implements InitializingBean {
                     {
                         String creatAuthTokenTableSql = "CREATE TABLE `" + authTokenTable + "` (\n" +
                                 "  `id` bigint(20) NOT NULL AUTO_INCREMENT,\n" +
-                                "  `accessToken` varchar(255) COMMENT 'accessToken',\n" +
+                                "  `enableRefresh` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否支持 refreshToken, 默认: 1. 1 表示支持, 0 表示不支持',\n" +
+                                "  `providerId` varchar(20) DEFAULT NULL COMMENT '第三方服务商,如: qq,github',\n" +
+                                "  `accessToken` varchar(64) COMMENT 'accessToken',\n" +
                                 "  `expireIn` bigint(20) COMMENT '过期时间',\n" +
-                                "  `refreshToken` varchar(255) COMMENT 'refreshToken',\n" +
-                                "  `uid` varchar(11) COMMENT 'alipay userId',\n" +
-                                "  `openId` varchar(255) COMMENT 'qq/mi/toutiao/wechatMp/wechatOpen/weibo/jd/kujiale/dingTalk/douyin/feishu',\n" +
-                                "  `accessCode` varchar(512) COMMENT 'dingTalk, taobao 附带属性',\n" +
-                                "  `unionId` varchar(512) COMMENT 'QQ附带属性',\n" +
-                                "  `scope` varchar(512) COMMENT 'Google附带属性',\n" +
-                                "  `tokenType` varchar(512) COMMENT 'Google附带属性',\n" +
-                                "  `idToken` varchar(512) COMMENT 'Google附带属性',\n" +
-                                "  `macAlgorithm` varchar(512) COMMENT '小米附带属性',\n" +
-                                "  `macKey` varchar(512) COMMENT '小米附带属性',\n" +
-                                "  `code` varchar(512) COMMENT '企业微信附带属性',\n" +
-                                "  `oauthToken` varchar(512) COMMENT 'Twitter附带属性',\n" +
-                                "  `oauthTokenSecret` varchar(512) COMMENT 'Twitter附带属性',\n" +
-                                "  `userId` varchar(512) COMMENT 'Twitter附带属性',\n" +
-                                "  `screenName` varchar(512) COMMENT 'Twitter附带属性',\n" +
-                                "  `oauthCallbackConfirmed` varchar(512) COMMENT 'Twitter附带属性',\n" +
+                                "  `refreshToken` varchar(64) COMMENT 'refreshToken',\n" +
+                                "  `uid` varchar(20) COMMENT 'alipay userId',\n" +
+                                "  `openId` varchar(64) COMMENT 'qq/mi/toutiao/wechatMp/wechatOpen/weibo/jd/kujiale/dingTalk/douyin/feishu',\n" +
+                                "  `accessCode` varchar(64) COMMENT 'dingTalk, taobao 附带属性',\n" +
+                                "  `unionId` varchar(64) COMMENT 'QQ附带属性',\n" +
+                                "  `scope` varchar(64) COMMENT 'Google附带属性',\n" +
+                                "  `tokenType` varchar(20) COMMENT 'Google附带属性',\n" +
+                                "  `idToken` varchar(64) COMMENT 'Google附带属性',\n" +
+                                "  `macAlgorithm` varchar(20) COMMENT '小米附带属性',\n" +
+                                "  `macKey` varchar(64) COMMENT '小米附带属性',\n" +
+                                "  `code` varchar(64) COMMENT '企业微信附带属性',\n" +
+                                "  `oauthToken` varchar(64) COMMENT 'Twitter附带属性',\n" +
+                                "  `oauthTokenSecret` varchar(64) COMMENT 'Twitter附带属性',\n" +
+                                "  `userId` varchar(64) COMMENT 'Twitter附带属性',\n" +
+                                "  `screenName` varchar(64) COMMENT 'Twitter附带属性',\n" +
+                                "  `oauthCallbackConfirmed` varchar(64) COMMENT 'Twitter附带属性',\n" +
+                                "  `expireTime` bigint(20) DEFAULT '-1' COMMENT '过期时间, 基于 1970-01-01T00:00:00Z, 无过期时间默认为 -1',\n" +
                                 "  PRIMARY KEY (`id`)\n" +
                                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
                         connection.prepareStatement(creatAuthTokenTableSql).executeUpdate();
