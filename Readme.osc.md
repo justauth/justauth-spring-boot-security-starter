@@ -846,12 +846,6 @@ new Thread(() -> {
 
 | **属性**                                        | **类型** | **默认值**                                                   | **描述**                                                     | **可选项** |
 | ----------------------------------------------- | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------- |
-| **第三方登录相关**                              |          |                                                              |                                                              |            |
-| ums.repository.userIdParamName                  | String   | userId                                                       | 第三方登录用户注册时: 用户唯一 ID 字段名称， 默认为 userId   |            |
-| ums.repository.passwordParamName                | String   | password                                                     | 第三方登录用户注册时: 密码 字段名称， 默认为 password        |            |
-| ums.repository.providerIdParamName              | String   | providerId                                                   | 第三方录用户注册时: 服务商 providerId 字段名称， 默认为 providerId |            |
-| ums.repository.providerUserIdParamName          | String   | providerUserId                                               | 第三方登录用户注册时: 在服务商那的用户唯一ID providerUserId 字段名称， 默认为 providerUserId |            |
-| ums.repository.avatarUrlParamName               | String   | avatarUrl                                                    | 第三方登录用户注册时: 用户头像 avatarUrl 字段名称， 默认为 avatarUrl |            |
 | **自定义第三方登录用户表及相关 CURD 语句**      |          |                                                              |                                                              |            |
 | ums.repository.tableName                        | String   | user_connection                                              | 第三方登录用户数据库表名称，                                 |            |
 | ums.repository.userIdColumnName                 | String   | userId                                                       | 第三方登录用户数据库用户表用户唯一 ID 字段名称， 默认为 userId |            |

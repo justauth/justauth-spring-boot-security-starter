@@ -41,33 +41,6 @@ import top.dcenter.ums.security.core.oauth.repository.factory.UsersConnectionRep
 @ConfigurationProperties("ums.repository")
 public class RepositoryProperties {
 
-
-    // ================= 第三方登录相关功能 =================
-
-    /**
-     * 第三方登录用户注册时: 用户唯一 ID 字段名称， 默认为 userId
-     */
-    private String userIdParamName = "userId";
-    /**
-     * 第三方登录用户注册时: 密码 字段名称， 默认为 password
-     */
-    private String passwordParamName = "password";
-
-    /**
-     * 第三方录用户注册时: 服务商 providerId 字段名称， 默认为 providerId
-     */
-    private String providerIdParamName = "providerId";
-    /**
-     * 第三方登录用户注册时: 在服务商那的用户唯一ID providerUserId 字段名称， 默认为 providerUserId
-     */
-    private String providerUserIdParamName = "providerUserId";
-    /**
-     * 第三方登录用户注册时: 用户头像 avatarUrl 字段名称， 默认为 avatarUrl
-     */
-    private String avatarUrlParamName = "avatarUrl";
-
-
-
     // ================= 第三方登录 key 与 secret 加密相关 =================
     /**
      * 第三方登录用户数据库表的字段 accessToken 与 refreshToken 加密专用密码
