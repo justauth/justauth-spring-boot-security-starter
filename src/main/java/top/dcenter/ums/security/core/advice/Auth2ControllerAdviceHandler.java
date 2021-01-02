@@ -11,8 +11,6 @@ import top.dcenter.ums.security.core.oauth.exception.Auth2Exception;
 import top.dcenter.ums.security.core.oauth.exception.RefreshTokenFailureException;
 import top.dcenter.ums.security.core.vo.ResponseResult;
 
-import static top.dcenter.ums.security.core.mdc.utils.MdcUtil.getMdcTraceId;
-
 /**
  * OAuth2 异常处理器
  * @author YongWu zheng
@@ -27,20 +25,20 @@ public class Auth2ControllerAdviceHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseResult abstractResponseJsonAuthenticationException(AbstractResponseJsonAuthenticationException ex) {
         String errorMsg = ex.getMessage();
-        return ResponseResult.fail(errorMsg, ex.getErrorCodeEnum(), getMdcTraceId());
+        return ResponseResult.fail(errorMsg, ex.getErrorCodeEnum(), ex.getData());
     }
 
     @ExceptionHandler(Auth2Exception.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
     public ResponseResult auth2Exception(Auth2Exception ex) {
-        return ResponseResult.fail(ex.getMessage(), ex.getErrorCodeEnum(), getMdcTraceId());
+        return ResponseResult.fail(ex.getMessage(), ex.getErrorCodeEnum(), ex.getData());
     }
 
     @ExceptionHandler(RefreshTokenFailureException.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseResult refreshTokenFailureException(RefreshTokenFailureException ex) {
-        return ResponseResult.fail(ex.getMessage(), ex.getErrorCodeEnum(), getMdcTraceId());
+        return ResponseResult.fail(ex.getMessage(), ex.getErrorCodeEnum(), ex.getData());
     }
 }

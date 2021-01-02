@@ -29,15 +29,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-import top.dcenter.ums.security.core.mdc.MdcIdGenerator;
-import top.dcenter.ums.security.core.mdc.MdcIdType;
-import top.dcenter.ums.security.core.mdc.properties.MdcProperties;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 import top.dcenter.ums.security.core.tasks.handler.RefreshAccessTokenJobHandler;
 
 import java.util.concurrent.ScheduledExecutorService;
-
-import static top.dcenter.ums.security.core.mdc.utils.MdcUtil.decorateTasks;
 
 /**
  * 简单的任务定时任务调度配置
@@ -52,20 +47,13 @@ public class ScheduleAutoConfiguration implements SchedulingConfigurer {
     private final ScheduledExecutorService jobTaskScheduledExecutor;
     private final Auth2Properties auth2Properties;
     private final RefreshAccessTokenJobHandler refreshAccessTokenJobHandler;
-    private final MdcIdType mdcIdType;
-
-    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
-    @Autowired(required = false)
-    private MdcIdGenerator mdcIdGenerator;
 
 
     public ScheduleAutoConfiguration(@Qualifier("jobTaskScheduledExecutor") ScheduledExecutorService jobTaskScheduledExecutor,
                                      Auth2Properties auth2Properties,
-                                     MdcProperties mdcProperties,
                                      @Autowired(required = false) RefreshAccessTokenJobHandler refreshAccessTokenJobHandler) {
         this.jobTaskScheduledExecutor = jobTaskScheduledExecutor;
         this.auth2Properties = auth2Properties;
-        this.mdcIdType = mdcProperties.getType();
         this.refreshAccessTokenJobHandler = refreshAccessTokenJobHandler;
     }
 
@@ -74,8 +62,7 @@ public class ScheduleAutoConfiguration implements SchedulingConfigurer {
         taskRegistrar.setScheduler(this.jobTaskScheduledExecutor);
         if (this.refreshAccessTokenJobHandler != null) {
             // 刷新 AccessToken 定时任务
-            taskRegistrar.addCronTask(decorateTasks(this.refreshAccessTokenJobHandler::refreshAccessTokenJob,
-                                                    this.mdcIdType, this.mdcIdGenerator),
+            taskRegistrar.addCronTask(this.refreshAccessTokenJobHandler::refreshAccessTokenJob,
                                       auth2Properties.getRefreshTokenJobCron());
         }
     }
