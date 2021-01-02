@@ -26,6 +26,8 @@ package top.dcenter.ums.security.core.oauth.properties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.lang.NonNull;
+import top.dcenter.ums.security.core.oauth.entity.AuthTokenPo;
 import top.dcenter.ums.security.core.oauth.repository.factory.Auth2JdbcUsersConnectionRepositoryFactory;
 import top.dcenter.ums.security.core.oauth.repository.factory.UsersConnectionRepositoryFactory;
 
@@ -51,13 +53,71 @@ public class RepositoryProperties {
      */
     private String textEncryptorSalt = "cd538b1b077542aca5f86942b6507fe2";
 
+    /* ========================== 数据库初始化相关语句 ============================= */
+    /**
+     * 查询数据库名称, 默认为 mysql 查询语句.
+     */
+    private String queryDatabaseNameSql = "select database();";
+    /**
+     * 第三方登录 {@link AuthTokenPo} 数据库表名称.
+     */
+    private String authTokenTableName = "auth_token";
+    /**
+     * 查询户 authTokenTableName 在数据库中是否存在的语句。 <br><br>
+     * 注意： sql 语句中的 %s 必须写上，且 %s 的顺序必须与后面的字段名称所对应的含义对应 :<br><br>
+     * authTokenTableName、<br><br>
+     * database
+     */
+    private String queryAuthTokenTableExistSql = "SELECT COUNT(1) FROM information_schema.tables WHERE " +
+            "table_name = '%s' AND table_schema = '%s'";
+
+    public String getQueryAuthTokenTableExistSql(@NonNull String database) {
+        return String.format(queryAuthTokenTableExistSql, authTokenTableName, database);
+    }
+
+    /**
+     * 创建 authTokenTableName 的建表语句。 <br><br>
+     * 注意： sql 语句中的 %s 必须写上，且 %s 的顺序必须与后面的字段名称所对应的含义对应 :<br><br>
+     * authTokenTableName、<br><br>
+     */
+    private String createAuthTokenTableSql = "CREATE TABLE `%s` (\n" +
+            "  `id` bigint(20) NOT NULL AUTO_INCREMENT,\n" +
+            "  `enableRefresh` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否支持 refreshToken, 默认: 1. 1 表示支持, 0 表示不支持',\n" +
+            "  `providerId` varchar(20) DEFAULT NULL COMMENT '第三方服务商,如: qq,github',\n" +
+            "  `accessToken` varchar(64) COMMENT 'accessToken',\n" +
+            "  `expireIn` bigint(20) DEFAULT '-1' COMMENT 'accessToken 过期时间, 无过期时间默认为 -1',\n" +
+            "  `refreshTokenExpireIn` bigint(20) DEFAULT '-1' COMMENT 'refreshToken 过期时间, 无过期时间默认为 -1',\n" +
+            "  `refreshToken` varchar(64) COMMENT 'refreshToken',\n" +
+            "  `uid` varchar(20) COMMENT 'alipay userId',\n" +
+            "  `openId` varchar(64) COMMENT 'qq/mi/toutiao/wechatMp/wechatOpen/weibo/jd/kujiale/dingTalk/douyin/feishu',\n" +
+            "  `accessCode` varchar(64) COMMENT 'dingTalk, taobao 附带属性',\n" +
+            "  `unionId` varchar(64) COMMENT 'QQ附带属性',\n" +
+            "  `scope` varchar(64) COMMENT 'Google附带属性',\n" +
+            "  `tokenType` varchar(20) COMMENT 'Google附带属性',\n" +
+            "  `idToken` varchar(64) COMMENT 'Google附带属性',\n" +
+            "  `macAlgorithm` varchar(20) COMMENT '小米附带属性',\n" +
+            "  `macKey` varchar(64) COMMENT '小米附带属性',\n" +
+            "  `code` varchar(64) COMMENT '企业微信附带属性',\n" +
+            "  `oauthToken` varchar(64) COMMENT 'Twitter附带属性',\n" +
+            "  `oauthTokenSecret` varchar(64) COMMENT 'Twitter附带属性',\n" +
+            "  `userId` varchar(64) COMMENT 'Twitter附带属性',\n" +
+            "  `screenName` varchar(64) COMMENT 'Twitter附带属性',\n" +
+            "  `oauthCallbackConfirmed` varchar(64) COMMENT 'Twitter附带属性',\n" +
+            "  `expireTime` bigint(20) DEFAULT '-1' COMMENT '过期时间, 基于 1970-01-01T00:00:00Z, 无过期时间默认为 -1',\n" +
+            "  PRIMARY KEY (`id`)\n" +
+            ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+
+    public String getCreateAuthTokenTableSql() {
+        return String.format(createAuthTokenTableSql, authTokenTableName);
+    }
 
     /* ==========================自定义第三方登录用户表及相关 CURD 语句============================= */
 
     /**
      * 第三方登录用户数据库表名称，<br><br>
      */
-    private String tableName = "user_connection";
+    private String userConnectionTableName = "user_connection";
 
     /**
      * 第三方登录用户数据库用户表用户唯一 ID 字段名称， 默认为 userId
@@ -112,7 +172,7 @@ public class RepositoryProperties {
      * 用户需要对第三方登录的用户表与 curd 的 sql 语句结构进行更改时, 必须实现对应的 {@link UsersConnectionRepositoryFactory}，
      * 如果需要，请实现 {@link UsersConnectionRepositoryFactory}，可以参考 {@link Auth2JdbcUsersConnectionRepositoryFactory}。<br><br>
      * 注意： sql 语句中的 %s 必须写上，且 %s 的顺序必须与后面的字段名称所对应的含义对应 :<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * userIdColumnName、<br><br>
      * providerIdColumnName、<br><br>
      * providerUserIdColumnName、<br><br>
@@ -160,7 +220,7 @@ public class RepositoryProperties {
      * 用户需要对第三方登录的用户表与 curd 的 sql 语句结构进行更改时, 必须实现对应的 {@link UsersConnectionRepositoryFactory}，
      * 如果需要，请实现 {@link UsersConnectionRepositoryFactory}，可以参考 {@link Auth2JdbcUsersConnectionRepositoryFactory}。<br><br>
      * 注意： sql 语句中的 %s 必须写上，且 %s 的顺序必须与后面的字段名称所对应的含义对应 :<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * userIdColumnName、<br><br>
      * providerIdColumnName、<br><br>
      * providerUserIdColumnName、<br><br>
@@ -184,7 +244,7 @@ public class RepositoryProperties {
      */
     public String getCreatUserConnectionTableSql() {
         return String.format(creatUserConnectionTableSql,
-                             tableName,
+                             userConnectionTableName,
                              userIdColumnName,
                              providerIdColumnName,
                              providerUserIdColumnName,
@@ -212,7 +272,7 @@ public class RepositoryProperties {
      * 第三方登录用户数据库用户表查询 userIds 的查询语句。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
      * databaseName、<br><br>
-     * tableName
+     * userConnectionTableName
      */
     private String queryUserConnectionTableExistSql =
             "SELECT COUNT(1) FROM information_schema.tables WHERE table_schema='%s' AND table_name = '%s'";
@@ -220,11 +280,11 @@ public class RepositoryProperties {
      * 第三方登录用户数据库用户表查询 userIds 的查询语句。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
      * databaseName、<br><br>
-     * tableName
+     * userConnectionTableName
      */
     public String getQueryUserConnectionTableExistSql(String databaseName) {
 
-        return String.format(queryUserConnectionTableExistSql, databaseName, tableName);
+        return String.format(queryUserConnectionTableExistSql, databaseName, userConnectionTableName);
     }
 
 
@@ -232,7 +292,7 @@ public class RepositoryProperties {
      * 第三方登录用户数据库用户表查询 userIds 的查询语句。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
      * userIdColumnName、<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * providerIdColumnName、<br><br>
      * providerUserIdColumnName
      */
@@ -241,7 +301,7 @@ public class RepositoryProperties {
      * 第三方登录用户数据库用户表查询 userIds 的查询语句。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
      * userIdColumnName、<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * providerIdColumnName、<br><br>
      * providerUserIdColumnName
      */
@@ -249,7 +309,7 @@ public class RepositoryProperties {
 
         return String.format(findUserIdsWithConnectionSql,
                              userIdColumnName,
-                             tableName,
+                             userConnectionTableName,
                              providerIdColumnName,
                              providerUserIdColumnName);
     }
@@ -258,7 +318,7 @@ public class RepositoryProperties {
      * 通过第三方服务提供商提供的 providerId 与 providerUserIds 从数据库用户表查询 userIds 的查询语句。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
      * userIdColumnName、<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * providerIdColumnName、<br><br>
      * providerUserIdColumnName
      */
@@ -267,7 +327,7 @@ public class RepositoryProperties {
      * 通过第三方服务提供商提供的 providerId 与 providerUserIds 从数据库用户表查询 userIds 的查询语句。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
      * userIdColumnName、<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * providerIdColumnName、<br><br>
      * providerUserIdColumnName
      */
@@ -275,7 +335,7 @@ public class RepositoryProperties {
 
         return String.format(findUserIdsConnectedToSql,
                              userIdColumnName,
-                             tableName,
+                             userConnectionTableName,
                              providerIdColumnName,
                              providerIdColumnName,
                              providerUserIdColumnName,
@@ -295,7 +355,7 @@ public class RepositoryProperties {
      * tokenIdColumnName、<br><br>
      * refreshTokenColumnName、<br><br>
      * expireTimeColumnName、<br><br>
-     * tableName
+     * userConnectionTableName
      */
     private String selectFromUserConnectionSql = "select %s, %s, %s, %s, %s, %s, %s, %s, %s, %s from %s";
 
@@ -312,7 +372,7 @@ public class RepositoryProperties {
      * tokenIdColumnName、<br><br>
      * refreshTokenColumnName、<br><br>
      * expireTimeColumnName、<br><br>
-     * tableName
+     * userConnectionTableName
      */
     public String getSelectFromUserConnectionSql() {
         return String.format(selectFromUserConnectionSql,
@@ -326,13 +386,13 @@ public class RepositoryProperties {
                              tokenIdColumnName,
                              refreshTokenColumnName,
                              expireTimeColumnName,
-                             tableName);
+                             userConnectionTableName);
     }
 
     /**
      * 第三方登录用户数据库用户表更新语句。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * displayNameColumnName、<br><br>
      * profileUrlColumnName、<br><br>
      * imageUrlColumnName、<br><br>
@@ -362,7 +422,7 @@ public class RepositoryProperties {
     /**
      * 第三方登录用户数据库用户表更新语句。 "update %s set %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ? where %s = ? and %s = ? and %s = ?"<br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * displayNameColumnName、<br><br>
      * profileUrlColumnName、<br><br>
      * imageUrlColumnName、<br><br>
@@ -377,7 +437,7 @@ public class RepositoryProperties {
     public String getUpdateConnectionSql() {
 
         return String.format(updateConnectionSql,
-                             tableName,
+                             userConnectionTableName,
                              displayNameColumnName,
                              profileUrlColumnName,
                              imageUrlColumnName,
@@ -393,7 +453,7 @@ public class RepositoryProperties {
     /**
      * 第三方登录用户数据库用户表添加用户语句。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * userIdColumnName、<br><br>
      * providerIdColumnName、<br><br>
      * providerUserIdColumnName、<br><br>
@@ -415,7 +475,7 @@ public class RepositoryProperties {
     /**
      * 第三方登录用户数据库用户表添加用户语句。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * userIdColumnName、<br><br>
      * providerIdColumnName、<br><br>
      * providerUserIdColumnName、<br><br>
@@ -431,7 +491,7 @@ public class RepositoryProperties {
     public String getAddConnectionSql() {
 
         return String.format(addConnectionSql,
-                             tableName,
+                             userConnectionTableName,
                              userIdColumnName,
                              providerIdColumnName,
                              providerUserIdColumnName,
@@ -450,7 +510,7 @@ public class RepositoryProperties {
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
      * rankColumnName、<br><br>
      * rankColumnName、<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * userIdColumnName、<br><br>
      * providerIdColumnName
      */
@@ -462,7 +522,7 @@ public class RepositoryProperties {
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
      * rankColumnName、<br><br>
      * rankColumnName、<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * userIdColumnName、<br><br>
      * providerIdColumnName
      */
@@ -471,7 +531,7 @@ public class RepositoryProperties {
         return String.format(addConnectionQueryForRankSql,
                              rankColumnName,
                              rankColumnName,
-                             tableName,
+                             userConnectionTableName,
                              userIdColumnName,
                              providerIdColumnName);
     }
@@ -479,7 +539,7 @@ public class RepositoryProperties {
     /**
      * 第三方登录用户数据库用户表根据 userId 与 providerId 删除多个用户。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * userIdColumnName、<br><br>
      * providerIdColumnName
      */
@@ -487,21 +547,21 @@ public class RepositoryProperties {
     /**
      * 第三方登录用户数据库用户表根据 userId 与 providerId 删除多个用户。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * userIdColumnName、<br><br>
      * providerIdColumnName
      */
     public String getRemoveConnectionsSql() {
 
         return String.format(removeConnectionsSql,
-                             tableName,
+                             userConnectionTableName,
                              userIdColumnName,
                              providerIdColumnName);
     }
     /**
      * 第三方登录用户数据库用户表根据 userId、providerId、providerUserId 删除一个用户。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * userIdColumnName、<br><br>
      * providerIdColumnName、<br><br>
      * providerUserIdColumnName
@@ -511,7 +571,7 @@ public class RepositoryProperties {
     /**
      * 第三方登录用户数据库用户表根据 userId、providerId、providerUserId 删除一个用户。 <br><br>
      * 注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应, %s按顺序会用对应的 :<br><br>
-     * tableName、<br><br>
+     * userConnectionTableName、<br><br>
      * userIdColumnName、<br><br>
      * providerIdColumnName、<br><br>
      * providerUserIdColumnName
@@ -519,7 +579,7 @@ public class RepositoryProperties {
     public String getRemoveConnectionSql() {
 
         return String.format(removeConnectionSql,
-                             tableName,
+                             userConnectionTableName,
                              userIdColumnName,
                              providerIdColumnName,
                              providerUserIdColumnName);

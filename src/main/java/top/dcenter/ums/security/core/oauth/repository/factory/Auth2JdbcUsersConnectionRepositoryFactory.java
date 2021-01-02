@@ -31,7 +31,7 @@ import top.dcenter.ums.security.core.oauth.properties.RepositoryProperties;
 
 /**
  * UsersConnectionRepositoryFactory 接口实现，
- * 用户需要对第三方{@link RepositoryProperties} <i>tableName</i> 用户表更改或者更改Repository的实现方式（如更换Redis）时，要实现此接口
+ * 用户需要对第三方{@link RepositoryProperties} <i>userConnectionTableName</i> 用户表更改或者更改Repository的实现方式（如更换Redis）时，要实现此接口
  * {@link UsersConnectionRepositoryFactory}
  * .<br><br>
  *     自定义的接口实现并注入 IOC 容器会自动覆盖此类
