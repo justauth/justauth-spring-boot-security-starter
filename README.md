@@ -16,7 +16,6 @@
 2. 支持定时刷新 accessToken 分布式定时任务,
 3. 支持第三方授权登录的用户信息表与 token 信息表的 redis 缓存功能.
 4. 支持第三方绑定与解绑及查询接口(top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository).
-5. 支持基于 SLF4J MDC 机制的日志链路追踪功能
 
 ### 微信群：UMS 添加微信(z56133)备注(UMS) 
 ![weixin](doc/weixin.png)
@@ -541,53 +540,6 @@ jackson2JsonRedisSerializer.setObjectMapper(om);
 - 注意: [UmsUserDetailsService](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)
 的注册用户方法返回的 `UserDetails` 的默认实现 `User` 已实现反序列化器, 如果是开发者**自定义的子类**, **需开发者自己实现反序列化器**.
 
-------
-## 七、基于 SLF4J MDC 机制的日志链路追踪功能
-
-- 使用此功能在日志配置文件中的 `pattern` 中添加 `%X{MDC_TRACE_ID}` 即可.
-```xml
-<!-- 控制台 -->
-<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <!-- 日志格式 -->
-    <encoder>
-        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %X{MDC_TRACE_ID} %logger[%L] - %msg%n</pattern>
-        <charset>utf-8</charset>
-    </encoder>
-    <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
-    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-        <!-- 只有这个日志权限才能看，sql语句 -->
-        <level>DEBUG</level>
-    </filter>
-</appender>
-```
-- 自定义 `SLF4J MDC` 机制实现日志链路追踪 id 的类型: 可通过属性 ums.mdc.type 定义:
-```yaml
-# 基于 SLF4J MDC 机制实现日志链路追踪 id 的类型, 默认为 uuid. 当需要自定义 id 时, type = MdcIdType.CUSTOMIZE_ID, 再实现 MdcIdGenerator.getMdcId() 方法, 注入 IOC 容器即可.
-ums:
-  mdc:
-    type: UUID/THREAD_ID/SESSION_ID/CUSTOMIZE_ID
-```
-当 ums.mdc.type = CUSTOMIZE_ID 时 需要实现接口 [MdcIdGenerator](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/core/src/main/java/top/dcenter/ums/security/core/mdc/MdcIdGenerator.java) 并注入 IOC 容器.
-
-
-- 多线程使用问题: 父线程新建子线程之前调用 `MDC.getCopyOfContextMap()` 方法获取 `MDC context`, 子线程在执行操作前先调用 
-`MDC.setContextMap(context)` 方法将父线程的 `MDC context` 设置到子线程中. ThreadPoolTaskExecutor 的配置请参考 [ScheduleAutoConfiguration](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/core/src/main/java/top/dcenter/ums/security/core/oauth/config/ScheduleAutoConfiguration.java).
-- 多线程传递 MDC context 简单示例:  
-```java
-final Logger log = LoggerFactory.getLogger(this.getClass());
-// 获取父线程 MDC 中的内容
-final Map<String, String> context = MDC.getCopyOfContextMap();
-final Runnable r = () -> {
-    log.info("testMDC");
-    System.out.println("...");
-};
-new Thread(() -> {
-    // 将父线程的 MDC context 设置到子线程中
-    MDC.setContextMap(context);
-    r.run();
-}, "testMDC").start();
-```
-
 
 ------
 ## 八、`时序图(Sequence Diagram)`: 随着版本迭代会有出入
@@ -596,15 +548,6 @@ new Thread(() -> {
 
 ------
 ## 九、`属性配置列表`
-
-###  基于 SLF4J MDC 机制的日志链路追踪配置属性
-
-| **属性**                                         | **类型**                | **默认值**                             | **描述**                                                     | **可选项**                         |
-| ------------------------------------------------ | ----------------------- | -------------------------------------- | ------------------------------------------------------------ | ---------------------------------- |
-| ums.mdc.enabled | Boolean | true | 是否支持基于 SLF4J MDC 机制日志的链路追踪, 默认: true | true/false     |
-| ums.mdc.type | MdcIdType | UUID | 基于 `SLF4J MDC` 机制实现日志链路追踪 id 的类型, 默认为 uuid. 当需要自定义 id 时, `type = MdcIdType.CUSTOMIZE_ID`, 再实现 `MdcIdGenerator.getMdcId()` 方法, 注入 IOC 容器即可. | `UUID/THREAD_ID/SESSION_ID/CUSTOMIZE_ID`     |
-| ums.mdc.includeUrls | List<String> | /** | 需要添加 MDC 日志的链路追踪的 url, 默认: /**, 并在日志文件的 pattern 中添加 %X{MDC_TRACE_ID} |      |
-| ums.mdc.excludeUrls | List<String> |      | 不需要 MDC 日志的链路追踪的 url, 如: 静态路径 |      |
 
 ###  OAuth2 / refreshToken 定时任务 / JustAuth 配置属性
 
@@ -629,7 +572,6 @@ new Thread(() -> {
 | ums.oauth.justAuth.timeout                                   | Duration       | PT180S               | 默认 state 缓存过期时间：3分钟(PT180S) 鉴于授权过程中，根据个人的操作习惯，或者授权平台的不同（google等），每个授权流程的耗时也有差异，不过单个授权流程一般不会太长 本缓存工具默认的过期时间设置为3分钟，即程序默认认为3分钟内的授权有效，超过3分钟则默认失效，失效后删除 |                       |
 | ums.oauth.justAuth.cacheType                                 | StateCacheType | SESSION              | JustAuth state 缓存类型, 默认 session                        | DEFAULT/SESSION/REDIS |
 | ums.oauth.justAuth.cacheKeyPrefix                            | String         | JUST_AUTH:           | JustAuth state 缓存 key 前缀                                 |                       |
-| ums.oauth.justAuth.scopes                                    | List<String>   |                      | 支持自定义授权平台的 `scope` 内容, 格式为: `source:scope`, 例如: `[QQ:write, QQ:read, GITEE:email, GITHUB:read]`   |                       |
 | **proxy**                                                    |                |                      |                                                              |                       |
 | ums.oauth.proxy.enable                                       | Boolean        | false                | 是否支持代理, 默认为: false. 当为 false 时, 其他属性都失效.  | true/false            |
 | ums.oauth.proxy.proxy                                        | Proxy.Type     | HTTP                 | 针对国外服务可以单独设置代理类型, 默认 Proxy.Type.HTTP       | HTTP/DIRECT/SOCKS     |
@@ -638,150 +580,152 @@ new Thread(() -> {
 | ums.oauth.proxy.timeout                                      | Duration       | PT3S                 | 代理超时, 默认 PT3S                                          |                       |
 | ums.oauth.proxy.foreignTimeout                               | Duration       | PT15S                | 用于国外网站代理超时, 默认 PT15S                             |                       |
 | **github**                                                   |                |                      |                                                              |                       |
-| ums.oauth.github.providerId                                  | String         | github               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.github.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.github.clientSecret                                | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.github.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **weibo**                                                    |                |                      |                                                              |                       |
-| ums.oauth.weibo.providerId                                   | String         | weibo                | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.weibo.clientId                                     | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.weibo.clientSecret                                 | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.weibo.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **gitee**                                                    |                |                      |                                                              |                       |
-| ums.oauth.gitee.providerId                                   | String         | gitee                | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.gitee.clientId                                     | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.gitee.clientSecret                                 | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.gitee.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **dingtalk**                                                 |                |                      |                                                              |                       |
-| ums.oauth.dingtalk.providerId                                | String         | dingtalk             | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.dingtalk.clientId                                  | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.dingtalk.clientSecret                              | String         |                      | `client Secret`                                              |                       |
 | **baidu**                                                    |                |                      |                                                              |                       |
-| ums.oauth.baidu.providerId                                   | String         | baidu                | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.baidu.clientId                                     | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.baidu.clientSecret                                 | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.baidu.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **coding**                                                   |                |                      |                                                              |                       |
-| ums.oauth.coding.providerId                                  | String         | coding               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.coding.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.coding.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.coding.codingGroupName                             | String         |                      | 使用 Coding 登录时，需要传该值。<br/>团队域名前缀，比如以“ https://justauth.coding.net/ ”为例，``codingGroupName = justauth` |                       |
+| ums.oauth.coding.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **oschina**                                                  |                |                      |                                                              |                       |
-| ums.oauth.oschina.providerId                                 | String         | oschina              | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.oschina.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.oschina.clientSecret                               | String         |                      | `client Secret`                                              |                       |
 | **alipay**                                                   |                |                      |                                                              |                       |
-| ums.oauth.alipay.providerId                                  | String         | alipay               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.alipay.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.alipay.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.alipay.alipayPublicKey                             | String         |                      | 支付宝公钥：当选择支付宝登录时，该值可用 对应“RSA2(SHA256)密钥”中的“支付宝公钥” |                       |
+| ums.oauth.alipay.proxyHost                             | String         |                      | 支付宝: 支付宝有自己的代理, 默认代理对支付宝不生效, 代理主机: |                       |
+| ums.oauth.alipay.proxyPort                             | Integer         |                      | 支付宝: 支付宝有自己的代理, 默认代理对支付宝不生效, 代理端口: |                       |
 | **qq**                                                       |                |                      |                                                              |                       |
-| ums.oauth.qq.providerId                                      | String         | qq                   | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.qq.clientId                                        | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.qq.clientSecret                                    | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.qq.unionId                                         | String         |                      | 是否需要申请 unionId，默认: false. 目前只针对qq登录 注：qq授权登录时，获取 unionId 需要单独发送邮件申请权限。如果个人开发者账号中申请了该权限，可以将该值置为true，在获取openId时就会同步获取unionId 参考链接：http://wiki.connect.qq.com/unionid%E4%BB%8B%E7%BB%8D |                       |
+| ums.oauth.qq.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **wechatOpen**                                               |                |                      |                                                              |                       |
-| ums.oauth.wechatOpen.providerId                              | String         | wechatOpen           | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.wechatOpen.clientId                                | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.wechatOpen.clientSecret                            | String         |                      | `client Secret`                                              |                       |
 | **wechatMp**                                                 |                |                      |                                                              |                       |
-| ums.oauth.wechatMp.providerId                                | String         | wechatMp             | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.wechatMp.clientId                                  | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.wechatMp.clientSecret                              | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.wechatMp.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **taobao**                                                   |                |                      |                                                              |                       |
-| ums.oauth.taobao.providerId                                  | String         | taobao               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.taobao.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.taobao.clientSecret                                | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.taobao.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **google**                                                   |                |                      |                                                              |                       |
-| ums.oauth.google.providerId                                  | String         | google               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.google.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.google.clientSecret                                | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.google.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **facebook**                                                 |                |                      |                                                              |                       |
-| ums.oauth.facebook.providerId                                | String         | facebook             | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.facebook.clientId                                  | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.facebook.clientSecret                              | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.facebook.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **github**                                                   |                |                      |                                                              |                       |
-| ums.oauth.github.providerId                                  | String         | github               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.github.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.github.clientSecret                                | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.github.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **douyin**                                                   |                |                      |                                                              |                       |
-| ums.oauth.douyin.providerId                                  | String         | douyin               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.douyin.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.douyin.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | **linkedin**                                                 |                |                      |                                                              |                       |
-| ums.oauth.linkedin.providerId                                | String         | linkedin             | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.linkedin.clientId                                  | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.linkedin.clientSecret                              | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.linkedin.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **microsoft**                                                |                |                      |                                                              |                       |
-| ums.oauth.microsoft.providerId                               | String         | microsoft            | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.microsoft.clientId                                 | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.microsoft.clientSecret                             | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.microsoft.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **mi**                                                       |                |                      |                                                              |                       |
-| ums.oauth.mi.providerId                                      | String         | mi                   | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.mi.clientId                                        | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.mi.clientSecret                                    | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.mi.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **toutiao**                                                  |                |                      |                                                              |                       |
-| ums.oauth.toutiao.providerId                                 | String         | toutiao              | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.toutiao.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.toutiao.clientSecret                               | String         |                      | `client Secret`                                              |                       |
 | **teambition**                                               |                |                      |                                                              |                       |
-| ums.oauth.teambition.providerId                              | String         | teambition           | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.teambition.clientId                                | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.teambition.clientSecret                            | String         |                      | `client Secret`                                              |                       |
 | **renren**                                                   |                |                      |                                                              |                       |
-| ums.oauth.renren.providerId                                  | String         | renren               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.renren.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.renren.clientSecret                                | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.renren.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **pinterest**                                                |                |                      |                                                              |                       |
-| ums.oauth.pinterest.providerId                               | String         | pinterest            | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.pinterest.clientId                                 | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.pinterest.clientSecret                             | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.pinterest.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **stackOverflow**                                            |                |                      |                                                              |                       |
-| ums.oauth.stackOverflow.providerId                           | String         | stackOverflow        | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.stackOverflow.clientId                             | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.stackOverflow.clientSecret                         | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.stackOverflow.stackOverflowKey                     | String         |                      | Stack Overflow Key                                           |                       |
+| ums.oauth.stackOverflow.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **huawei**                                                   |                |                      |                                                              |                       |
-| ums.oauth.huawei.providerId                                  | String         | huawei               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.huawei.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.huawei.clientSecret                                | String         |                      | `client Secret`                                              |                       |
-| **wechatEnterprise**                                         |                |                      |                                                              |                       |
-| ums.oauth.wechatEnterprise.providerId                        | String         | wechatEnterprise     | 第三方服务商 id, 不可更改                                            |                       |
+| ums.oauth.huawei.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
+| **wechatEnterprise 企业微信二维码版**                                         |                |                      |                                                              |                       |
 | ums.oauth.wechatEnterprise.clientId                          | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.wechatEnterprise.clientSecret                      | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.wechatEnterprise.agentId                           | String         |                      | 企业微信，授权方的网页应用ID                                 |                       |
 | **kujiale**                                                  |                |                      |                                                              |                       |
-| ums.oauth.kujiale.providerId                                 | String         | kujiale              | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.kujiale.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.kujiale.clientSecret                               | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.kujiale.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **gitlab**                                                   |                |                      |                                                              |                       |
-| ums.oauth.gitlab.providerId                                  | String         | gitlab               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.gitlab.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.gitlab.clientSecret                                | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.gitlab.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **meituan**                                                  |                |                      |                                                              |                       |
-| ums.oauth.meituan.providerId                                 | String         | meituan              | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.meituan.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.meituan.clientSecret                               | String         |                      | `client Secret`                                              |                       |
 | **eleme**                                                    |                |                      |                                                              |                       |
-| ums.oauth.eleme.providerId                                   | String         | eleme                | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.eleme.clientId                                     | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.eleme.clientSecret                                 | String         |                      | `client Secret`                                              |                       |
 | **twitter**                                                  |                |                      |                                                              |                       |
-| ums.oauth.twitter.providerId                                 | String         | twitter              | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.twitter.clientId                                   | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.twitter.clientSecret                               | String         |                      | `client Secret`                                              |                       |
 | **jd**                                                       |                |                      |                                                              |                       |
-| ums.oauth.jd.providerId                                      | String         | jd                   | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.jd.clientId                                        | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.jd.clientSecret                                    | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.jd.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **aliyun**                                                   |                |                      |                                                              |                       |
-| ums.oauth.aliyun.providerId                                  | String         | aliyun               | 第三方服务商 id, 不可更改                                            |                       |
 | ums.oauth.aliyun.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.aliyun.clientSecret                                | String         |                      | `client Secret`                                              |                       |
+| **feishu**                                                   |                |                      |                                                              |                       |
+| ums.oauth.feishu.clientId                                    | String         |                      | `client Id`                                                  |                       |
+| ums.oauth.feishu.clientSecret                                | String         |                      | `client Secret`                                              |                       |
+| **xmly 喜马拉雅**                                                   |                |                      |                                                              |                       |
+| ums.oauth.xmly.clientId                                    | String         |                      | `client Id`                                                  |                       |
+| ums.oauth.xmly.clientSecret                                | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.xmly.deviceId                                  | String         |                | 喜马拉雅：设备ID, `设备唯一标识ID `                                           |                       |
+| ums.oauth.xmly.clientOsType                                  | Integer         |                | 喜马拉雅：客户端操作系统类型，`1-iOS系统，2-Android系统，3-Web`                                           |                       |
+| ums.oauth.xmly.packId                                  | String         |                | 喜马拉雅：客户端包名，如果 `AuthConfig#getClientOsType()` 为1或2时必填。对`Android`客户端是包名，对`IOS`客户端是`Bundle ID `           |                       |
+| **wechatEnterpriseWeb 企业微信网页版**                                                   |                |                      |                                                              |                       |
+| ums.oauth.wechatEnterpriseWeb.clientId                          | String         |                      | `client Id`                                                  |                       |
+| ums.oauth.wechatEnterpriseWeb.clientSecret                      | String         |                      | `client Secret`                                              |                       |
+| ums.oauth.wechatEnterpriseWeb.agentId                           | String         |                      | 企业微信，授权方的网页应用ID                                 |                       |
+| ums.oauth.wechatEnterpriseWeb.scopes                                  | List<String>         |                | 支持自定义授权平台的 scope 内容, 格式参考对应的 AuthScope.getScope() 的子类. 注意: 会自动添加默认的 scope 设置.                                          |                       |
 | **customize**                                                   |                |                      |                                                              |                       |
-| ums.oauth.customize.providerId                                  | String         | customize               | 第三方服务商 id, 通过 customizeProviderId 更改                                           |                       |
 | ums.oauth.customize.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.customize.clientSecret                                | String         |                      | `client Secret`                                              |                       |
 | ums.oauth.customize.customizeProviderId                                | String         |                      | 自定义第三方授权登录, 当 `Auth2Properties#customize` 时有效, 此字段必须以驼峰方式命名. 比如此字段的值为 `umsCustomize`, 那么 `/auth2/authorization/customize` 会替换为 `/auth2/authorization/umsCustomize`                                              |                       |
 | ums.oauth.customize.customizeIsForeign                                | Boolean         | false                     | 自定义第三方授权登录, 当 `Auth2Properties#customize` 时有效, 设置第三方是否在国外, 默认: `false`. 如果为 `false` 时, 设置 `HttpConfig` 的超时时间为 `ums.oauth.proxy.timeout` 的值. 如果为 `true` 时, 设置 `HttpConfig` 的超时时间为 `ums.oauth.proxy.foreignTimeout` 的值.                                             | true/false                      |
 | **gitlabPrivate**                                                   |                |                      |                                                              |                       |
-| ums.oauth.gitlabPrivate.providerId                                  | String         | gitlabPrivate               | 第三方服务商 id, 不可更改                                           |                       |
 | ums.oauth.gitlabPrivate.clientId                                    | String         |                      | `client Id`                                                  |                       |
 | ums.oauth.gitlabPrivate.clientSecret                                | String         |                      | `client Secret`                                              |                       |
     
@@ -843,8 +787,13 @@ new Thread(() -> {
 
 | **属性**                                        | **类型** | **默认值**                                                   | **描述**                                                     | **可选项** |
 | ----------------------------------------------- | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------- |
+| **数据库初始化相关语句**      |          |                                                              |                                                              |            |
+| ums.repository.queryDatabaseNameSql          | String   | select database();                                              | 查询数据库名称, 默认为 `mysql` 查询语句.                                |            |
+| ums.repository.authTokenTableName          | String   | auth_token                                              | 第三方登录 `AuthTokenPo` 数据库表名称.                                |            |
+| ums.repository.queryAuthTokenTableExistSql          | String   | SELECT COUNT(1) FROM information_schema.tables WHERE table_name = '%s' AND table_schema = '%s';                                              | 查询户 `authTokenTableName` 在数据库中是否存在的语句。  注意： `sql` 语句中的 `%s` 必须写上，且 `%s` 的顺序必须与后面的字段名称所对应的含义对应 :  `authTokenTableName`, `database`                                |            |
+| ums.repository.createAuthTokenTableSql          | String   | 创建 authTokenTableName 的建表语句                                             | 创建 `authTokenTableName` 的建表语句。  注意： `sql` 语句中的 `%s` 必须写上，且 %s 的顺序必须与后面的字段名称所对应的含义对应 :  `authTokenTableName`                                |            |
 | **自定义第三方登录用户表及相关 CURD 语句**      |          |                                                              |                                                              |            |
-| ums.repository.tableName                        | String   | user_connection                                              | 第三方登录用户数据库表名称，                                 |            |
+| ums.repository.userConnectionTableName          | String   | user_connection                                              | 第三方登录用户数据库表名称，                                 |            |
 | ums.repository.userIdColumnName                 | String   | userId                                                       | 第三方登录用户数据库用户表用户唯一 ID 字段名称， 默认为 userId |            |
 | ums.repository.providerIdColumnName             | String   | providerId                                                   | 第三方登录用户数据库用户表服务商 providerId 字段名称， 默认为 providerId |            |
 | ums.repository.providerUserIdColumnName         | String   | providerUserId                                               | 第三方登录用户数据库用户表服务商用户 providerUserId 字段名称， 默认为 providerUserId |            |
@@ -873,3 +822,7 @@ new Thread(() -> {
 2. 新建 Feat_xxx 分支
 3. 提交代码
 4. 新建 Pull Request
+
+
+## 友情链接
+[一个基于aws s3快速集成多storage client的启动器](https://gitee.com/opcooc/opcooc-storage-spring-boot-starter)

@@ -1,3 +1,20 @@
+## 1.1.12
+### Fixes and Improvements:
+1. 更新 JustAuth 依赖到 1.15.9 版本.
+2. 新增 飞书, 喜马拉雅, 企业微信网页 第三方登录.
+3. 增加 支付宝内置的代理自定义设置.
+4. 升级 facebook api 版本到 9.0.
+5. 修改 原来的企业微信为 企业微信二维码登录.
+6. 修改: AuthToken 添加了 refreshTokenExpireIn 字段, 相应的修改数据库操作.
+7. 删除: mdc 功能, 聚集第三方登录功能.
+8. 重命名 ums.repository.tableName 为 ums.repository.userConnectionTableName.
+9. 新增 auth_token 建表及查询表是否存在的 sql 语句属性(ums.repository.xxx).
+10. 新增查询数据库名称的 sql 语句属性(ums.repository.queryDatabaseNameSql), 方便根据不同数据库自定义查询语句.
+11. 优化: 删除 RepositoryProperties 无用的配置属性.
+12. 示例: 修改配置.
+
+
+
 ## 1.1.11
 ### Fixes and Improvements:
 1. 修复: 补全 AuthToken 与 UserConnection 建表语句, 与刷新 access Token 定时任务处理逻辑相匹配.
