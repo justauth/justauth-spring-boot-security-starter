@@ -55,21 +55,6 @@ spring:
 
 # ums core
 ums:
-  # ================ 基于 SLF4J MDC 机制的日志链路追踪配置属性 ================
-  mdc:
-    # 是否支持基于 SLF4J MDC 机制日志的链路追踪, 默认: true
-    enable: true
-    # 基于 SLF4J MDC 机制实现日志链路追踪 id 的类型, 默认为 uuid.
-    # 当需要自定义 id 时, type = MdcIdType.CUSTOMIZE_ID, 再实现 MdcIdGenerator.getMdcId() 方法, 注入 IOC 容器即可.
-    type: session_id
-    # 需要添加 MDC 日志的链路追踪的 url, 默认: /**, 并在日志文件的 pattern 中添加 %X{MDC_TRACE_ID}
-    include-urls:
-      - /**
-    # 不需要 MDC 日志的链路追踪的 url, 如: 静态路径
-    exclude-urls:
-      - /**/*.js
-      - /**/*.html
-      - /**/*.css
 
   # ================ 第三方授权登录相关配置 ================
   oauth:
@@ -92,9 +77,16 @@ ums:
       # 根据是否有设置 clientId 来动态加载相应 JustAuth 的 AuthXxxRequest
       client-id: 4d4ee00e82f669f2ea8d
       client-secret: 4050be113a83556b63bd991d606fded437b05235
+      scopes:
+#        - 'repo:status'
+#        - 'public_repo'
+#        - 'repo:invite'
+#        - 'user:follow'
     gitee:
       client-id: dcc38c801ee88f43cfc1d5c52ec579751c12610c37b87428331bd6694056648e
       client-secret: f7384969d0e93088cdab546a1cea026442c16e2476cedec02e202cc89ee773ae
+      scopes:
+        - user_info
     # 自定义 OAuth2 Login
     customize:
       client-id: c971cf1634460e18310a5d7cb0f55d7d143a72015b2f29aee6a0e8911efac7eb
@@ -150,13 +142,7 @@ ums:
       cacheType: session
       # JustAuth state 缓存 key 前缀
       cacheKeyPrefix: 'JUST_AUTH:'
-      # 支持自定义授权平台的 scope 内容, 格式为: source:scope, 例如: [QQ:write, QQ:read, GITEE:email, GITHUB:read]
-      scopes:
-      # 示例
-      # - QQ:write
-      # - QQ:read
-      # - GITEE:email
-      # - GITHUB:read
+
     # 用于 JustAuth 的代理(HttpClient)设置
     proxy:
       # 是否支持代理, 默认为: false.
