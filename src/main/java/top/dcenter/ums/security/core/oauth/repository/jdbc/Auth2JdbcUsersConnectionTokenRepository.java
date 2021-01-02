@@ -70,6 +70,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
     @Override
     public AuthTokenPo findAuthTokenById(String tokenId) throws DataAccessException {
         return jdbcTemplate.queryForObject("SELECT `id`, `enableRefresh`, `providerId`, `accessToken`, `expireIn`, " +
+                                                   "`refreshTokenExpireIn`, " +
                                                    "`refreshToken`, `uid`, `openId`, `accessCode`, `unionId`, `scope`, " +
                                                    "`tokenType`, `idToken`, `macAlgorithm`, `macKey`, `code`, " +
                                                    "`oauthToken`, `oauthTokenSecret`, `userId`, `screenName`, " +
@@ -84,14 +85,16 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
     @Override
     public AuthTokenPo saveAuthToken(AuthTokenPo authToken) throws DataAccessException {
         jdbcTemplate.update("INSERT INTO auth_token(`enableRefresh` ,`providerId`, `accessToken`, `expireIn`, " +
+                                    "`refreshTokenExpireIn`, " +
                                     "`refreshToken`, `uid`, `openId`, `accessCode`, `unionId`, `scope`, `tokenType`, " +
                                     "`idToken`, `macAlgorithm`, `macKey`, `code`, `oauthToken`, `oauthTokenSecret`, " +
                                     "`userId`, `screenName`, `oauthCallbackConfirmed`, `expireTime`) " +
-                                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+                                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
                             authToken.getEnableRefresh().getCode(),
                             authToken.getProviderId(),
                             encrypt(authToken.getAccessToken()),
                             authToken.getExpireIn(),
+                            authToken.getRefreshTokenExpireIn(),
                             encrypt(authToken.getRefreshToken()),
                             authToken.getUid(),
                             authToken.getOpenId(),
@@ -133,6 +136,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
                                     "`providerId` = ?, " +
                                     "`accessToken` = ?, " +
                                     "`expireIn` = ?, " +
+                                    "`refreshTokenExpireIn` = ?, " +
                                     "`refreshToken` = ?, " +
                                     "`uid` = ?, " +
                                     "`openId` = ?, " +
@@ -155,6 +159,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
                             authToken.getProviderId(),
                             encrypt(authToken.getAccessToken()),
                             authToken.getExpireIn(),
+                            authToken.getRefreshTokenExpireIn(),
                             encrypt(authToken.getRefreshToken()),
                             authToken.getUid(),
                             authToken.getOpenId(),
@@ -198,13 +203,14 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
     public List<AuthTokenPo> findAuthTokenByExpireTimeAndBetweenId(@NonNull Long expiredTime, @NonNull Long startId,
                                                                    @NonNull Long endId) throws DataAccessException {
         return jdbcTemplate.query("SELECT `id`, `enableRefresh`, `providerId`, `accessToken`, `expireIn`, " +
-                                   "`refreshToken`, `uid`, `openId`, `accessCode`, `unionId`, `scope`, " +
-                                   "`tokenType`, `idToken`, `macAlgorithm`, `macKey`, `code`, " +
-                                   "`oauthToken`, `oauthTokenSecret`, `userId`, `screenName`, " +
-                                   "`oauthCallbackConfirmed`, `expireTime` " +
-                                   "FROM auth_token " +
-                                   "WHERE id BETWEEN ? AND ? AND `expireTime` <= ? " +
-                                          "AND enableRefresh = " + YES.getCode() + ";",
+                                           "`refreshTokenExpireIn`, " +
+                                           "`refreshToken`, `uid`, `openId`, `accessCode`, `unionId`, `scope`, " +
+                                           "`tokenType`, `idToken`, `macAlgorithm`, `macKey`, `code`, " +
+                                           "`oauthToken`, `oauthTokenSecret`, `userId`, `screenName`, " +
+                                           "`oauthCallbackConfirmed`, `expireTime` " +
+                                           "FROM auth_token " +
+                                           "WHERE id BETWEEN ? AND ? AND `expireTime` <= ? " +
+                                                  "AND enableRefresh = " + YES.getCode() + ";",
                            authTokenPoMapper, startId, endId, expiredTime);
     }
 
@@ -238,6 +244,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
             token.setProviderId(rs.getString("providerId"));
             token.setAccessToken(decrypt(rs.getString("accessToken")));
             token.setExpireIn(rs.getInt("expireIn"));
+            token.setRefreshTokenExpireIn(rs.getInt("refreshTokenExpireIn"));
             token.setRefreshToken(decrypt(rs.getString("refreshToken")));
             token.setUid(rs.getString("uid"));
             token.setOpenId(rs.getString("openId"));

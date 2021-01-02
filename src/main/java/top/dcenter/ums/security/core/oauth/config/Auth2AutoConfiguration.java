@@ -210,7 +210,8 @@ public class Auth2AutoConfiguration implements InitializingBean {
                                 "  `enableRefresh` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否支持 refreshToken, 默认: 1. 1 表示支持, 0 表示不支持',\n" +
                                 "  `providerId` varchar(20) DEFAULT NULL COMMENT '第三方服务商,如: qq,github',\n" +
                                 "  `accessToken` varchar(64) COMMENT 'accessToken',\n" +
-                                "  `expireIn` bigint(20) COMMENT '过期时间',\n" +
+                                "  `expireIn` bigint(20) DEFAULT '-1' COMMENT 'accessToken 过期时间, 无过期时间默认为 -1',\n" +
+                                "  `refreshTokenExpireIn` bigint(20) DEFAULT '-1' COMMENT 'refreshToken 过期时间, 无过期时间默认为 -1',\n" +
                                 "  `refreshToken` varchar(64) COMMENT 'refreshToken',\n" +
                                 "  `uid` varchar(20) COMMENT 'alipay userId',\n" +
                                 "  `openId` varchar(64) COMMENT 'qq/mi/toutiao/wechatMp/wechatOpen/weibo/jd/kujiale/dingTalk/douyin/feishu',\n" +

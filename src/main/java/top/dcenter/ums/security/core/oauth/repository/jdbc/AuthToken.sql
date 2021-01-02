@@ -7,6 +7,7 @@ CREATE TABLE `auth_token` (
   `accessToken` varchar(64) DEFAULT NULL COMMENT 'accessToken',
   `expireIn` bigint(20) DEFAULT '-1' COMMENT '过期时间, 无过期时间默认为 -1',
   `refreshToken` varchar(64) DEFAULT NULL COMMENT 'refreshToken',
+  `refreshTokenExpireIn` bigint(20) DEFAULT '-1' COMMENT 'refreshToken 过期时间, 无过期时间默认为 -1',
   `uid` varchar(20) DEFAULT NULL COMMENT 'alipay userId',
   `openId` varchar(64) DEFAULT NULL COMMENT 'qq/mi/toutiao/wechatMp/wechatOpen/weibo/jd/kujiale/dingTalk/douyin/feishu',
   `accessCode` varchar(64) DEFAULT NULL COMMENT 'dingTalk, taobao 附带属性',
