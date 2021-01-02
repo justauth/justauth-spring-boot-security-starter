@@ -26,12 +26,17 @@ package top.dcenter.ums.security.core.oauth.properties;
 import com.xkcoding.http.config.HttpConfig;
 import lombok.Getter;
 import lombok.Setter;
+import me.zhyd.oauth.config.AuthConfig;
+import me.zhyd.oauth.enums.scope.AuthScope;
+
+import java.util.List;
 
 /**
  * OAuth2 基本属性
  * @author YongWu zheng
  * @version V1.0  Created by 2020/5/17 14:08
  */
+@SuppressWarnings("jol")
 @Getter
 @Setter
 public class BaseAuth2Properties {
@@ -51,6 +56,16 @@ public class BaseAuth2Properties {
      * 对应“RSA2(SHA256)密钥”中的“支付宝公钥”
      */
     private String alipayPublicKey;
+    /**
+     * 支付宝: 支付宝有自己的代理, 默认代理对支付宝不生效, 代理主机:
+     * @since justAuth 1.15.9
+     */
+    private String proxyHost;
+    /**
+     * 支付宝: 支付宝有自己的代理, 默认代理对支付宝不生效, 代理端口:
+     * @since justAuth 1.15.9
+     */
+    private Integer proxyPort;
     /**
      * 是否需要申请 unionId，默认: false. 目前只针对qq登录
      * 注：qq授权登录时，获取 unionId 需要单独发送邮件申请权限。如果个人开发者账号中申请了该权限，可以将该值置为true，在获取openId时就会同步获取unionId
@@ -84,4 +99,31 @@ public class BaseAuth2Properties {
      * 如果为 true 时, 设置 {@link HttpConfig} 的超时时间为 ums.oauth.proxy.foreignTimeout 的值.
      */
     private Boolean customizeIsForeign = Boolean.FALSE;
+    /**
+     * 喜马拉雅：设备ID, 设备唯一标识ID
+     *
+     * @since justAuth 1.15.8
+     */
+    private String deviceId;
+
+    /**
+     * 喜马拉雅：客户端操作系统类型，1-iOS系统，2-Android系统，3-Web
+     *
+     * @since justAuth 1.15.9
+     */
+    private Integer clientOsType;
+
+    /**
+     * 喜马拉雅：客户端包名，如果 {@link AuthConfig#getClientOsType()} 为1或2时必填。对Android客户端是包名，对IOS客户端是Bundle ID
+     *
+     * @since justAuth 1.15.9
+     */
+    private String packId;
+
+    /**
+     * 支持自定义授权平台的 scope 内容, 格式参考对应的 {@link AuthScope#getScope()} 的子类.
+     * 注意: 会自动添加默认的 scope 设置.
+     * @since 1.15.7
+     */
+    private List<String> scopes;
 }

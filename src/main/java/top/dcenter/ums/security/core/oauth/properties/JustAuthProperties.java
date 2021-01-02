@@ -30,7 +30,6 @@ import me.zhyd.oauth.model.AuthCallback;
 import top.dcenter.ums.security.core.oauth.justauth.enums.StateCacheType;
 
 import java.time.Duration;
-import java.util.List;
 
 /**
  * JustAuth 配置
@@ -77,21 +76,5 @@ public class JustAuthProperties {
      * JustAuth state 缓存 key 前缀
      */
     private String cacheKeyPrefix = "JUST_AUTH:";
-
-    /**
-     * 支持自定义授权平台的 scope 内容, 格式为: source:scope, 例如: [QQ:write, QQ:read, GITEE:email, GITHUB:read]
-     * <pre>
-     * ums:
-     *   oauth:
-     *     just-auth:
-     *       scopes:
-     *         - QQ:write
-     *         - QQ:read
-     *         - GITEE:email
-     *         - GITHUB:read
-     * </pre>
-     * @since 1.15.7
-     */
-    private List<String> scopes;
 
 }

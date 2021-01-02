@@ -29,6 +29,7 @@ import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
 import me.zhyd.oauth.config.AuthSource;
+import me.zhyd.oauth.enums.scope.*;
 import me.zhyd.oauth.request.AuthDefaultRequest;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -57,15 +58,18 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static java.lang.String.join;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
+import static me.zhyd.oauth.config.AuthDefaultSource.ALIPAY;
+import static me.zhyd.oauth.utils.AuthScopeUtils.getDefaultScopes;
 import static org.springframework.util.StringUtils.hasText;
 import static top.dcenter.ums.security.core.oauth.consts.SecurityConstants.URL_SEPARATOR;
 import static top.dcenter.ums.security.core.oauth.util.MvcUtil.splitByCharacterTypeCamelCase;
@@ -317,8 +321,8 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
 
         JustAuthProperties justAuth = auth2Properties.getJustAuth();
         AuthConfig config = getAuthConfig(auth2Properties, source);
-        // 设置自定义 scopes
-        List<String> scopes = getScopesBySource(justAuth.getScopes(), source);
+        // 设置自定义 scopes, 如果没有设置则返回 null, 如果有设置则自动添加默认设置
+        List<String> scopes = getScopesBySource(auth2Properties, source);
         config.setScopes(scopes);
         // 设置是否启用代理
         Auth2Properties.HttpConfigProperties proxy = auth2Properties.getProxy();
@@ -330,7 +334,7 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
             if (auth2Properties.getCustomize().getCustomizeIsForeign()) {
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
             }
-            return this.getAuthDefaultRequestAdapter(config, source, authStateCache);
+            return this.getAuthDefaultRequestAdapter(config, source, authStateCache, null,null);
         }
 
         if (!(source instanceof AuthDefaultSource)) {
@@ -346,13 +350,21 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
                 config.setCodingGroupName(auth2Properties.getCoding().getCodingGroupName());
                 break;
             case ALIPAY:
-                config.setAlipayPublicKey(auth2Properties.getAlipay().getAlipayPublicKey());
-                break;
+                BaseAuth2Properties alipay = auth2Properties.getAlipay();
+                config.setAlipayPublicKey(alipay.getAlipayPublicKey());
+                return this.getAuthDefaultRequestAdapter(config, source, authStateCache,
+                                                         alipay.getProxyHost(), alipay.getProxyPort());
             case QQ:
                 config.setUnionId(auth2Properties.getQq().getUnionId());
                 break;
             case WECHAT_ENTERPRISE:
                 config.setAgentId(auth2Properties.getWechatEnterprise().getAgentId());
+                break;
+            case XMLY:
+                BaseAuth2Properties xmly = auth2Properties.getXmly();
+                config.setDeviceId(xmly.getDeviceId());
+                config.setClientOsType(xmly.getClientOsType());
+                config.setPackId(xmly.getPackId());
                 break;
             case STACK_OVERFLOW:
                 config.setStackOverflowKey(auth2Properties.getStackOverflow().getStackOverflowKey());
@@ -361,7 +373,7 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
             case GITHUB: case GOOGLE: case FACEBOOK: case MICROSOFT: case PINTEREST: case GITLAB: case TWITTER:
                 config.getHttpConfig().setTimeout((int) proxy.getForeignTimeout().toMillis());
                 break;
-            case CSDN: case FEISHU:
+            case CSDN:
                 isNotSupport = true;
                 break;
             default:
@@ -370,26 +382,107 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
         if (isNotSupport) {
             return null;
         }
-        return this.getAuthDefaultRequestAdapter(config, source, authStateCache);
+        return this.getAuthDefaultRequestAdapter(config, source, authStateCache, null,null);
     }
 
     /**
-     * 根据 source 获取对应的自定义 scopes
-     * @param scopes    用户自定义的所有第三方的 scopes, 格式: source:scope 如: [QQ:write, QQ:read, GITEE:email, GITHUB:read]
-     * @param source    {@link AuthSource}
-     * @return 返回 source 相对应的 scopes
+     * 根据 source 获取对应的自定义 scopes, 没有想对应的 {@link AuthScope} 返回 null; 如果没有设置自定义的 scopes 则返回 null, 如果有则自动添加默认设置,
+     * 注意: 自定义第三方授权登录时, 要自己在 AuthCustomizeRequest 中自定义 scopes.
+     * @param auth2Properties   {@link Auth2Properties}
+     * @param source            {@link AuthSource}
+     * @return 返回 source 相对应的 scopes, 如果 source 相对应的自定义 scopes 为 null 值则返回 null 值
+     * @throws IllegalAccessException 反射异常
      */
-    @NonNull
-    private List<String> getScopesBySource(@Nullable List<String> scopes, @NonNull AuthSource source) {
-        if (CollectionUtils.isEmpty(scopes)) {
-            return new ArrayList<>(0);
+    @Nullable
+    private List<String> getScopesBySource(@NonNull Auth2Properties auth2Properties, @NonNull AuthSource source) throws IllegalAccessException {
+        List<String> customAuthScopes = getCustomAuthScopes(auth2Properties, source);
+        if (CollectionUtils.isEmpty(customAuthScopes)) {
+            return null;
         }
-        final String sourceName = source.getName() + ":";
+        List<String> defaultScopes = getDefaultScopes(getDefaultScopeBySource(source));
+        if (CollectionUtils.isEmpty(defaultScopes)) {
+            return null;
+        }
+        Set<String> scopeSet = new HashSet<>(defaultScopes);
+        scopeSet.addAll(customAuthScopes);
+        return new ArrayList<>(scopeSet);
+    }
 
-        return scopes.stream()
-                     .filter(scope -> scope.startsWith(sourceName))
-                     .map(scope -> scope.substring(sourceName.length()))
-                     .collect(Collectors.toList());
+    /**
+     * 根据 source 返回相对应的默认 {@link AuthScope} 数组,
+     * 注意: 自定义的 AuthSource 返回 null, 没有想对应的 {@link AuthScope} 返回 null.
+     * @param source    {@link AuthSource}
+     * @return  返回 source 相对应的默认 {@link AuthScope} 数组
+     */
+    @Nullable
+    private AuthScope[] getDefaultScopeBySource(@NonNull AuthSource source) {
+        //noinspection AlibabaSwitchStatement
+        switch ((AuthDefaultSource) source) {
+            case STACK_OVERFLOW:
+                return AuthStackoverflowScope.values();
+            case WECHAT_ENTERPRISE_WEB:
+                return AuthWeChatEnterpriseWebScope.values();
+            case BAIDU:
+                return AuthBaiduScope.values();
+            case CODING:
+                return AuthCodingScope.values();
+            case PINTEREST:
+                return AuthPinterestScope.values();
+            case GITHUB:
+                return AuthGithubScope.values();
+            case MI:
+                return AuthMiScope.values();
+            case RENREN:
+                return AuthRenrenScope.values();
+            case HUAWEI:
+                return AuthHuaweiScope.values();
+            case QQ:
+                return AuthQqScope.values();
+            case FACEBOOK:
+                return AuthFacebookScope.values();
+            case WECHAT_MP:
+                return AuthWechatMpScope.values();
+            case JD:
+                return AuthJdScope.values();
+            case GITEE:
+                return AuthGiteeScope.values();
+            case WEIBO:
+                return AuthWeiboScope.values();
+            case MICROSOFT:
+                return AuthMicrosoftScope.values();
+            case GITLAB:
+                return AuthGitlabScope.values();
+            case GOOGLE:
+                return AuthGoogleScope.values();
+            case KUJIALE:
+                return AuthKujialeScope.values();
+            case LINKEDIN:
+                return AuthLinkedinScope.values();
+            default: return null;
+        }
+    }
+
+    /**
+     * 根据 source 从 auth2Properties 中获取相对应的自定义 scopes. 没有设置自定义 scopes 时返回 null.
+     * @param auth2Properties   {@link Auth2Properties}
+     * @param source            {@link AuthSource}
+     * @return 返回根据 source 从 auth2Properties 中获取相对应的自定义 scopes. 没有设置自定义 scopes 时返回 null.
+     * @throws IllegalAccessException 反射异常
+     */
+    @Nullable
+    private List<String> getCustomAuthScopes(@NonNull Auth2Properties auth2Properties,
+                                             @NonNull AuthSource source) throws IllegalAccessException {
+        // 根据 AuthDefaultSource 获取对应的 Auth2Properties 字段名称(即providerId)
+        String providerId = getProviderId(source);
+
+        // 根据 providerId 从 Auth2Properties 获取对应的 BaseAuth2Properties 对象.
+        BaseAuth2Properties providerProperties = getBaseAuth2PropertiesByProviderId(auth2Properties, providerId);
+
+        if (isNull(providerProperties)) {
+            return null;
+        }
+
+        return providerProperties.getScopes();
     }
 
     /**
@@ -408,15 +501,23 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
      * @param config                {@link AuthDefaultRequest} 的 {@link AuthConfig}
      * @param source                {@link AuthDefaultRequest} 的 {@link AuthSource}
      * @param authStateCache        {@link AuthDefaultRequest} 的 {@link AuthStateCache}
+     * @param alipayProxyHost       支付宝有自己的代理, 默认代理对支付宝不生效, 支付宝代理主机:
+     * @param alipayProxyPort       支付宝有自己的代理, 默认代理对支付宝不生效, 支付宝代理端口:
      * @return                      {@link AuthDefaultRequest} 相对应的适配器
      */
     @NonNull
     private AuthDefaultRequestAdapter getAuthDefaultRequestAdapter(@NonNull AuthConfig config,
                                                                    @NonNull AuthSource source,
-                                                                   @NonNull AuthStateCache authStateCache) throws ClassNotFoundException {
+                                                                   @NonNull AuthStateCache authStateCache,
+                                                                   @Nullable String alipayProxyHost,
+                                                                   @Nullable Integer alipayProxyPort) throws ClassNotFoundException {
         final AuthDefaultRequestAdapter adapter = new AuthDefaultRequestAdapter(config, source, authStateCache);
         Class<?>[] argumentTypes = new Class[]{AuthConfig.class, AuthStateCache.class};
         Object[] arguments = new Object[]{config, authStateCache};
+        if (ALIPAY.equals(source) && hasText(alipayProxyHost) && nonNull(alipayProxyPort)) {
+            argumentTypes = new Class[]{AuthConfig.class, AuthStateCache.class, String.class, Integer.class};
+            arguments = new Object[]{config, authStateCache, alipayProxyHost, alipayProxyPort};
+        }
         final AuthDefaultRequest proxyObject = createProxy(getAuthRequestClassBySource(source),
                                                            argumentTypes, arguments, adapter);
         adapter.setAuthDefaultRequest(proxyObject);
@@ -500,34 +601,14 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
         // 根据 AuthDefaultSource 获取对应的 Auth2Properties 字段名称(即providerId)
         String providerId = getProviderId(source);
 
-        // 获取字段 fieldName(即providerId) 的值
-        Class<? extends Auth2Properties> aClass = auth2Properties.getClass();
-        Field[] declaredFields = aClass.getDeclaredFields();
-        // 第三方属性(providerId,clientId, clientSecret)对象
-        Object providerProperties = null;
-        for (Field field : declaredFields)
-        {
-            field.setAccessible(true);
-            if (field.getName().equals(providerId))
-            {
-                providerProperties = field.get(auth2Properties);
-                break;
-            }
-            else if ("customize".equals(field.getName())) {
-                BaseAuth2Properties baseAuth2Properties = (BaseAuth2Properties) field.get(auth2Properties);
-                String customizeProviderId = baseAuth2Properties.getCustomizeProviderId();
-                if (hasText(customizeProviderId) && customizeProviderId.equals(providerId)) {
-                    providerProperties = baseAuth2Properties;
-                    break;
-                }
-            }
-        }
+        // 根据 providerId 从 Auth2Properties 获取对应的 BaseAuth2Properties 对象.
+        BaseAuth2Properties providerProperties = getBaseAuth2PropertiesByProviderId(auth2Properties, providerId);
 
         requireNonNull(providerProperties, String.format("获取不到 %s 类型所对应的 BaseAuth2Properties 的子类", source.getName()));
 
         // 设置 clientId 与 clientSecret
         Class<BaseAuth2Properties> baseClass = BaseAuth2Properties.class;
-        declaredFields = baseClass.getDeclaredFields();
+        Field[] declaredFields = baseClass.getDeclaredFields();
         for (Field field : declaredFields)
         {
             field.setAccessible(true);
@@ -550,6 +631,39 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
                 + auth2Properties.getRedirectUrlPrefix() + URL_SEPARATOR + providerId;
 
         return builder.redirectUri(redirectUri).build();
+    }
+
+    /**
+     * 根据 providerId 从 {@link Auth2Properties} 获取对应的 {@link BaseAuth2Properties} 对象.
+     * @param auth2Properties   {@link Auth2Properties}
+     * @param providerId        providerId
+     * @return  返回 providerId 在 {@link Auth2Properties} 中相对应的 {@link BaseAuth2Properties} 对象, 不存在则返回 null
+     * @throws IllegalAccessException 反射异常
+     */
+    @Nullable
+    private BaseAuth2Properties getBaseAuth2PropertiesByProviderId(Auth2Properties auth2Properties, String providerId) throws IllegalAccessException {
+        Class<? extends Auth2Properties> aClass = auth2Properties.getClass();
+        Field[] declaredFields = aClass.getDeclaredFields();
+        // 第三方属性(providerId,clientId, clientSecret)对象
+        Object providerProperties = null;
+        for (Field field : declaredFields)
+        {
+            field.setAccessible(true);
+            if (field.getName().equals(providerId))
+            {
+                providerProperties = field.get(auth2Properties);
+                break;
+            }
+            else if ("customize".equals(field.getName())) {
+                BaseAuth2Properties baseAuth2Properties = (BaseAuth2Properties) field.get(auth2Properties);
+                String customizeProviderId = baseAuth2Properties.getCustomizeProviderId();
+                if (hasText(customizeProviderId) && customizeProviderId.equals(providerId)) {
+                    providerProperties = baseAuth2Properties;
+                    break;
+                }
+            }
+        }
+        return (BaseAuth2Properties) providerProperties;
     }
 
     /**
@@ -632,6 +746,10 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
             }
             if ("wechat".equalsIgnoreCase(split)) {
                 sb.append("WeChat");
+                continue;
+            }
+            if ("enterprise".equalsIgnoreCase(split) && splits.length == 2 && "wechat".equalsIgnoreCase(splits[0])) {
+                sb.append("EnterpriseQrcode");
                 continue;
             }
             if (split.length() > 1) {
