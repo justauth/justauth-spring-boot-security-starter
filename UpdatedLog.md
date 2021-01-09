@@ -1,3 +1,8 @@
+## 1.1.14
+### Fixes and Improvements:
+1. 优化: 接口名称 updateUserConnectionAndAuthToken(..).
+2. 改进: ConnectionService 接口添加 findConnectionByProviderIdAndProviderUserId(..) 方法, 这样 Auth2LoginAuthenticationProvider 只需引用 ConnectionService, 如需更改第三方用户信息的保存方式, 实现此类即可, 不再需要实现 UsersConnectionRepository 类.
+
 ## 1.1.13
 ### Fixes and Improvements:
 1. 改进: 添加是否在启动时检查并自动创建 userConnectionTable 与 authTokenTable 控制开关属性.

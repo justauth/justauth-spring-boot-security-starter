@@ -16,7 +16,7 @@
 1. 支持所有 justAuth 支持的第三方登录，登录后自动注册 或 绑定 或 创建临时用户([TemporaryUser](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/userdetails/TemporaryUser.java)).
 2. 支持定时刷新 accessToken 分布式定时任务,
 3. 支持第三方授权登录的用户信息表与 token 信息表的 redis 缓存功能.
-4. 支持第三方绑定与解绑及查询接口(top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository).
+4. 支持第三方绑定与解绑及查询接口.
 
 ### 登录流程图
 ![登录流程图](doc/登录流程.png)
