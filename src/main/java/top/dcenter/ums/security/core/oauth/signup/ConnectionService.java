@@ -49,7 +49,7 @@ public interface ConnectionService {
 	 * @param connectionData    第三方授权登录的用户信息
 	 * @throws UpdateConnectionException    更新异常
 	 */
-	void updateUserConnection(@NonNull final AuthUser authUser, @NonNull final ConnectionData connectionData) throws UpdateConnectionException;
+	void updateUserConnectionAndAuthToken(@NonNull final AuthUser authUser, @NonNull final ConnectionData connectionData) throws UpdateConnectionException;
 
 	/**
 	 * 第三方授权登录信息{@link AuthUser}绑定到本地账号{@link UserDetails}, 且添加第三方授权登录信息到 user_connection 与 auth_token

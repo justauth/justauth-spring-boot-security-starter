@@ -309,7 +309,7 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 			updateConnectionTaskExecutor.execute(
 					() -> {
 						try {
-							connectionService.updateUserConnection(authUser, connectionData);
+							connectionService.updateUserConnectionAndAuthToken(authUser, connectionData);
 						}
 						catch (Exception e) {
 							String msg = String.format("异步更新第三方授权登录用户信息与 token 信息失败: AuthUser=%s, ConnectionData=%s, error=%s",
@@ -324,7 +324,7 @@ public class Auth2LoginAuthenticationProvider implements AuthenticationProvider 
 			log.error(String.format("异步更新第三方授权登录用户信息与 token 信息失败: %s, 再次同步更新", e.getMessage()), e);
 			// 异步执行失败, 直接同步更新授权登录用户信息与 token 信息
 			try {
-				connectionService.updateUserConnection(authUser, connectionData);
+				connectionService.updateUserConnectionAndAuthToken(authUser, connectionData);
 			}
 			catch (Exception ex) {
 				String msg = String.format("同步更新第三方授权登录用户信息与 token 信息失败: AuthUser=%s, ConnectionData=%s, error=%s",

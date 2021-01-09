@@ -133,7 +133,7 @@ public class DefaultConnectionServiceImpl implements ConnectionService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRED)
-    public void updateUserConnection(@NonNull AuthUser authUser, @NonNull ConnectionData data) throws UpdateConnectionException {
+    public void updateUserConnectionAndAuthToken(@NonNull AuthUser authUser, @NonNull ConnectionData data) throws UpdateConnectionException {
         ConnectionData connectionData = null;
         try
         {
