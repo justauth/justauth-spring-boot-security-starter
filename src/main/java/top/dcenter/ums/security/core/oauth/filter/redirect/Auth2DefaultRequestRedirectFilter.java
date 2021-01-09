@@ -86,16 +86,16 @@ import static top.dcenter.ums.security.core.vo.RedirectVo.redirect;
  * @see AuthorizationRequestRepository
  * @see ClientRegistration
  * @see ClientRegistrationRepository
- * @see &#60;a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1"&#62;Section
- * 4.1 Authorization Code Grant&#60;/a&#62;
- * @see &#60;a target="_blank" href=
- * "https://tools.ietf.org/html/rfc6749#section-4.1.1"&#62;Section 4.1.1 Authorization Request
- * (Authorization Code)&#60;/a&#62;
- * @see &#60;a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.2"&#62;Section
- * 4.2 Implicit Grant&#60;/a&#62;
- * @see &#60;a target="_blank" href=
- * "https://tools.ietf.org/html/rfc6749#section-4.2.1"&#62;Section 4.2.1 Authorization Request
- * (Implicit)&#60;/a&#62;
+ * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1">Section
+ * 4.1 Authorization Code Grant</a>
+ * @see <a target="_blank" href=
+ * "https://tools.ietf.org/html/rfc6749#section-4.1.1">Section 4.1.1 Authorization Request
+ * (Authorization Code)</a>
+ * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.2">Section
+ * 4.2 Implicit Grant</a>
+ * @see <a target="_blank" href=
+ * "https://tools.ietf.org/html/rfc6749#section-4.2.1">Section 4.2.1 Authorization Request
+ * (Implicit)</a>
  */
 @SuppressWarnings({"unused", "JavaDoc"})
 public class Auth2DefaultRequestRedirectFilter extends OncePerRequestFilter {

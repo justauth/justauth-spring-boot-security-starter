@@ -17,10 +17,13 @@ package top.dcenter.ums.security.core.oauth.signup;
 
 import me.zhyd.oauth.model.AuthUser;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
 import top.dcenter.ums.security.core.oauth.entity.ConnectionData;
 import top.dcenter.ums.security.core.oauth.exception.RegisterUserFailureException;
 import top.dcenter.ums.security.core.oauth.repository.exception.UpdateConnectionException;
+
+import java.util.List;
 
 /**
  * A command that signs up a new user in the event no user id could be mapped from a {@link AuthUser}.
@@ -38,9 +41,10 @@ public interface ConnectionService {
 	 * @param authUser      the user info from the provider sign-in attempt
 	 * @param providerId    第三方服务商, 如: qq, github
 	 * @param encodeState   加密后的 state.   {@code https://gitee.com/pcore/just-auth-spring-security-starter/issues/I22JC7}
-	 * @return the new user UserDetails. May be null to indicate that an implicit failed to register local user.
+	 * @return the new user UserDetails.
 	 * @throws RegisterUserFailureException 用户重名或注册失败
 	 */
+	@NonNull
 	UserDetails signUp(@NonNull AuthUser authUser, @NonNull String providerId, @NonNull String encodeState) throws RegisterUserFailureException;
 
 	/**
@@ -59,4 +63,14 @@ public interface ConnectionService {
 	 * @param providerId    第三方服务商 Id
 	 */
 	void binding(@NonNull UserDetails principal, @NonNull AuthUser authUser, @NonNull String providerId);
+
+	/**
+	 * 根据 providerId 与 providerUserId 获取 ConnectionData list.
+	 * @param providerId        第三方服务商, 如: qq, github
+	 * @param providerUserId    第三方用户 Id
+	 * @return  connection data list
+	 */
+	@Nullable
+	List<ConnectionData> findConnectionByProviderIdAndProviderUserId(@NonNull String providerId,
+	                                                                 @NonNull String providerUserId);
 }

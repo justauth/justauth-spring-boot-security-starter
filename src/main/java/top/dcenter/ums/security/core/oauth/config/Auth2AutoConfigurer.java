@@ -42,7 +42,6 @@ import top.dcenter.ums.security.core.oauth.filter.login.Auth2LoginAuthentication
 import top.dcenter.ums.security.core.oauth.filter.redirect.Auth2DefaultRequestRedirectFilter;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 import top.dcenter.ums.security.core.oauth.provider.Auth2LoginAuthenticationProvider;
-import top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository;
 import top.dcenter.ums.security.core.oauth.service.Auth2StateCoder;
 import top.dcenter.ums.security.core.oauth.service.Auth2UserService;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
@@ -65,7 +64,6 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
     private final Auth2Properties auth2Properties;
     private final UmsUserDetailsService umsUserDetailsService;
     private final Auth2UserService auth2UserService;
-    private final UsersConnectionRepository usersConnectionRepository;
     private final ConnectionService connectionSignUp;
     private final ExecutorService updateConnectionTaskExecutor;
     @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection"})
@@ -86,13 +84,12 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
 
     public Auth2AutoConfigurer(Auth2Properties auth2Properties,
                                UmsUserDetailsService umsUserDetailsService,
-                               Auth2UserService auth2UserService, UsersConnectionRepository usersConnectionRepository,
+                               Auth2UserService auth2UserService,
                                ConnectionService connectionSignUp,
                                @Qualifier("updateConnectionTaskExecutor") ExecutorService updateConnectionTaskExecutor) {
         this.auth2Properties = auth2Properties;
         this.umsUserDetailsService = umsUserDetailsService;
         this.auth2UserService = auth2UserService;
-        this.usersConnectionRepository = usersConnectionRepository;
         this.connectionSignUp = connectionSignUp;
         this.updateConnectionTaskExecutor = updateConnectionTaskExecutor;
     }
@@ -136,8 +133,7 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
         // 添加 provider
         Auth2LoginAuthenticationProvider auth2LoginAuthenticationProvider = new Auth2LoginAuthenticationProvider(
                 auth2UserService, connectionSignUp, umsUserDetailsService,
-                usersConnectionRepository, updateConnectionTaskExecutor,
-                auth2Properties.getAutoSignUp(), auth2Properties.getTemporaryUserAuthorities(),
+                updateConnectionTaskExecutor, auth2Properties.getAutoSignUp(), auth2Properties.getTemporaryUserAuthorities(),
                 auth2Properties.getTemporaryUserPassword());
         http.authenticationProvider(postProcess(auth2LoginAuthenticationProvider));
 
