@@ -18,8 +18,12 @@
 3. 支持第三方授权登录的用户信息表与 token 信息表的 redis 缓存功能.
 4. 支持第三方绑定与解绑及查询接口(top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository).
 
+### 登录流程图
+![登录流程图](doc/登录流程.png)
+
 ### 微信群：UMS 添加微信(z56133)备注(UMS) 
 ![weixin](doc/weixin.png)
+
 ------
 ## 二、`maven`：
 
@@ -790,6 +794,7 @@ jackson2JsonRedisSerializer.setObjectMapper(om);
 | **属性**                                        | **类型** | **默认值**                                                   | **描述**                                                     | **可选项** |
 | ----------------------------------------------- | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------- |
 | **数据库初始化相关语句**      |          |                                                              |                                                              |            |
+| ums.repository.enableStartUpInitializeTable                         | Boolean     | true      | 是否在启动时检查并自动创建 `userConnectionTableName` 与 `authTokenTableName`, 默认: `TRUE`   | true/false |
 | ums.repository.queryDatabaseNameSql          | String   | select database();                                              | 查询数据库名称, 默认为 `mysql` 查询语句.                                |            |
 | ums.repository.authTokenTableName          | String   | auth_token                                              | 第三方登录 `AuthTokenPo` 数据库表名称.                                |            |
 | ums.repository.queryAuthTokenTableExistSql          | String   | SELECT COUNT(1) FROM information_schema.tables WHERE table_name = '%s' AND table_schema = '%s';                                              | 查询户 `authTokenTableName` 在数据库中是否存在的语句。  注意： `sql` 语句中的 `%s` 必须写上，且 `%s` 的顺序必须与后面的字段名称所对应的含义对应 :  `authTokenTableName` , `database`                                |            |

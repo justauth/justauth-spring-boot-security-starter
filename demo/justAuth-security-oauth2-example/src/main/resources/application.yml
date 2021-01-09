@@ -246,6 +246,8 @@ ums:
     text-encryptor-password: 7ca5d913a17b4942942d16a974e3fecc
     # 第三方登录用户数据库表的字段 accessToken 与 refreshToken 加密专用 salt
     text-encryptor-salt: cd538b1b077542aca5f86942b6507fe2
+    # 是否在启动时检查并自动创建 userConnectionTableName 与 authTokenTableName, 默认: TRUE
+    enableStartUpInitializeTable: true
     # 其他的有: 数据库表名称, 字段名称, curd sql 语句 等设置, 一般不需要更改,
     # 如果要添加字段: 具体查看 RepositoryProperties 与 Auth2JdbcUsersConnectionRepository
   # =============== end: user_connection repository 配置 ===============

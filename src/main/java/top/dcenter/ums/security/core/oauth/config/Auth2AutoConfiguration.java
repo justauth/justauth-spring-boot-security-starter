@@ -150,6 +150,11 @@ public class Auth2AutoConfiguration implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
+        if (!repositoryProperties.getEnableStartUpInitializeTable()) {
+            // 不支持在启动时检查并自动创建 userConnectionTableName 与 authTokenTableName, 直接退出
+            return;
+        }
+
         // ====== 是否要初始化数据库 ======
         // 如果 Auth2JdbcUsersConnectionRepository, Auth2JdbcUsersConnectionTokenRepository 所需的表 user_connection, 未创建则创建它
         try (Connection connection = dataSource.getConnection())

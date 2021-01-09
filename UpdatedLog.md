@@ -1,3 +1,8 @@
+## 1.1.13
+### Fixes and Improvements:
+1. 改进: 添加是否在启动时检查并自动创建 userConnectionTable 与 authTokenTable 控制开关属性.
+2. 文档: 添加登录流程图.
+
 ## 1.1.12
 ### Fixes and Improvements:
 1. 更新 JustAuth 依赖到 1.15.9 版本.
