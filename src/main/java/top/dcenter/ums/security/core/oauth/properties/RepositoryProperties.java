@@ -89,22 +89,22 @@ public class RepositoryProperties {
             "  `id` bigint(20) NOT NULL AUTO_INCREMENT,\n" +
             "  `enableRefresh` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否支持 refreshToken, 默认: 1. 1 表示支持, 0 表示不支持',\n" +
             "  `providerId` varchar(20) DEFAULT NULL COMMENT '第三方服务商,如: qq,github',\n" +
-            "  `accessToken` varchar(64) COMMENT 'accessToken',\n" +
+            "  `accessToken` varchar(512) COMMENT 'accessToken',\n" +
             "  `expireIn` bigint(20) DEFAULT '-1' COMMENT 'accessToken 过期时间, 无过期时间默认为 -1',\n" +
             "  `refreshTokenExpireIn` bigint(20) DEFAULT '-1' COMMENT 'refreshToken 过期时间, 无过期时间默认为 -1',\n" +
-            "  `refreshToken` varchar(64) COMMENT 'refreshToken',\n" +
+            "  `refreshToken` varchar(512) COMMENT 'refreshToken',\n" +
             "  `uid` varchar(20) COMMENT 'alipay userId',\n" +
-            "  `openId` varchar(64) COMMENT 'qq/mi/toutiao/wechatMp/wechatOpen/weibo/jd/kujiale/dingTalk/douyin/feishu',\n" +
-            "  `accessCode` varchar(64) COMMENT 'dingTalk, taobao 附带属性',\n" +
-            "  `unionId` varchar(64) COMMENT 'QQ附带属性',\n" +
-            "  `scope` varchar(64) COMMENT 'Google附带属性',\n" +
+            "  `openId` varchar(256) COMMENT 'qq/mi/toutiao/wechatMp/wechatOpen/weibo/jd/kujiale/dingTalk/douyin/feishu',\n" +
+            "  `accessCode` varchar(256) COMMENT 'dingTalk, taobao 附带属性',\n" +
+            "  `unionId` varchar(256) COMMENT 'QQ附带属性',\n" +
+            "  `scope` varchar(256) COMMENT 'Google附带属性',\n" +
             "  `tokenType` varchar(20) COMMENT 'Google附带属性',\n" +
-            "  `idToken` varchar(64) COMMENT 'Google附带属性',\n" +
+            "  `idToken` varchar(256) COMMENT 'Google附带属性',\n" +
             "  `macAlgorithm` varchar(20) COMMENT '小米附带属性',\n" +
-            "  `macKey` varchar(64) COMMENT '小米附带属性',\n" +
-            "  `code` varchar(64) COMMENT '企业微信附带属性',\n" +
-            "  `oauthToken` varchar(64) COMMENT 'Twitter附带属性',\n" +
-            "  `oauthTokenSecret` varchar(64) COMMENT 'Twitter附带属性',\n" +
+            "  `macKey` varchar(256) COMMENT '小米附带属性',\n" +
+            "  `code` varchar(256) COMMENT '企业微信附带属性',\n" +
+            "  `oauthToken` varchar(256) COMMENT 'Twitter附带属性',\n" +
+            "  `oauthTokenSecret` varchar(256) COMMENT 'Twitter附带属性',\n" +
             "  `userId` varchar(64) COMMENT 'Twitter附带属性',\n" +
             "  `screenName` varchar(64) COMMENT 'Twitter附带属性',\n" +
             "  `oauthCallbackConfirmed` varchar(64) COMMENT 'Twitter附带属性',\n" +
@@ -209,9 +209,9 @@ public class RepositoryProperties {
             "\t%s varchar(64) COMMENT '第三方用户名',\n" +
             "\t%s varchar(256) COMMENT '主页',\n" +
             "\t%s varchar(256) COMMENT '头像',\n" +
-            "\t%s varchar(64) NOT NULL COMMENT 'accessToken',\n" +
+            "\t%s varchar(512) NOT NULL COMMENT 'accessToken',\n" +
             "\t%s bigint(20) COMMENT 'auth_token.id',\n" +
-            "\t%s varchar(64) COMMENT 'refreshToken',\n" +
+            "\t%s varchar(512) COMMENT 'refreshToken',\n" +
             "\t%s bigint(20) DEFAULT '-1' COMMENT '过期时间, 基于 1970-01-01T00:00:00Z, 无过期时间默认为 -1',\n" +
             "\tPRIMARY KEY (%s, %s, %s),\n" +
             "\tunique KEY `idx_userId_providerId_rank`(%s, %s, %s),\n" +
