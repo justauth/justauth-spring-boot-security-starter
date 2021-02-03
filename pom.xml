@@ -6,7 +6,7 @@
 
     <groupId>top.dcenter</groupId>
     <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>1.1.14</version>
+    <version>1.1.15</version>
 
     <packaging>jar</packaging>
     <name>justAuth-spring-security-starter</name>
@@ -376,6 +376,7 @@
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            <stagingProgressTimeoutMinutes>30</stagingProgressTimeoutMinutes>
                         </configuration>
                         <executions>
                             <execution>

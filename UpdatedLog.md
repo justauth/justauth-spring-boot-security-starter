@@ -1,3 +1,7 @@
+## 1.1.15
+### Fixes and Improvements:
+1. 修复: user_connection 与 auth_token 建表语句的bug.
+
 ## 1.1.14
 ### Fixes and Improvements:
 1. 优化: 接口名称 updateUserConnectionAndAuthToken(..).
