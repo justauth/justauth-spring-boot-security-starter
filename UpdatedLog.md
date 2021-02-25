@@ -1,3 +1,9 @@
+## 1.1.17
+### Fixes and Improvements:
+1. 修复: 当本地登录用户为临时登录用户时绑定异常, 当本地登录用户的 Authentication 为 JwtAuthenticationToken 时绑定异常.
+2. 添加: AuthenticationToUserDetailsConverter.java 接口并实现此接口.
+3. 改进: 添加 expireIn2Timestamp 重载方法.
+
 ## 1.1.16
 ### Fixes and Improvements:
 1. 修复: TemporaryUser 序列化问题. 完善第三方登录不支持自动注册功能的 example.
