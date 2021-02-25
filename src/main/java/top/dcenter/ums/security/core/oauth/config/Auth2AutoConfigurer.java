@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
@@ -66,6 +67,7 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
     private final Auth2UserService auth2UserService;
     private final ConnectionService connectionSignUp;
     private final ExecutorService updateConnectionTaskExecutor;
+    private final RedisConnectionFactory redisConnectionFactory;
     @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection"})
     @Autowired(required = false)
     private Auth2StateCoder auth2StateCoder;
@@ -86,12 +88,15 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
                                UmsUserDetailsService umsUserDetailsService,
                                Auth2UserService auth2UserService,
                                ConnectionService connectionSignUp,
-                               @Qualifier("updateConnectionTaskExecutor") ExecutorService updateConnectionTaskExecutor) {
+                               @Qualifier("updateConnectionTaskExecutor") ExecutorService updateConnectionTaskExecutor,
+                               @Autowired(required = false)
+                               RedisConnectionFactory redisConnectionFactory) {
         this.auth2Properties = auth2Properties;
         this.umsUserDetailsService = umsUserDetailsService;
         this.auth2UserService = auth2UserService;
         this.connectionSignUp = connectionSignUp;
         this.updateConnectionTaskExecutor = updateConnectionTaskExecutor;
+        this.redisConnectionFactory = redisConnectionFactory;
     }
 
     @Override
@@ -107,7 +112,8 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
         // 添加第三方登录回调接口过滤器
         String filterProcessesUrl = auth2Properties.getRedirectUrlPrefix();
         Auth2LoginAuthenticationFilter auth2LoginAuthenticationFilter =
-                new Auth2LoginAuthenticationFilter(filterProcessesUrl, auth2Properties.getSignUpUrl(), authenticationDetailsSource);
+                new Auth2LoginAuthenticationFilter(filterProcessesUrl, auth2Properties.getSignUpUrl(),
+                                                   authenticationDetailsSource, redisConnectionFactory);
         AuthenticationManager sharedObject = http.getSharedObject(AuthenticationManager.class);
         auth2LoginAuthenticationFilter.setAuthenticationManager(sharedObject);
         if (authenticationFailureHandler != null)

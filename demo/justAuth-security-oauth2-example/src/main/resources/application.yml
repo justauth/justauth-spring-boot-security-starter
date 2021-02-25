@@ -65,7 +65,7 @@ ums:
     # 例如: 1. 设置值 "/signUp", 则跳转指定到 "/signUp" 进行注册.
     # 2. 想返回自定义 json 数据到前端, 这里要设置 null , 在 Auth2LoginAuthenticationFilter 设置的 AuthenticationSuccessHandler
     # 上处理返回 json; 判断是否为临时用户的条件是: Authentication.getPrincipal() 是否为 TemporaryUser 类型.
-    sign-up-url: /signUpAgain
+    sign-up-url: /signUp
     # 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户密码, 默认为: "". 注意: 生产环境更换密码
     temporary-user-password: ""
     # 用于第三方授权登录时, 未开启自动注册且用户是第一次授权登录的临时用户的默认权限, 多个权限用逗号分开, 默认为: "ROLE_TEMPORARY_USER"

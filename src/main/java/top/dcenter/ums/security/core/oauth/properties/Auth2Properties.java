@@ -256,7 +256,7 @@ public class Auth2Properties {
      * 注意: 当 autoSignUp = false 时, 此属性才生效.<br>
      * 例如:<br>
      * 1. 设置值 "/signUp", 则跳转指定到 "/signUp" 进行注册. <br>
-     * 2. 想返回自定义 json 数据到前端, 这里要设置 null , 在 {@link Auth2LoginAuthenticationFilter} 设置的
+     * 2. 想返回自定义 json 数据到前端, 这里要设置 为空 , 在 {@link Auth2LoginAuthenticationFilter} 设置的
      * {@link AuthenticationSuccessHandler} 上处理返回 json; 判断是否为临时用户的条件是: {@link Authentication#getPrincipal()}
      * 是否为 {@link TemporaryUser} 类型.<br>
      */

@@ -15,6 +15,11 @@
  */
 package top.dcenter.ums.security.core.oauth.filter.login;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
@@ -48,12 +53,17 @@ import top.dcenter.ums.security.core.oauth.justauth.Auth2RequestHolder;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
 import top.dcenter.ums.security.core.oauth.token.Auth2LoginAuthenticationToken;
 import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
+import top.dcenter.ums.security.core.oauth.util.MvcUtil;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.Objects.nonNull;
 
 /**
  * An implementation of an {@link AbstractAuthenticationProcessingFilter} for OAuth 2.0
@@ -108,9 +118,12 @@ import java.io.IOException;
 @SuppressWarnings("JavaDoc")
 public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
+    public static final String TEMPORARY_USER_CACHE_KEY_PREFIX = "TEMPORARY_USER_REDIS_CACHE_KEY:";
+    public static final String TEMPORARY_USERNAME_PARAM_NAME = "temporary_username";
     private static final String AUTHORIZATION_REQUEST_NOT_FOUND_ERROR_CODE = "authorization_request_not_found";
 
     private final Auth2DefaultRequestResolver authorizationRequestResolver;
+    private final RedisConnectionFactory redisConnectionFactory;
 
     private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
@@ -126,13 +139,17 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
      * the authentication requests, not null
      * @param signUpUrl          第三方授权登录后如未注册用户不支持自动注册功能, 则跳转到此 url 进行注册逻辑, 此 url 必须开发者自己实现
      * @param authenticationDetailsSource      {@link AuthenticationDetailsSource}
+     * @param redisConnectionFactory           redis connection factory
      * @since 5.1
      */
     public Auth2LoginAuthenticationFilter(@NonNull String filterProcessesUrl, @Nullable String signUpUrl,
-                                          @Nullable AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource) {
+                                          @Nullable AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource,
+                                          @Autowired(required = false)
+                                          @Nullable RedisConnectionFactory redisConnectionFactory) {
         super(filterProcessesUrl + "/*");
         this.authorizationRequestResolver = new Auth2DefaultRequestResolver(filterProcessesUrl);
         this.signUpUrl = signUpUrl;
+        this.redisConnectionFactory = redisConnectionFactory;
         if (authenticationDetailsSource != null) {
             setAuthenticationDetailsSource(authenticationDetailsSource);
         }
@@ -187,9 +204,27 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
                     authResult, this.getClass()));
         }
 
+        // 自定义注册逻辑
         final Object principal = authResult.getPrincipal();
         if (principal instanceof TemporaryUser && StringUtils.hasText(this.signUpUrl)) {
-            this.redirectStrategy.sendRedirect(request, response, this.signUpUrl);
+            TemporaryUser temporaryUser = (TemporaryUser) principal;
+            String username = temporaryUser.getUsername();
+            String key = TEMPORARY_USER_CACHE_KEY_PREFIX + username;
+            if (nonNull(redisConnectionFactory)) {
+                // 存入 redis
+                try (RedisConnection connection = redisConnectionFactory.getConnection()) {
+                    connection.set(key.getBytes(StandardCharsets.UTF_8),
+                                   MvcUtil.toJsonString(temporaryUser).getBytes(StandardCharsets.UTF_8),
+                                   Expiration.from(86400L, TimeUnit.SECONDS),
+                                   RedisStringCommands.SetOption.UPSERT);
+                }
+            }
+            else {
+                // 存入 session
+                request.getSession().setAttribute(key, temporaryUser);
+            }
+            this.redirectStrategy.sendRedirect(request, response,
+                                               this.signUpUrl + "?" + TEMPORARY_USERNAME_PARAM_NAME + "=" + username);
             return;
         }
         else {

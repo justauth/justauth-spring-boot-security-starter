@@ -16,6 +16,8 @@
 
 package top.dcenter.ums.security.core.oauth.userdetails;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.extern.slf4j.Slf4j;
 import me.zhyd.oauth.model.AuthUser;
 import org.springframework.security.core.CredentialsContainer;
@@ -27,6 +29,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
+import top.dcenter.ums.security.core.oauth.jackson.deserializes.TemporaryUserDeserializer;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
 
 import java.io.Serializable;
@@ -50,6 +53,8 @@ import java.util.function.Function;
  */
 @SuppressWarnings("ALL")
 @Slf4j
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
+@JsonDeserialize(using = TemporaryUserDeserializer.class)
 public class TemporaryUser implements UserDetails, CredentialsContainer {
 
 	private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
@@ -59,6 +64,7 @@ public class TemporaryUser implements UserDetails, CredentialsContainer {
 	// ================================================================================================
 	private String password;
 	private final String username;
+	@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
 	private final Set<GrantedAuthority> authorities;
 	private final boolean accountNonExpired;
 	private final boolean accountNonLocked;
