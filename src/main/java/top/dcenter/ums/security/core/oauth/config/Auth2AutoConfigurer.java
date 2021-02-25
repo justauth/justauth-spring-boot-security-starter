@@ -47,6 +47,7 @@ import top.dcenter.ums.security.core.oauth.service.Auth2StateCoder;
 import top.dcenter.ums.security.core.oauth.service.Auth2UserService;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
 import top.dcenter.ums.security.core.oauth.signup.ConnectionService;
+import top.dcenter.ums.security.core.oauth.userdetails.converter.AuthenticationToUserDetailsConverter;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
@@ -58,6 +59,7 @@ import java.util.concurrent.ExecutorService;
  * @author YongWu zheng
  * @version V2.0  Created by 2020/10/12 12:31
  */
+@SuppressWarnings("jol")
 @Configuration
 @AutoConfigureAfter({Auth2AutoConfiguration.class})
 public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> implements InitializingBean {
@@ -68,6 +70,7 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
     private final ConnectionService connectionSignUp;
     private final ExecutorService updateConnectionTaskExecutor;
     private final RedisConnectionFactory redisConnectionFactory;
+    private final AuthenticationToUserDetailsConverter authenticationToUserDetailsConverter;
     @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection"})
     @Autowired(required = false)
     private Auth2StateCoder auth2StateCoder;
@@ -90,13 +93,16 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
                                ConnectionService connectionSignUp,
                                @Qualifier("updateConnectionTaskExecutor") ExecutorService updateConnectionTaskExecutor,
                                @Autowired(required = false)
-                               RedisConnectionFactory redisConnectionFactory) {
+                               RedisConnectionFactory redisConnectionFactory,
+                               @Autowired(required = false)
+                               AuthenticationToUserDetailsConverter authenticationToUserDetailsConverter) {
         this.auth2Properties = auth2Properties;
         this.umsUserDetailsService = umsUserDetailsService;
         this.auth2UserService = auth2UserService;
         this.connectionSignUp = connectionSignUp;
         this.updateConnectionTaskExecutor = updateConnectionTaskExecutor;
         this.redisConnectionFactory = redisConnectionFactory;
+        this.authenticationToUserDetailsConverter = authenticationToUserDetailsConverter;
     }
 
     @Override
@@ -140,7 +146,7 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
         Auth2LoginAuthenticationProvider auth2LoginAuthenticationProvider = new Auth2LoginAuthenticationProvider(
                 auth2UserService, connectionSignUp, umsUserDetailsService,
                 updateConnectionTaskExecutor, auth2Properties.getAutoSignUp(), auth2Properties.getTemporaryUserAuthorities(),
-                auth2Properties.getTemporaryUserPassword());
+                auth2Properties.getTemporaryUserPassword(), authenticationToUserDetailsConverter);
         http.authenticationProvider(postProcess(auth2LoginAuthenticationProvider));
 
     }
