@@ -227,16 +227,26 @@ public interface Auth2DefaultRequest {
      */
     static <T extends AuthTokenPo> void expireIn2Timestamp(@NonNull Integer timeout,
                                                            @Nullable Integer expireIn, @NonNull T authToken) {
+
+        authToken.setExpireTime(expireIn2Timestamp(timeout, expireIn));
+    }
+
+    /**
+     * 有效期转时间戳
+     * @param timeout   {@link HttpConfig#getTimeout()}, 单位毫秒
+     * @param expireIn  有效期
+     * @return 时间戳
+     */
+    static long expireIn2Timestamp(@NonNull Integer timeout, @Nullable Integer expireIn) {
         if (expireIn == null || expireIn < 1)
         {
             // 无过期时间, 默认设置为 -1
-            authToken.setExpireTime(-1L);
+            return -1L;
         }
         else
         {
             // 转换为到期日期的 EpochMilli, 考虑到网络延迟, 相对于第三方的过期时间, 减去根据用户设置的 timeout(HttpConfigProperties.timeout) 时间,
-            long dealLine = Instant.now().plusSeconds(expireIn).minusMillis(timeout).toEpochMilli();
-            authToken.setExpireTime(dealLine);
+            return Instant.now().plusSeconds(expireIn).minusMillis(timeout).toEpochMilli();
         }
     }
 
