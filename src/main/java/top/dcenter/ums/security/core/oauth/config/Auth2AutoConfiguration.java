@@ -51,6 +51,8 @@ import top.dcenter.ums.security.core.oauth.service.DefaultAuth2UserServiceImpl;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
 import top.dcenter.ums.security.core.oauth.signup.ConnectionService;
 import top.dcenter.ums.security.core.oauth.signup.DefaultConnectionServiceImpl;
+import top.dcenter.ums.security.core.oauth.userdetails.converter.AuthenticationToUserDetailsConverter;
+import top.dcenter.ums.security.core.oauth.userdetails.converter.Oauth2TokenAuthenticationTokenToUserConverter;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -81,6 +83,12 @@ public class Auth2AutoConfiguration implements InitializingBean {
         this.repositoryProperties = repositoryProperties;
         this.auth2Properties = auth2Properties;
         this.dataSource = dataSource;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(type = {"top.dcenter.ums.security.core.oauth.userdetails.converter.AuthenticationToUserDetailsConverter"})
+    public AuthenticationToUserDetailsConverter authenticationToUserDetailsConverter() {
+        return new Oauth2TokenAuthenticationTokenToUserConverter();
     }
 
     @Bean
