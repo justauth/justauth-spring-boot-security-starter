@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import top.dcenter.ums.security.core.oauth.enums.ErrorCodeEnum;
 import top.dcenter.ums.security.core.oauth.exception.AbstractResponseJsonAuthenticationException;
 import top.dcenter.ums.security.core.oauth.exception.Auth2Exception;
+import top.dcenter.ums.security.core.oauth.exception.BusinessException;
 import top.dcenter.ums.security.core.oauth.exception.RefreshTokenFailureException;
 import top.dcenter.ums.security.core.vo.ResponseResult;
 
@@ -40,5 +42,12 @@ public class Auth2ControllerAdviceHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseResult refreshTokenFailureException(RefreshTokenFailureException ex) {
         return ResponseResult.fail(ex.getMessage(), ex.getErrorCodeEnum(), ex.getData());
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseResult  businessException(BusinessException e){
+        return ResponseResult.fail(e.getMessage(), ErrorCodeEnum.BUSINESS_ERROR, e.getData());
     }
 }

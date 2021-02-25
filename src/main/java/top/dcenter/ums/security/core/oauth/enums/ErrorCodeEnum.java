@@ -58,6 +58,9 @@ public enum ErrorCodeEnum {
     REFRESH_TOKEN_FAILURE(950, "refresh Token 刷新失败"),
 
     AUTH2_PROVIDER_NOT_SUPPORT(960, "此服务商的第三方授权登录不支持"),
+    UN_BINDING_ERROR(961, "解绑第三方账号异常"),
+    BINDING_ERROR(962, "绑定第三方账号异常"),
+    BOUND_ERROR(963, "此第三方账号已绑定在其他账号上"),
 
     USER_REGISTER_OAUTH2_FAILURE(999, "本地用户注册成功, 第三方信息保存失败"),
 
@@ -87,6 +90,7 @@ public enum ErrorCodeEnum {
     CUSTOMIZE_CODE_ERROR(670, "验证码错误"),
 
     PARAMETER_ERROR(700, "参数错误"),
+    BUSINESS_ERROR(701, "业务异常"),
 
     ADD_PERMISSION_FAILURE(710, "添加权限失败"),
     DEL_PERMISSION_FAILURE(720, "删除权限失败"),
