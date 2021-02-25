@@ -29,13 +29,18 @@ import me.zhyd.oauth.model.AuthToken;
 import me.zhyd.oauth.model.AuthUser;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import top.dcenter.ums.security.core.oauth.entity.AuthTokenPo;
 import top.dcenter.ums.security.core.oauth.entity.ConnectionData;
+import top.dcenter.ums.security.core.oauth.entity.ConnectionKey;
 import top.dcenter.ums.security.core.oauth.enums.ErrorCodeEnum;
 import top.dcenter.ums.security.core.oauth.exception.RegisterUserFailureException;
+import top.dcenter.ums.security.core.oauth.exception.UnBindingException;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
 import top.dcenter.ums.security.core.oauth.justauth.util.JustAuthUtil;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
@@ -168,6 +173,23 @@ public class DefaultConnectionServiceImpl implements ConnectionService {
     public void binding(@NonNull UserDetails principal, @NonNull AuthUser authUser, @NonNull String providerId) {
         // 第三方授权登录信息绑定到本地账号, 且添加第三方授权登录信息到 user_connection 与 auth_token
         registerConnection(providerId, authUser, principal);
+    }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRED)
+    public void unbinding(@NonNull String userId, @NonNull String providerId, @NonNull String providerUserId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isCurrentUserAndValid = authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)
+                && authentication.getName().equals(userId);
+        // 用户未登录或不是当前用户
+        if (!isCurrentUserAndValid) {
+            log.warn("用户 {} 进行解绑操作时, 用户未登录或不是当前用户; userId: {}, providerId: {}, providerUserId: {}",
+                     authentication.getName(), userId, providerId, providerUserId);
+            throw new UnBindingException(ErrorCodeEnum.UN_BINDING_ERROR, userId);
+        }
+        // 解除绑定(第三方)
+        usersConnectionRepository.removeConnection(userId, new ConnectionKey(providerId, providerUserId));
     }
 
     @Override

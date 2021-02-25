@@ -28,6 +28,9 @@ import java.util.List;
 /**
  * A command that signs up a new user in the event no user id could be mapped from a {@link AuthUser}.
  * Allows for implicitly creating a local user profile from connection data during a provider sign-in attempt.
+ * note: To replace the implementation logic of the built-in {@code auth_token} and {@code user_connection} tables,
+ * implement this interface to inject the IOC container,
+ * And set the property ums.repository.enableStartUpInitializeTable = false.
  * @author YongWu zheng
  * @version V2.0  Created by 2020-10-08 20:10
  */
@@ -63,6 +66,14 @@ public interface ConnectionService {
 	 * @param providerId    第三方服务商 Id
 	 */
 	void binding(@NonNull UserDetails principal, @NonNull AuthUser authUser, @NonNull String providerId);
+
+	/**
+	 * 解除绑定(第三方)
+	 * @param userId            用户 Id
+	 * @param providerId        第三方服务商 Id
+	 * @param providerUserId    第三方用户 Id
+	 */
+	void unbinding(@NonNull String userId, @NonNull String providerId, @NonNull String providerUserId);
 
 	/**
 	 * 根据 providerId 与 providerUserId 获取 ConnectionData list.
