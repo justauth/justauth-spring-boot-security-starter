@@ -1,12 +1,13 @@
 # Spring security 集成 JustAuth 实现第三方授权登录脚手架: 
 
+![justAuthSpringSecurity](https://img.shields.io/badge/justAuthSpringSecurity-1.1.16-green.svg)
 ![JDK](https://img.shields.io/badge/JDK-1.8+-green.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.6.3-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-5.7.27-green.svg)
 ![Redis](https://img.shields.io/badge/Redis-5.0.3-green.svg)
 ![SpringBoot](https://img.shields.io/badge/SpringBoot-2.3.4-green.svg)
 ![SpringSecurity](https://img.shields.io/badge/SpringSecurity-5.4.1-green.svg)
-![JustAuth](https://img.shields.io/badge/JustAuth-1.15.8-green.svg)
+![JustAuth](https://img.shields.io/badge/JustAuth-1.15.9-green.svg)
 ![license](https://img.shields.io/badge/license-MIT-yellow.svg)
 
 ## 一、`特性`

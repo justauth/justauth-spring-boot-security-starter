@@ -1,3 +1,9 @@
+## 1.1.16
+### Fixes and Improvements:
+1. 修复: TemporaryUser 序列化问题. 完善第三方登录不支持自动注册功能的 example.
+2. 改进: ConnectionService.java 针对第三方增加解绑接口并添加默认实现.
+3. 改进: 添加对 BusinessException 的统一异常处理.
+
 ## 1.1.15
 ### Fixes and Improvements:
 1. 修复: user_connection 与 auth_token 建表语句的bug.
