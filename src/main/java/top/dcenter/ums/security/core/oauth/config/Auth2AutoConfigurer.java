@@ -33,7 +33,6 @@ import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -140,7 +139,7 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
             auth2LoginAuthenticationFilter.setRememberMeServices(rememberMeServices);
         }
 
-        http.addFilterAfter(postProcess(auth2LoginAuthenticationFilter), OAuth2AuthorizationRequestRedirectFilter.class);
+        http.addFilterAfter(postProcess(auth2LoginAuthenticationFilter), Auth2DefaultRequestRedirectFilter.class);
 
         // 添加 provider
         Auth2LoginAuthenticationProvider auth2LoginAuthenticationProvider = new Auth2LoginAuthenticationProvider(

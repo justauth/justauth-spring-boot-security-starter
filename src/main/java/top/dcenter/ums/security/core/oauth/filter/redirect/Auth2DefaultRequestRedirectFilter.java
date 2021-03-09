@@ -1,18 +1,3 @@
-/*
- * Copyright 2002-2018 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package top.dcenter.ums.security.core.oauth.filter.redirect;
 
@@ -20,10 +5,7 @@ import org.springframework.core.log.LogMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
-import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
@@ -49,33 +31,7 @@ import static top.dcenter.ums.security.core.oauth.util.MvcUtil.toJsonString;
 import static top.dcenter.ums.security.core.vo.RedirectVo.redirect;
 
 /**
- * This {@code Filter} initiates the authorization code grant or implicit grant flow by
- * redirecting the End-User's user-agent to the Authorization Server's Authorization
- * Endpoint.
- *
- * <p>
- * It builds the OAuth 2.0 Authorization Request, which is used as the redirect
- * {@code URI} to the Authorization Endpoint. The redirect {@code URI} will include the
- * client identifier, requested scope(s), state, response type, and a redirection URI
- * which the authorization server will send the user-agent back to once access is granted
- * (or denied) by the End-User (Resource Owner).
- *
- * <p>
- * By default, this {@code Filter} responds to authorization requests at the {@code URI}
- * {@code /auth2/authorization/{registrationId}} using the default
- * {@link Auth2DefaultRequestResolver}. The {@code URI} template variable
- * {@code {registrationId}} represents the {@link ClientRegistration#getRegistrationId()
- * registration identifier} of the client that is used for initiating the OAuth 2.0
- * Authorization Request.
- *
- * <p>
- * The default base {@code URI} {@code /auth2/authorization} may be overridden via the
- * constructor
- * {@link #Auth2DefaultRequestRedirectFilter(String, Auth2StateCoder, AuthenticationFailureHandler)},
- * or alternatively, an {@code Auth2DefaultRequestResolver} may be provided to the
- * constructor
- * {@link #Auth2DefaultRequestRedirectFilter(Auth2DefaultRequestResolver, Auth2StateCoder, AuthenticationFailureHandler)}
- * to override the resolving of authorization requests.
+ * 构建第三方授权链接并重定向
  *
  * @author Joe Grandja
  * @author Rob Winch
@@ -83,9 +39,6 @@ import static top.dcenter.ums.security.core.vo.RedirectVo.redirect;
  * @since 5.0
  * @see OAuth2AuthorizationRequest
  * @see Auth2DefaultRequestResolver
- * @see AuthorizationRequestRepository
- * @see ClientRegistration
- * @see ClientRegistrationRepository
  * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1">Section
  * 4.1 Authorization Code Grant</a>
  * @see <a target="_blank" href=
@@ -183,21 +136,10 @@ public class Auth2DefaultRequestRedirectFilter extends OncePerRequestFilter {
 		catch (Exception ex) {
 			// Check to see if we need to handle ClientAuthorizationRequiredException
 			Throwable[] causeChain = this.throwableAnalyzer.determineCauseChain(ex);
-			ClientAuthorizationRequiredException authEx = (ClientAuthorizationRequiredException) this.throwableAnalyzer
-					.getFirstThrowableOfType(ClientAuthorizationRequiredException.class, causeChain);
-			if (authEx != null) {
-				try {
-					Auth2DefaultRequest authorizationRequest = this.authorizationRequestResolver.resolve(request, authEx.getClientRegistrationId());
-					if (authorizationRequest == null) {
-						throw authEx;
-					}
-					this.sendRedirectForAuthorization(request, response, authorizationRequest);
-					this.requestCache.saveRequest(request, response);
-				}
-				catch (Exception failed) {
-					this.unsuccessfulRedirectForAuthorization(request, response, failed);
-				}
-				return;
+			AuthenticationException authzEx = (AuthenticationException) this.throwableAnalyzer
+					.getFirstThrowableOfType(AuthenticationException.class, causeChain);
+			if (authzEx != null) {
+				throw authzEx;
 			}
 			if (ex instanceof ServletException) {
 				throw (ServletException) ex;

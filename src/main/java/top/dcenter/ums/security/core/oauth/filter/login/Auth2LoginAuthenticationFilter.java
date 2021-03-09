@@ -1,18 +1,3 @@
-/*
- * Copyright 2002-2019 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package top.dcenter.ums.security.core.oauth.filter.login;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,29 +8,16 @@ import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider;
-import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationToken;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResponse;
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import top.dcenter.ums.security.core.oauth.filter.redirect.Auth2DefaultRequestResolver;
@@ -69,46 +41,10 @@ import static java.util.Objects.nonNull;
  * An implementation of an {@link AbstractAuthenticationProcessingFilter} for OAuth 2.0
  * Login.
  *
- * <p>
- * This authentication {@code Filter} handles the processing of an OAuth 2.0 Authorization
- * Response for the authorization code grant flow and delegates an
- * {@link OAuth2LoginAuthenticationToken} to the {@link AuthenticationManager} to log in
- * the End-User.
- *
- * <p>
- * The OAuth 2.0 Authorization Response is processed as follows:
- *
- * <ul>
- * <li>Assuming the End-User (Resource Owner) has granted access to the Client, the
- * Authorization Server will append the {@link OAuth2ParameterNames#CODE code} and
- * {@link OAuth2ParameterNames#STATE state} parameters to the
- * {@link OAuth2ParameterNames#REDIRECT_URI redirect_uri} (provided in the Authorization
- * Request) and redirect the End-User's user-agent back to this {@code Filter} (the
- * Client).</li>
- * <li>This {@code Filter} will then create an {@link OAuth2LoginAuthenticationToken} with
- * the {@link OAuth2ParameterNames#CODE code} received and delegate it to the
- * {@link AuthenticationManager} to authenticate.</li>
- * <li>Upon a successful authentication, an {@link OAuth2AuthenticationToken} is created
- * (representing the End-User {@code Principal}) and associated to the
- * {@link OAuth2AuthorizedClient Authorized Client} using the
- * {@link OAuth2AuthorizedClientRepository}.</li>
- * <li>Finally, the {@link OAuth2AuthenticationToken} is returned and ultimately stored in
- * the {@link SecurityContextRepository} to complete the authentication processing.</li>
- * </ul>
- *
  * @author Joe Grandja
+ * @author YongWu zheng
  * @since 5.0
  * @see AbstractAuthenticationProcessingFilter
- * @see OAuth2LoginAuthenticationToken
- * @see OAuth2AuthenticationToken
- * @see OAuth2LoginAuthenticationProvider
- * @see OAuth2AuthorizationRequest
- * @see OAuth2AuthorizationResponse
- * @see AuthorizationRequestRepository
- * @see OAuth2AuthorizationRequestRedirectFilter
- * @see ClientRegistrationRepository
- * @see OAuth2AuthorizedClient
- * @see OAuth2AuthorizedClientRepository
  * @see <a target="_blank" href="https://tools.ietf.org/html/rfc6749#section-4.1">Section
  * 4.1 Authorization Code Grant</a>
  * @see <a target="_blank" href=

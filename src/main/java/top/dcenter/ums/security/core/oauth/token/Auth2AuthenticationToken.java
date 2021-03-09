@@ -20,7 +20,6 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityCoreVersion;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.util.Assert;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
 
@@ -54,7 +53,6 @@ public class Auth2AuthenticationToken extends AbstractAuthenticationToken {
 	 * @param principal the user {@code Principal} registered with the OAuth 2.0 Provider
 	 * @param authorities the authorities granted to the user
 	 * @param providerId the providerId
-	 * {@link OAuth2AuthorizedClient Authorized Client}
 	 */
 	public Auth2AuthenticationToken(Object principal,
 	                                Collection<? extends GrantedAuthority> authorities,

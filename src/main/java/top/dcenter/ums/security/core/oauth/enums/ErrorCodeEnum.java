@@ -106,11 +106,11 @@ public enum ErrorCodeEnum {
     /**
      * 错误代码
      */
-    private Integer code;
+    private final Integer code;
     /**
      * 错误消息
      */
-    private String msg;
+    private final String msg;
 
     ErrorCodeEnum(int code, String msg) {
         this.code = code;
