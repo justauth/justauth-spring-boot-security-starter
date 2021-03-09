@@ -1,3 +1,8 @@
+## 1.1.18
+### Fixes and Improvements:
+1. 优化: 第三方登录中 state 缓存 key 策略.
+2. 优化: 依赖, 删除对 spring-security-oauth2-client 的依赖. 去除 spring-security-oauth2-resource-server 依赖的 scope:provider 标记.
+
 ## 1.1.17
 ### Fixes and Improvements:
 1. 修复: 当本地登录用户为临时登录用户时绑定异常, 当本地登录用户的 Authentication 为 JwtAuthenticationToken 时绑定异常.

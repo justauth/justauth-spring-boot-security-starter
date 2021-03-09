@@ -1,6 +1,6 @@
 # Spring security 集成 JustAuth 实现第三方授权登录脚手架: 
 
-![justAuthSpringSecurity](https://img.shields.io/badge/justAuthSpringSecurity-1.1.17-green.svg)
+![justAuthSpringSecurity](https://img.shields.io/badge/justAuthSpringSecurity-1.1.18-green.svg)
 ![JDK](https://img.shields.io/badge/JDK-1.8+-green.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.6.3-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-5.7.27-green.svg)
