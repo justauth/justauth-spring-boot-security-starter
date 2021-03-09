@@ -42,9 +42,7 @@ import org.springframework.lang.Nullable;
 import top.dcenter.ums.security.core.oauth.entity.AuthTokenPo;
 import top.dcenter.ums.security.core.oauth.enums.ErrorCodeEnum;
 import top.dcenter.ums.security.core.oauth.exception.RefreshTokenFailureException;
-import top.dcenter.ums.security.core.oauth.justauth.cache.Auth2StateCache;
 import top.dcenter.ums.security.core.oauth.justauth.cache.AuthStateSessionCache;
-import top.dcenter.ums.security.core.oauth.justauth.enums.CacheKeyStrategy;
 
 import java.time.Instant;
 
@@ -58,7 +56,6 @@ import java.time.Instant;
  * 6. {@link #login(AuthCallback)},<br>
  * 7. {@link #getProviderId()},<br>
  * 8. {@link #refreshToken(AuthTokenPo)},<br>
- * 9. {@link #determineState(AuthStateCache, String, AuthSource)},<br>
  * 10. {@link #removeStateCacheOfSessionCache(AuthStateCache, AuthSource)},<br>
  * 11. {@link #generateState()},<br>
  * 12. {@link #getAuthTokenPo(Integer, Long, AuthResponse)},<br>
@@ -144,30 +141,6 @@ public interface Auth2DefaultRequest {
      */
     default String generateState() {
         return UuidUtils.getUUID();
-    }
-
-    /**
-     * 根据缓存 key 的策略, 来决定 state.
-     * @param authStateCache    {@link AuthStateCache}
-     * @param state             state
-     * @param source            {@link AuthSource}
-     * @return  返回 state
-     */
-    static String determineState(@NonNull AuthStateCache authStateCache, @NonNull String state, @NonNull AuthSource source) {
-        if (authStateCache instanceof Auth2StateCache)
-        {
-            Auth2StateCache stateCache = ((Auth2StateCache) authStateCache);
-            CacheKeyStrategy cacheKeyStrategy = stateCache.getCacheKeyStrategy();
-            switch (cacheKeyStrategy)
-            {
-                case PROVIDER_ID:
-                    return source.getName();
-                case UUID:
-                default:
-                    break;
-            }
-        }
-        return state;
     }
 
     /**

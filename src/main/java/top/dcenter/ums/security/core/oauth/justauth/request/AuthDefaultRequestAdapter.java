@@ -46,8 +46,6 @@ import top.dcenter.ums.security.core.oauth.justauth.Auth2RequestHolder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest.determineState;
-
 /**
  * {@link AuthDefaultRequest} 的适配器
  * @author YongWu zheng
@@ -88,7 +86,7 @@ public class AuthDefaultRequestAdapter extends AuthDefaultRequest implements Aut
         }
 
         // 缓存 state
-        this.authStateCache.cache(determineState(this.authStateCache, state, this.source), state);
+        this.authStateCache.cache(state, state);
         return state;
     }
 
@@ -105,8 +103,7 @@ public class AuthDefaultRequestAdapter extends AuthDefaultRequest implements Aut
         try {
             AuthChecker.checkCode(this.source, authCallback);
             if (!this.config.isIgnoreCheckState()) {
-                AuthChecker.checkState(determineState(this.authStateCache, authCallback.getState(), this.source),
-                                       this.source, this.authStateCache);
+                AuthChecker.checkState(authCallback.getState(), this.source, this.authStateCache);
             }
 
             AuthToken authToken = this.getAccessToken(authCallback);
