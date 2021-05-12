@@ -164,7 +164,7 @@ ums:
     # redisCacheManager 设置, 默认实现: 对查询结果 null 值进行缓存, 添加时更新缓存 null 值.
     redis:
       # 是否开启缓存, 默认 false
-      open: true
+      open: false
       # 是否使用 spring IOC 容器中的 RedisConnectionFactory， 默认： false
       # 如果使用 spring IOC 容器中的 RedisConnectionFactory，则要注意 cache.database-index 要与 spring.redis.database 一样。
       use-ioc-redis-connection-factory: true

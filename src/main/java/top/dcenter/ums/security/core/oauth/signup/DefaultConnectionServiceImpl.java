@@ -44,6 +44,7 @@ import top.dcenter.ums.security.core.oauth.exception.UnBindingException;
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
 import top.dcenter.ums.security.core.oauth.justauth.util.JustAuthUtil;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
+import top.dcenter.ums.security.core.oauth.properties.HttpConfigProperties;
 import top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository;
 import top.dcenter.ums.security.core.oauth.repository.UsersConnectionTokenRepository;
 import top.dcenter.ums.security.core.oauth.repository.exception.UpdateConnectionException;
@@ -68,7 +69,7 @@ import static top.dcenter.ums.security.core.oauth.util.MvcUtil.toJsonString;
 public class DefaultConnectionServiceImpl implements ConnectionService {
     /**
      * {@link HttpConfig#getTimeout()}, 单位毫秒,
-     * 返回用户设置的超时时间{@link Auth2Properties.HttpConfigProperties#getTimeout()}，单位毫秒.
+     * 返回用户设置的超时时间{@link HttpConfigProperties#getTimeout()}，单位毫秒.
      */
     private final Integer timeout;
 
