@@ -37,10 +37,16 @@ import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import top.dcenter.ums.security.core.oauth.filter.JsonRequestFilter;
 import top.dcenter.ums.security.core.oauth.filter.login.Auth2LoginAuthenticationFilter;
 import top.dcenter.ums.security.core.oauth.filter.redirect.Auth2DefaultRequestRedirectFilter;
+import top.dcenter.ums.security.core.oauth.oneclicklogin.OneClickLoginAuthenticationFilter;
+import top.dcenter.ums.security.core.oauth.oneclicklogin.OneClickLoginAuthenticationProvider;
+import top.dcenter.ums.security.core.oauth.oneclicklogin.service.OneClickLoginService;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
+import top.dcenter.ums.security.core.oauth.properties.OneClickLoginProperties;
 import top.dcenter.ums.security.core.oauth.provider.Auth2LoginAuthenticationProvider;
 import top.dcenter.ums.security.core.oauth.service.Auth2StateCoder;
 import top.dcenter.ums.security.core.oauth.service.Auth2UserService;
@@ -52,6 +58,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
+
+import static java.util.Objects.nonNull;
 
 /**
  * 添加 OAuth2(JustAuth) 配置
@@ -70,6 +78,8 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
     private final ExecutorService updateConnectionTaskExecutor;
     private final RedisConnectionFactory redisConnectionFactory;
     private final AuthenticationToUserDetailsConverter authenticationToUserDetailsConverter;
+    private final OneClickLoginProperties oneClickLoginProperties;
+    private final OneClickLoginService oneClickLoginService;
     @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection"})
     @Autowired(required = false)
     private Auth2StateCoder auth2StateCoder;
@@ -92,9 +102,11 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
                                ConnectionService connectionSignUp,
                                @Qualifier("updateConnectionTaskExecutor") ExecutorService updateConnectionTaskExecutor,
                                @Autowired(required = false)
-                               RedisConnectionFactory redisConnectionFactory,
+                                       RedisConnectionFactory redisConnectionFactory,
                                @Autowired(required = false)
-                               AuthenticationToUserDetailsConverter authenticationToUserDetailsConverter) {
+                                       AuthenticationToUserDetailsConverter authenticationToUserDetailsConverter,
+                               OneClickLoginProperties oneClickLoginProperties,
+                               OneClickLoginService oneClickLoginService) {
         this.auth2Properties = auth2Properties;
         this.umsUserDetailsService = umsUserDetailsService;
         this.auth2UserService = auth2UserService;
@@ -102,10 +114,15 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
         this.updateConnectionTaskExecutor = updateConnectionTaskExecutor;
         this.redisConnectionFactory = redisConnectionFactory;
         this.authenticationToUserDetailsConverter = authenticationToUserDetailsConverter;
+        this.oneClickLoginProperties = oneClickLoginProperties;
+        this.oneClickLoginService = oneClickLoginService;
     }
 
     @Override
     public void configure(HttpSecurity http) {
+
+        // 添加 JsonRequestFilter 增加对 Json 格式的解析,
+        http.addFilterBefore(new JsonRequestFilter(), LogoutFilter.class);
 
         // 添加第三方登录入口过滤器
         String authorizationRequestBaseUri = auth2Properties.getAuthLoginUrlPrefix();
@@ -121,16 +138,6 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
                                                    authenticationDetailsSource, redisConnectionFactory);
         AuthenticationManager sharedObject = http.getSharedObject(AuthenticationManager.class);
         auth2LoginAuthenticationFilter.setAuthenticationManager(sharedObject);
-        if (authenticationFailureHandler != null)
-        {
-            // 添加认证失败处理器
-            auth2LoginAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        }
-        if (authenticationSuccessHandler != null)
-        {
-            // 添加认证成功处理器
-            auth2LoginAuthenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-        }
 
         // 添加 RememberMeServices
         if (rememberMeServices != null)
@@ -146,7 +153,44 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
                 auth2UserService, connectionSignUp, umsUserDetailsService,
                 updateConnectionTaskExecutor, auth2Properties.getAutoSignUp(), auth2Properties.getTemporaryUserAuthorities(),
                 auth2Properties.getTemporaryUserPassword(), authenticationToUserDetailsConverter);
+
+
+        Boolean oneClickLoginPropertiesEnable = oneClickLoginProperties.getEnable();
+        OneClickLoginAuthenticationFilter oneClickLoginAuthenticationFilter = null;
+        OneClickLoginAuthenticationProvider oneClickLoginAuthenticationProvider = null;
+        if (oneClickLoginPropertiesEnable) {
+            // 一键登录
+            oneClickLoginAuthenticationFilter =
+                    new OneClickLoginAuthenticationFilter(oneClickLoginService, oneClickLoginProperties,
+                                                          authenticationDetailsSource);
+            oneClickLoginAuthenticationFilter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
+            oneClickLoginAuthenticationProvider =
+                    new OneClickLoginAuthenticationProvider(umsUserDetailsService);
+            http.addFilterAfter(postProcess(oneClickLoginAuthenticationFilter), AbstractPreAuthenticatedProcessingFilter.class);
+        }
+
+
+        // 添加到 http
+        if (authenticationFailureHandler != null)
+        {
+            // 添加认证失败处理器
+            auth2LoginAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            if (nonNull(oneClickLoginAuthenticationFilter)) {
+                oneClickLoginAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            }
+        }
+        if (authenticationSuccessHandler != null)
+        {
+            // 添加认证成功处理器
+            auth2LoginAuthenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+            if (nonNull(oneClickLoginAuthenticationFilter)) {
+                oneClickLoginAuthenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+            }
+        }
         http.authenticationProvider(postProcess(auth2LoginAuthenticationProvider));
+        if (nonNull(oneClickLoginAuthenticationProvider)) {
+            http.authenticationProvider(postProcess(oneClickLoginAuthenticationProvider));
+        }
 
     }
 

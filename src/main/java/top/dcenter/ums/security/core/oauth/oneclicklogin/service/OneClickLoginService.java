@@ -20,25 +20,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package top.dcenter.ums.security.core.oauth.oneclicklogin.service;
 
-package top.dcenter.ums.security.core.oauth.config;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+import top.dcenter.ums.security.core.oauth.exception.Auth2Exception;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
-import top.dcenter.ums.security.core.oauth.properties.OneClickLoginProperties;
-import top.dcenter.ums.security.core.oauth.properties.RedisCacheProperties;
-import top.dcenter.ums.security.core.oauth.properties.RepositoryProperties;
+import java.util.Map;
 
 /**
- * Properties 配置
+ * 一键登录服务
  * @author YongWu zheng
- * @version V1.0  Created by 2020/5/29 14:42
+ * @weixin z56133
+ * @since 2021.5.13 16:42
  */
-@Configuration()
-@Order(98)
-@EnableConfigurationProperties({Auth2Properties.class, RepositoryProperties.class, OneClickLoginProperties.class,
-        RedisCacheProperties.class})
-public class Auth2PropertiesAutoConfiguration {
+public interface OneClickLoginService {
+
+    /**
+     * 根据 accessToken 从服务商获取用户手机号
+     * @param accessToken   access token
+     * @param otherParamMap 其他请求参数 map(包括请求头参数), map(paramName, paramValue)
+     * @return 手机号
+     * @throws Auth2Exception 获取手机号失败
+     */
+    @NonNull
+    String callback(@NonNull String accessToken, @Nullable Map<String, String> otherParamMap) throws Auth2Exception;
 }

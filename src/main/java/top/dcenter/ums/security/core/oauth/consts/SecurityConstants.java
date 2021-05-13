@@ -47,6 +47,10 @@ public class SecurityConstants {
      */
     public static final String DEFAULT_LOGIN_PROCESSING_URL_MOBILE = "/authentication/mobile";
     /**
+     * 默认的一键登录请求处理url
+     */
+    public static final String DEFAULT_ONE_CLICK_LOGIN_PROCESSING_URL = "/authentication/one-click";
+    /**
      * 默认的 social OAuth2 注册请求处理url
      */
     public static final String DEFAULT_SIGN_UP_PROCESSING_URL_SOCIAL = "/authentication/social";
