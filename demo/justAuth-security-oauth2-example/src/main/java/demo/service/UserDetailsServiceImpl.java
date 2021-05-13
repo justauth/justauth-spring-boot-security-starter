@@ -45,6 +45,7 @@ import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *  用户密码与手机短信登录与注册服务：<br><br>
@@ -143,6 +144,33 @@ public class UserDetailsServiceImpl implements UmsUserDetailsService {
                                .authorities(grantedAuthorities)
                                .build();
         // @formatter:off
+
+        // 把用户信息存入缓存
+        if (userCache != null)
+        {
+            userCache.putUserInCache(user);
+        }
+
+        return user;
+    }
+
+    @Override
+    @NonNull
+    public UserDetails registerUser(@NonNull String mobile, Map<String, String> otherParamMap) throws RegisterUserFailureException {
+
+        // 用户信息持久化逻辑。。。
+        // ...
+
+        log.info("Demo ======>: 手机短信登录用户 {}：注册成功", mobile);
+
+        User user = new User(mobile,
+                             passwordEncoder.encode("admin"),
+                             true,
+                             true,
+                             true,
+                             true,
+                             AuthorityUtils.commaSeparatedStringToAuthorityList("admin, ROLE_USER")
+        );
 
         // 把用户信息存入缓存
         if (userCache != null)

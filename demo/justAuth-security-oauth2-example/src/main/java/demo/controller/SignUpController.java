@@ -45,6 +45,7 @@ import top.dcenter.ums.security.core.oauth.exception.RegisterUserFailureExceptio
 import top.dcenter.ums.security.core.oauth.justauth.request.Auth2DefaultRequest;
 import top.dcenter.ums.security.core.oauth.justauth.util.JustAuthUtil;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
+import top.dcenter.ums.security.core.oauth.properties.HttpConfigProperties;
 import top.dcenter.ums.security.core.oauth.repository.UsersConnectionRepository;
 import top.dcenter.ums.security.core.oauth.repository.UsersConnectionTokenRepository;
 import top.dcenter.ums.security.core.oauth.service.Auth2StateCoder;
@@ -88,7 +89,7 @@ public class SignUpController {
 
     /**
      * {@link HttpConfig#getTimeout()}, 单位毫秒,
-     * 返回用户设置的超时时间{@link Auth2Properties.HttpConfigProperties#getTimeout()}，单位毫秒.
+     * 返回用户设置的超时时间{@link HttpConfigProperties#getTimeout()}，单位毫秒.
      */
     private final Integer timeout;
 
@@ -112,6 +113,11 @@ public class SignUpController {
 
     public SignUpController(Auth2Properties auth2Properties) {
         this.timeout = Math.toIntExact(auth2Properties.getProxy().getTimeout().toMillis());
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
     }
 
     @GetMapping("/signUp")

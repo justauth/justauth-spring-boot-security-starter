@@ -35,6 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import top.dcenter.ums.security.core.oauth.config.Auth2AutoConfigurer;
 import top.dcenter.ums.security.core.oauth.properties.Auth2Properties;
+import top.dcenter.ums.security.core.oauth.properties.OneClickLoginProperties;
 
 /**
  * web security config
@@ -49,6 +50,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private Auth2AutoConfigurer auth2AutoConfigurer;
     @Autowired
     private Auth2Properties auth2Properties;
+    @Autowired
+    private OneClickLoginProperties oneClickLoginProperties;
 
     private AuthenticationSuccessHandler authenticationSuccessHandler;
 
@@ -70,9 +73,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 
         http.formLogin()
-            .loginPage("/login.html")
+            .loginPage("/login")
             .successHandler(this.authenticationSuccessHandler);
-        http.logout().logoutSuccessUrl("/login.html");
+        http.logout().logoutSuccessUrl("/login");
 
         http.csrf().disable();
 
@@ -86,6 +89,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET,
                              auth2Properties.getRedirectUrlPrefix() + "/*",
                              auth2Properties.getAuthLoginUrlPrefix() + "/*")
+                .permitAll();
+        http.authorizeRequests()
+                .antMatchers(HttpMethod.POST,
+                             oneClickLoginProperties.getLoginProcessingUrl())
                 .permitAll();
         // @formatter:on
         // ========= end: 使用 justAuth-spring-security-starter 必须步骤 =========

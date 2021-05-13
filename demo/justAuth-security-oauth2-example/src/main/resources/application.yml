@@ -18,6 +18,13 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/ums?useSSL=false&useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
+  # thymeleaf
+  thymeleaf:
+    encoding: utf-8
+    prefix: classpath:/templates/
+    suffix: .htm
+    servlet:
+      content-type: text/html;charset=UTF-8
 
   # session 配置
   session:
@@ -55,7 +62,17 @@ spring:
 
 # ums core
 ums:
-
+  one-click-login:
+    # 一键登录是否开启, 默认 false
+    enable: true
+    # 一键登录请求处理 url, 默认 /authentication/one-click
+    login-processing-url: /authentication/one-click
+    # token 参数名称, 默认: accessToken
+    token-param-name: accessToken
+    # 其他请求参数名称列表(包括请求头名称), 此参数会传递到 OneClickLoginService.callback(String, Map)
+    # 与 UserDetailsRegisterService.registerUser(String, Map); 默认为: 空
+    other-param-names:
+      - imei
   # ================ 第三方授权登录相关配置 ================
   oauth:
     # 第三方授权登录后如未注册用户是否支持自动注册功能, 默认: true

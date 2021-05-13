@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@1.11.1/dist/jquery.min.js"></script>
+
+</head>
+<body>
+<h2>登录页面</h2>
+<h3>社交登录</h3>
+<a href="#" onclick="auth2('/demo/auth2/authorization/gitee')">gitee登录ajax</a>
+<a href="/demo/auth2/authorization/gitee">gitee登录</a>
+<a href="#" onclick="auth2('/demo/auth2/authorization/giteeCustomize')">自定义OAuth2登录ajax</a>
+<a href="/demo/auth2/authorization/giteeCustomize">自定义OAuth2登录</a>
+<!-- 示例未实现, 有私有 GitLab 仓库可以自己实现
+<a href="#" onclick="auth2('/demo/auth2/authorization/gitlabPrivate')">GitlabPrivate登录ajax</a>
+<a href="/demo/auth2/authorization/gitlabPrivate">GitlabPrivate登录</a>-->
+<a href="/demo/auth2/authorization/github">github登录</a>
+<a href="/demo/auth2/authorization/qq">qq登录</a>
+<h3>一键登录</h3>
+<form id="one-click-form" th:action="@{/authentication/one-click}" method="post">
+    <!-- 测试用, 生成环境根据实际情况设置 -->
+    <input type="hidden" name="imei" value="huaweiMate9">
+    <!-- 生产环境需要前端调用服务商的一键登录 sdk 获取服务商的 token -->
+    <input type="hidden" name="accessToken" value="20beb57cf6b940b49ebba06893dff93c">
+    <button id="btn-one-click" type="button">一键登录x</button>
+</form>
+<br><br>
+<dev id="basePath" th:basePath="@{/}" style="display: none"/>
+</body>
+
+<script>
+    var basePath = $("#basePath").attr("basePath");
+    $.fn.serializeObject = function()
+    {
+        let o = {};
+        let a = this.serializeArray();
+        $.each(a, function() {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    }
+
+    auth2 = function (url) {
+        $.ajax({
+            // 如果用的是模板，则 url 可以使用注入的方式，会跟着配置动态改变
+            url: url,
+            type: "GET",
+            dataType: "json",
+            contentType: 'application/json; charset=UTF-8',
+            success: function (data) {
+                console.log("获取的第三方授权 status = " + data.status)
+                console.log("获取的第三方授权 url = " + data.url)
+                //...
+                if (data.status === 302) {
+                    window.location.href = data.url;
+                }
+            },
+            error: function (data) {
+                // 登录失败
+                console.log("********登录失败*********")
+                console.log(data)
+            }
+        })
+    };
+
+    function submitFormByAjax(url, formId, errorNameId, errorCodeId, imgId) {
+        return function () {
+            console.log(JSON.stringify($(formId).serializeObject()))
+            $.ajax({
+                // 如果用的是模板，则 url 可以使用注入的方式，会跟着配置动态改变
+                url: url,
+                data: JSON.stringify($(formId).serializeObject()),
+                type: "POST",
+                dataType: "json",
+                contentType: 'application/json; charset=UTF-8',
+                success: function (data) {
+                    $(errorNameId).text("")
+                    $(errorCodeId).text("")
+                    console.log("==========注册成功============")
+                    // 注册成功
+                    // ...
+                    console.log(data)
+                    let uri = data.data
+                    if (uri === null) {
+                        window.location.href = basePath;
+                    } else {
+                        if ("/" === uri.substr(0, 1)) {
+                            uri = uri.substr(1, uri.length - 1);
+                        }
+                        window.location.href = basePath + uri;
+                    }
+                },
+                error: function (data) {
+                    // 注册失败
+                    $(errorNameId).text("")
+                    $(errorCodeId).text("")
+                    console.log("********注册失败*********")
+                    console.log(data)
+                    data = data.responseJSON
+                    if (undefined !== data) {
+                        console.log(data);
+                        // 错误代码看ErrorCodeEnum
+                        /*if (data.code >= 900 && data.code < 1000) {
+                            $(errorNameId).text(data.msg)
+                        } else if (data.code >= 600 && data.code < 700) {
+                            $(errorCodeId).text(data.msg)
+                        }*/
+                    }
+                    // $(imgId).trigger("click")
+                }
+            })
+            return
+        };
+    };
+
+    $("#btn-one-click").click(
+        submitFormByAjax($("#one-click-form").attr("action"), "#one-click-form", "#error-name", "#error-code", ".img")
+    )
+</script>
+</html>
