@@ -1,3 +1,7 @@
+## 1.1.21
+### Fixes and Improvements:
+1. 修复: Issues:I393LI, 自定义scope不能覆盖默认scope 的 bug. 感谢 luodada.
+
 ## 1.1.20
 ### Fixes and Improvements:
 1. 修复: yml 配置文件不能读取部分默认值的问题. 感谢 jueding920 与 a18739975021 提的bug.
