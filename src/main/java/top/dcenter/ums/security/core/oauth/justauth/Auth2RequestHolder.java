@@ -384,11 +384,11 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
     }
 
     /**
-     * 根据 source 获取对应的自定义 scopes, 没有想对应的 {@link AuthScope} 返回 null; 如果没有设置自定义的 scopes 则返回 null, 如果有则自动添加默认设置,
+     * 根据 source 获取对应的自定义 scopes, 没有自定义的 {@link AuthScope} 返回默认 scopes;
      * 注意: 自定义第三方授权登录时, 要自己在 AuthCustomizeRequest 中自定义 scopes.
      * @param auth2Properties   {@link Auth2Properties}
      * @param source            {@link AuthSource}
-     * @return 返回 source 相对应的 scopes, 如果 source 相对应的自定义 scopes 为 null 值则返回 null 值
+     * @return 返回 source 相对应的 scopes, 如果 source 相对应的自定义 scopes 为 null 值则返回默认 scopes
      * @throws IllegalAccessException 反射异常
      */
     @Nullable
