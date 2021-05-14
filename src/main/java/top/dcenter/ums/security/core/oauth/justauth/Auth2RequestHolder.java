@@ -56,13 +56,10 @@ import top.dcenter.ums.security.core.oauth.properties.HttpConfigProperties;
 import top.dcenter.ums.security.core.oauth.properties.JustAuthProperties;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.String.join;
@@ -322,7 +319,7 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
 
         JustAuthProperties justAuth = auth2Properties.getJustAuth();
         AuthConfig config = getAuthConfig(auth2Properties, source);
-        // 设置自定义 scopes, 如果没有设置则返回 null, 如果有设置则自动添加默认设置
+        // 设置自定义 scopes, 如果没有设置自定义 scopes 则返回默认 scopes
         List<String> scopes = getScopesBySource(auth2Properties, source);
         config.setScopes(scopes);
         // 设置是否启用代理
@@ -398,15 +395,13 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
     private List<String> getScopesBySource(@NonNull Auth2Properties auth2Properties, @NonNull AuthSource source) throws IllegalAccessException {
         List<String> customAuthScopes = getCustomAuthScopes(auth2Properties, source);
         if (CollectionUtils.isEmpty(customAuthScopes)) {
-            return null;
+            List<String> defaultScopes = getDefaultScopes(getDefaultScopeBySource(source));
+            if (CollectionUtils.isEmpty(defaultScopes)) {
+                return null;
+            }
+            return defaultScopes;
         }
-        List<String> defaultScopes = getDefaultScopes(getDefaultScopeBySource(source));
-        if (CollectionUtils.isEmpty(defaultScopes)) {
-            return null;
-        }
-        Set<String> scopeSet = new HashSet<>(defaultScopes);
-        scopeSet.addAll(customAuthScopes);
-        return new ArrayList<>(scopeSet);
+        return customAuthScopes;
     }
 
     /**
