@@ -1,3 +1,7 @@
+## 1.1.20
+### Fixes and Improvements:
+1. 修复: yml 配置文件不能读取部分默认值的问题. 感谢 jueding920 与 a18739975021 提的bug.
+
 ## 1.1.19
 ### Fixes and Improvements:
 1. 新增: 一键登录功能.
