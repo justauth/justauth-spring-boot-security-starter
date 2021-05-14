@@ -1,3 +1,9 @@
+## 1.1.19
+### Fixes and Improvements:
+1. 新增: 一键登录功能.
+2. 添加: 一键登录 example.
+3. 优化: 属性配置.
+
 ## 1.1.18
 ### Fixes and Improvements:
 1. 优化: 第三方登录中 state 缓存 key 策略.

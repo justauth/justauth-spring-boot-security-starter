@@ -1,6 +1,6 @@
 # Spring security 集成 JustAuth 实现第三方授权登录脚手架: 
 
-![justAuthSpringSecurity](https://img.shields.io/badge/justAuthSpringSecurity-1.1.18-green.svg)
+![justAuthSpringSecurity](https://img.shields.io/badge/justAuthSpringSecurity-1.1.19-green.svg)
 ![JDK](https://img.shields.io/badge/JDK-1.8+-green.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.6.3-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-5.7.27-green.svg)
@@ -17,6 +17,7 @@
 2. 支持定时刷新 accessToken 分布式定时任务,
 3. 支持第三方授权登录的用户信息表与 token 信息表的 redis 缓存功能.
 4. 支持第三方绑定与解绑及查询接口.
+5. 支持一键登录.
 
 ### 登录流程图
 ![登录流程图](doc/登录流程.png)
@@ -462,6 +463,7 @@ hello world!<br>
 ### 2. `必须实现的接口`    
 
    - 本地用户服务: [UmsUserDetailsService](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)    
+   - 一键登录: - [OneClickLoginService](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/oneclicklogin/service/OneClickLoginService.java)
 ### 3. `必须添加 Auth2AutoConfigurer 到 HttpSecurity` 
 
 ```java
@@ -526,6 +528,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     
     - [AuthCustomizeRequest](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/justauth/request/AuthCustomizeRequest.java): 抽象类, 实现此自定义的 AuthCustomizeRequest 同时, 必须实现 AuthCustomizeSource 或 AuthGitlabPrivateSource 且注入 ioc 容器, 会自动集成进 OAuth2 Login 逻辑流程中, 只需要像 JustAuth 默认实现的第三方登录一样, 配置相应的属性(ums.oauth.customize.[clientId|clientSecret]等属性)即可.
 
+- [OneClickLoginService](https://github.com/justauth/justauth-spring-boot-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/oneclicklogin/service/OneClickLoginService.java): 一键登录`必须实现`此接口, 根据 accessToken 从服务商获取用户手机号.
 
 ------
 ## 六、`Jackson 序列化与反序列化`
