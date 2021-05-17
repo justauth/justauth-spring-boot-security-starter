@@ -138,6 +138,11 @@ ums:
     batch-count: 1000
     # accessToken 的剩余有效期内进行刷新 accessToken, 默认: 24, 单位: 小时. 注意: 需要根据实际生产环境进行优化
     remaining-expire-in: 24
+    # 是否支持内置的第三方登录用户表(user_connection) 和 auth_token 表. 默认: true.
+    # 注意: 如果为 false, 则必须重新实现 ConnectionService 接口.
+    enable-user-connection-and-auth-token-table: true
+    # 是否支持内置的第三方登录 token 表(auth_token). 默认: true.
+    enable-auth-token-table: true
 
     # ================ start: 定时刷新 access token 定时任务相关配置 ================
 

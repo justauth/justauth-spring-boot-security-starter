@@ -32,6 +32,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import top.dcenter.ums.security.core.oauth.filter.login.Auth2LoginAuthenticationFilter;
 import top.dcenter.ums.security.core.oauth.job.RefreshTokenJob;
+import top.dcenter.ums.security.core.oauth.signup.ConnectionService;
 import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
 
 /**
@@ -319,6 +320,17 @@ public class Auth2Properties {
      * 注意: 需要根据实际生产环境进行优化
      */
     private Integer remainingExpireIn = 24;
+
+    /**
+     * 是否支持内置的第三方登录用户表(user_connection) 和 第三方登录 token 表(auth_token). 默认: true.
+     * 注意: 如果为 false, 则必须重新实现 {@link ConnectionService} 接口.
+     */
+    private Boolean enableUserConnectionAndAuthTokenTable = Boolean.TRUE;
+
+    /**
+     * 是否支持内置的第三方登录 token 表(auth_token). 默认: true.
+     */
+    private Boolean enableAuthTokenTable = Boolean.TRUE;
 
     // =================== justAuth 属性 ===================
 

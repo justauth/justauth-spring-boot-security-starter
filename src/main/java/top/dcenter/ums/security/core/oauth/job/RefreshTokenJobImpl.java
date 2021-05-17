@@ -76,7 +76,7 @@ public class RefreshTokenJobImpl implements RefreshTokenJob {
     private RedisConnectionFactory redisConnectionFactory;
 
     public RefreshTokenJobImpl(UsersConnectionRepository usersConnectionRepository,
-                               UsersConnectionTokenRepository usersConnectionTokenRepository,
+                               @Autowired(required = false) UsersConnectionTokenRepository usersConnectionTokenRepository,
                                Auth2Properties auth2Properties,
                                @Qualifier("refreshTokenTaskExecutor") ExecutorService refreshTokenTaskExecutor) {
         Assert.notNull(refreshTokenTaskExecutor, "refreshTokenTaskExecutor cannot be null");
@@ -93,6 +93,10 @@ public class RefreshTokenJobImpl implements RefreshTokenJob {
 
     @Override
     public void refreshTokenJob() {
+        // 不支持第三方 token 表(auth_token) 直接退出
+        if (!auth2Properties.getEnableAuthTokenTable()) {
+            return;
+        }
         if (this.redisConnectionFactory != null)
         {
             // 分布式

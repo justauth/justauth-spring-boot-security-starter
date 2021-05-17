@@ -34,7 +34,7 @@ import top.dcenter.ums.security.core.oauth.repository.factory.UsersConnectionRep
 /**
  * OAuth2 第三方登录 user_connection 持久化表字段, sql语句属性 设置
  *
- * @author ZYW
+ * @author YongWu zheng
  * @version V1.0  Created by 2020/5/3 19:52
  */
 @SuppressWarnings("jol")

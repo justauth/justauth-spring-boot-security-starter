@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -79,7 +80,8 @@ public class Auth2AutoConfiguration implements InitializingBean {
     private final Auth2Properties auth2Properties;
     private final DataSource dataSource;
 
-    public Auth2AutoConfiguration(RepositoryProperties repositoryProperties, Auth2Properties auth2Properties, DataSource dataSource) {
+    public Auth2AutoConfiguration(RepositoryProperties repositoryProperties, Auth2Properties auth2Properties,
+                                  DataSource dataSource) {
         this.repositoryProperties = repositoryProperties;
         this.auth2Properties = auth2Properties;
         this.dataSource = dataSource;
@@ -92,25 +94,20 @@ public class Auth2AutoConfiguration implements InitializingBean {
     }
 
     @Bean
-    public RefreshTokenJob refreshTokenJob(UsersConnectionTokenRepository usersConnectionTokenRepository,
-                                           UsersConnectionRepository usersConnectionRepository,
-                                           @Qualifier("refreshTokenTaskExecutor") ExecutorService refreshTokenTaskExecutor) {
-        return new RefreshTokenJobImpl(usersConnectionRepository, usersConnectionTokenRepository,
-                                       auth2Properties, refreshTokenTaskExecutor);
-    }
-
-    @Bean
     @ConditionalOnMissingBean(type = "top.dcenter.ums.security.core.oauth.service.Auth2UserService")
     public Auth2UserService auth2UserService() {
         return new DefaultAuth2UserServiceImpl();
     }
 
     @Bean
+    @ConditionalOnMissingBean(type = "org.springframework.jdbc.core.JdbcTemplate")
+    @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-user-connection-and-auth-token-table", havingValue = "true")
     public JdbcTemplate auth2UserConnectionJdbcTemplate() {
         return new JdbcTemplate(dataSource);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-user-connection-and-auth-token-table", havingValue = "true")
     public UsersConnectionRepository usersConnectionRepository(UsersConnectionRepositoryFactory usersConnectionRepositoryFactory,
                                                                JdbcTemplate auth2UserConnectionJdbcTemplate,
                                                                @Qualifier("connectionTextEncryptor") TextEncryptor connectionTextEncryptor) {
@@ -120,14 +117,8 @@ public class Auth2AutoConfiguration implements InitializingBean {
     }
 
     @Bean
-    @ConditionalOnMissingBean(type = {"top.dcenter.ums.security.core.oauth.repository.UsersConnectionTokenRepository"})
-    public UsersConnectionTokenRepository usersConnectionTokenRepository(TextEncryptor connectionTextEncryptor,
-                                                                         JdbcTemplate auth2UserConnectionJdbcTemplate) {
-        return new Auth2JdbcUsersConnectionTokenRepository(auth2UserConnectionJdbcTemplate, connectionTextEncryptor);
-    }
-
-    @Bean
     @ConditionalOnMissingBean(type = {"top.dcenter.ums.security.core.oauth.repository.factory.UsersConnectionRepositoryFactory"})
+    @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-user-connection-and-auth-token-table", havingValue = "true")
     public UsersConnectionRepositoryFactory usersConnectionRepositoryFactory() {
         return new Auth2JdbcUsersConnectionRepositoryFactory();
     }
@@ -140,8 +131,9 @@ public class Auth2AutoConfiguration implements InitializingBean {
 
     @Bean
     @ConditionalOnMissingBean(type = "top.dcenter.ums.security.core.oauth.signup.ConnectionService")
+    @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-user-connection-and-auth-token-table", havingValue = "true")
     public ConnectionService connectionSignUp(UmsUserDetailsService userDetailsService,
-                                              UsersConnectionTokenRepository usersConnectionTokenRepository,
+                                              @Autowired(required = false) UsersConnectionTokenRepository usersConnectionTokenRepository,
                                               UsersConnectionRepository usersConnectionRepository,
                                               @Autowired(required = false) Auth2StateCoder auth2StateCoder) {
         return new DefaultConnectionServiceImpl(userDetailsService, auth2Properties,
@@ -158,7 +150,8 @@ public class Auth2AutoConfiguration implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        if (!repositoryProperties.getEnableStartUpInitializeTable()) {
+        if (!repositoryProperties.getEnableStartUpInitializeTable()
+                || !auth2Properties.getEnableUserConnectionAndAuthTokenTable()) {
             // 不支持在启动时检查并自动创建 userConnectionTableName 与 authTokenTableName, 直接退出
             return;
         }
@@ -208,6 +201,10 @@ public class Auth2AutoConfiguration implements InitializingBean {
                     }
                 }
 
+                // 不支持第三方 token 表(auth_token) 直接退出
+                if (!auth2Properties.getEnableAuthTokenTable()) {
+                    return;
+                }
                 //noinspection TryStatementWithMultipleResources,TryStatementWithMultipleResources
                 try (final PreparedStatement preparedStatement2 =
                              connection.prepareStatement(repositoryProperties.getQueryAuthTokenTableExistSql(database));
@@ -234,6 +231,41 @@ public class Auth2AutoConfiguration implements InitializingBean {
                 throw new Exception(String.format("初始化第三方登录的 %s 用户表时发生错误",
                                                   repositoryProperties.getUserConnectionTableName()));
             }
+        }
+
+    }
+
+    @Configuration
+    @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-user-connection-and-auth-token-table", havingValue = "true")
+    static class JobAutoConfiguration {
+
+        private final Auth2Properties auth2Properties;
+
+        public JobAutoConfiguration(Auth2Properties auth2Properties) {
+            this.auth2Properties = auth2Properties;
+        }
+
+        @Bean
+        @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-refresh-token-job", havingValue = "true")
+        public RefreshTokenJob refreshTokenJob(@Autowired(required = false)
+                                               UsersConnectionTokenRepository usersConnectionTokenRepository,
+                                               UsersConnectionRepository usersConnectionRepository,
+                                               @Qualifier("refreshTokenTaskExecutor") ExecutorService refreshTokenTaskExecutor) {
+            return new RefreshTokenJobImpl(usersConnectionRepository, usersConnectionTokenRepository,
+                                           auth2Properties, refreshTokenTaskExecutor);
+        }
+    }
+
+    @Configuration
+    @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-user-connection-and-auth-token-table", havingValue = "true")
+    static class AuthTokenAutoConfiguration {
+
+        @Bean
+        @ConditionalOnMissingBean(type = {"top.dcenter.ums.security.core.oauth.repository.UsersConnectionTokenRepository"})
+        @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-auth-token-table", havingValue = "true")
+        public UsersConnectionTokenRepository usersConnectionTokenRepository(TextEncryptor connectionTextEncryptor,
+                                                                             JdbcTemplate auth2UserConnectionJdbcTemplate) {
+            return new Auth2JdbcUsersConnectionTokenRepository(auth2UserConnectionJdbcTemplate, connectionTextEncryptor);
         }
 
     }

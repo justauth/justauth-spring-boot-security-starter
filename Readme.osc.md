@@ -514,14 +514,38 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 - [Auth2UserService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2UserService.java): 获取第三方用户信息的接口, 一般**不需要用户实现**, 除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
 
-- [UsersConnectionRepository](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionRepository.java): 第三方授权登录的第三方用户信息增删改查, 绑定与解绑及查询是否绑定与解绑接口, 一般**不需要用户实现**. 
-  除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
-
-- [UsersConnectionTokenRepository](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionTokenRepository.java): 第三方授权登录用户 accessToken 信息表增删改查接口, 一般**不需要用户实现**. 
-  除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
-
 - [ConnectionService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/signup/ConnectionService.java): 第三方授权登录用户的注册, 绑定, 更新第三方用户信息与 accessToken 信息的接口, 一般**不需要用户实现**.
   除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+
+  - [UsersConnectionRepository](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionRepository.java): 第三方授权登录的第三方用户信息增删改查, 绑定与解绑及查询是否绑定与解绑接口, 一般**不需要用户实现**. 
+    除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+  
+  - [UsersConnectionTokenRepository](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionTokenRepository.java): 第三方授权登录用户 accessToken 信息表增删改查接口, 一般**不需要用户实现**. 
+    除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+
+  > # 取消 OAuth2 的内置数据库说明
+  > 
+  > ## 一. 同时取消第三方登录的 user_connection 与 auth_token 表
+  > ### 1. 属性配置 
+  > 
+  > ```yaml
+  > ums:
+  >   oauth:
+  >     # 是否支持内置的第三方登录用户表(user_connection) 和 auth_token 表. 默认: true.
+  >     # 注意: 如果为 false, 则必须重新实现 ConnectionService 接口.
+  >     enable-user-connection-and-auth-token-table: false
+  > ```
+  > ### 2. 必须重新实现 `top.dcenter.ums.security.core.oauth.signup.ConnectionService` 接口
+  > 
+  > ## 二. 取消第三方登录 auth_token 表
+  > ### 1. 属性配置
+  > 
+  > ```yaml
+  > ums:
+  >   oauth:
+  >     # 是否支持内置的第三方登录 token 表(auth_token). 默认: true.
+  >     enable-auth-token-table: false
+  > ```
 
 - 自定义 OAuth2 Login 扩展接口: 内置两个自定义 providerId(ums.oauth.customize 与 ums.oauth.gitlabPrivate)
 
@@ -572,6 +596,8 @@ jackson2JsonRedisSerializer.setObjectMapper(om);
 | ums.oauth.authLoginUrlPrefix                                 | String         | /oauth/authorization | 第三方登录授权登录 url 前缀, 不包含 `ServletContextPath`，默认为 `/oauth/authorization` |                       |
 | ums.oauth.temporaryUserAuthorities                                 | String         | ROLE_USER            | 第三方授权登录成功后的默认权限, 多个权限用逗号分开, 默认为: "ROLE_USER" |                       |
 | ums.oauth.suppressReflectWarning                | Boolean                 | false                                  | 抑制反射警告, 支持 JDK11, 默认: false , 在确认 WARNING: An illegal reflective access operation has occurred 安全后, 可以打开此设置, 可以抑制反射警告. | true/false                         |
+| ums.oauth.enableUserConnectionAndAuthTokenTable | Boolean | true | 是否支持内置的第三方登录用户表(`user_connection`) 和 第三方登录 `token `表(`auth_token`). 默认: `true`. 注意: 如果为 `false`, 则必须重新实现 `ConnectionService `接口. | true/false |
+| ums.oauth.enableAuthTokenTable | Boolean | true | 是否支持内置的第三方登录 `token `表(`auth_token`). 默认: `true`. | true/false |
 | **refreshToken 定时任务**                                    |                |                      |                                                              |                       |
 | ums.oauth.refreshTokenJobCron                                | String         | 0 * 2 * * ?          | A cron-like expression.<br/>       `0 * 2 * * ?` 分别对应: `second/minute/hour/day of month/month/day of week`<br/>       <br/>默认为: "0 * 2 * * ?", 凌晨 2 点启动定时任务, 支持分布式(分布式 IOC 容器中必须有 `RedisConnectionFactory`, 也就是说, 是否分布式执行依据 IOC 容器中是否有 `RedisConnectionFactory`) |                       |
 | ums.oauth.enableRefreshTokenJob                              | Boolean        | false                | 是否支持定时刷新 `AccessToken` 定时任务, 考虑到很多应用都有自己的定时任务应用, 默认: `false`. `RefreshTokenJob` 接口的实现已注入 IOC 容器, 方便自定义定时任务接口时调用. 支持分布式(分布式 IOC 容器中必须有 `RedisConnectionFactory`, 也就是说, 是否分布式执行依据 IOC 容器中是否有 `RedisConnectionFactory`) | true/false            |

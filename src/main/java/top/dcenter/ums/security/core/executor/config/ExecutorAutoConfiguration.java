@@ -25,6 +25,7 @@ package top.dcenter.ums.security.core.executor.config;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
@@ -47,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings({"unused"})
 @Configuration
+@ConditionalOnProperty(prefix = "ums.oauth", name = "enabled", havingValue = "true")
 @AutoConfigureAfter(value = {ExecutorPropertiesAutoConfiguration.class})
 public class ExecutorAutoConfiguration implements DisposableBean {
 
@@ -74,6 +76,7 @@ public class ExecutorAutoConfiguration implements DisposableBean {
     }
 
     @Bean()
+    @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-refresh-token-job", havingValue = "true")
     public ExecutorService refreshTokenTaskExecutor() {
         ExecutorProperties.RefreshTokenExecutorProperties refreshToken = executorProperties.getRefreshToken();
         ThreadPoolExecutor threadPoolExecutor =
