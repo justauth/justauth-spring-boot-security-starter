@@ -32,6 +32,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
@@ -160,7 +161,10 @@ public class Auth2LoginAuthenticationFilter extends AbstractAuthenticationProces
                 request.getSession().setAttribute(key, temporaryUser);
             }
             this.redirectStrategy.sendRedirect(request, response,
-                                               this.signUpUrl + "?" + TEMPORARY_USERNAME_PARAM_NAME + "=" + username);
+                                               this.signUpUrl + "?"
+                                                        + TEMPORARY_USERNAME_PARAM_NAME + "="
+                                                        + URLEncoder.encode(username, StandardCharsets.UTF_8.name()));
+
             return;
         }
         else {

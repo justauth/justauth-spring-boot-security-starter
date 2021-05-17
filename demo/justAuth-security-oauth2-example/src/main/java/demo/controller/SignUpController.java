@@ -135,14 +135,12 @@ public class SignUpController {
         model.addAttribute("securityContextHolder", authentication);
 
         // 测试是否自动注册
-        //            boolean autoSignUp = auth2Properties.getAutoSignUp();
-        boolean autoSignUp = false;
+        boolean autoSignUp = auth2Properties.getAutoSignUp();
         String signUpUrl = auth2Properties.getSignUpUrl();
 
         UserDetails newUserDetails = null;
         AuthUser authUser = null;
 
-        //noinspection ConstantConditions
         if (!autoSignUp && hasText(signUpUrl)) {
             TemporaryUser temporaryUser;
             // 从 redis 中获取

@@ -28,7 +28,6 @@ import org.springframework.security.web.authentication.SavedRequestAwareAuthenti
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.util.StringUtils;
 import top.dcenter.ums.security.core.oauth.userdetails.TemporaryUser;
 import top.dcenter.ums.security.core.vo.ResponseResult;
 
@@ -36,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static org.springframework.util.StringUtils.hasText;
 import static top.dcenter.ums.security.core.oauth.util.MvcUtil.isAjaxOrJson;
 import static top.dcenter.ums.security.core.oauth.util.MvcUtil.responseWithJson;
 import static top.dcenter.ums.security.core.oauth.util.MvcUtil.toJsonString;
@@ -71,8 +71,11 @@ public class DemoSignUpUrlAuthenticationSuccessHandler extends SavedRequestAware
         }
         else {
             String targetUrlParameter = getTargetUrlParameter();
-            if (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter))) {
-                targetUrl = targetUrlParameter;
+            if (targetUrlParameter != null && hasText(request.getParameter(targetUrlParameter))) {
+                String parameterUrl = request.getParameter(targetUrlParameter);
+                if (hasText(parameterUrl)) {
+                    targetUrl = parameterUrl;
+                }
             }
             else {
                 // Use the DefaultSavedRequest URL
@@ -85,7 +88,7 @@ public class DemoSignUpUrlAuthenticationSuccessHandler extends SavedRequestAware
 
         clearAuthenticationAttributes(request);
 
-        if (!StringUtils.hasText(targetUrl)) {
+        if (!hasText(targetUrl)) {
             targetUrl = getDefaultTargetUrl();
         }
 
