@@ -1,3 +1,14 @@
+## 1.1.22
+### Fixes and Improvements:
+1. 修复: redirect 时 url 中文乱码的bug. 感谢: jueding920.
+2. 修复: 自定义第三方时: 获取 AuthScope 异常的bug.
+3. 修复: Auth2JdbcUsersConnectionTokenRepository 不能动态替换 authTokenTableName 的bug. 感谢: jueding920.
+4. 修复: RefreshTokenJobImpl.java NPE bug.
+5. 修复: RefreshAccessTokenJobHandler.java NPE bug.
+6. 新增: 获取当前账号下所有绑定的第三方账号接口, ConnectionService.listAllConnections() 接口.
+7. 新增: 取消OAuth2的内置数据库的属性设置. ums.oauth.enableUserConnectionAndAuthTokenTable 与 ums.oauth.enableAuthTokenTable. 具体看: 取消OAuth2内置数据库说明.md.
+8. 其他优化.
+
 ## 1.1.21
 ### Fixes and Improvements:
 1. 修复: Issues:I393LI, 自定义scope不能覆盖默认scope 的 bug. 感谢 luodada.
