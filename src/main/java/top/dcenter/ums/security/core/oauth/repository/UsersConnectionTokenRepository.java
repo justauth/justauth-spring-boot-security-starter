@@ -24,6 +24,7 @@
 package top.dcenter.ums.security.core.oauth.repository;
 
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import top.dcenter.ums.security.core.oauth.entity.AuthTokenPo;
 import top.dcenter.ums.security.core.oauth.enums.EnableRefresh;
 
@@ -44,7 +45,8 @@ public interface UsersConnectionTokenRepository {
 	 * @return  AuthTokenPo
 	 * @throws Exception 查询错误
 	 */
-	AuthTokenPo findAuthTokenById(String tokenId) throws Exception;
+	@Nullable
+	AuthTokenPo findAuthTokenById(@NonNull String tokenId) throws Exception;
 
 	/**
 	 * 持久化 authToken, 并把返回的 authToken id 保存在 authToken 中
@@ -52,7 +54,8 @@ public interface UsersConnectionTokenRepository {
 	 * @return  AuthTokenPo
 	 * @throws Exception    持久化 authToken 异常
 	 */
-	AuthTokenPo saveAuthToken(AuthTokenPo authToken) throws Exception;
+	@NonNull
+	AuthTokenPo saveAuthToken(@NonNull AuthTokenPo authToken) throws Exception;
 
 	/**
 	 * 更新 {@link AuthTokenPo}
@@ -60,20 +63,22 @@ public interface UsersConnectionTokenRepository {
 	 * @return  AuthTokenPo
 	 * @throws Exception    数据更新异常
 	 */
-	AuthTokenPo updateAuthToken(AuthTokenPo authToken) throws Exception;
+	@NonNull
+	AuthTokenPo updateAuthToken(@NonNull AuthTokenPo authToken) throws Exception;
 
 	/**
 	 * 删除 id = tokenId 的记录
 	 * @param tokenId   tokenId
 	 * @throws Exception 删除错误
 	 */
-	void delAuthTokenById(String tokenId) throws Exception;
+	void delAuthTokenById(@NonNull String tokenId) throws Exception;
 
 	/**
 	 * 获取最大 TokenId
 	 * @return 获取最大 TokenId
 	 * @throws Exception sql 执行错误
 	 */
+	@NonNull
 	Long getMaxTokenId() throws Exception;
 
 	/**
@@ -85,6 +90,7 @@ public interface UsersConnectionTokenRepository {
 	 * @return  符合条件的 {@link AuthTokenPo} 列表
 	 * @throws Exception   查询错误
 	 */
+	@NonNull
 	List<AuthTokenPo> findAuthTokenByExpireTimeAndBetweenId(@NonNull Long expiredTime, @NonNull Long startId,
 	                                                        @NonNull Long endId) throws Exception;
 
