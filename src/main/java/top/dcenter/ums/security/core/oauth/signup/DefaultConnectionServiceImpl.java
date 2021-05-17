@@ -36,8 +36,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import top.dcenter.ums.security.core.oauth.entity.AuthTokenPo;
 import top.dcenter.ums.security.core.oauth.entity.ConnectionData;
+import top.dcenter.ums.security.core.oauth.entity.ConnectionDto;
 import top.dcenter.ums.security.core.oauth.entity.ConnectionKey;
 import top.dcenter.ums.security.core.oauth.enums.ErrorCodeEnum;
 import top.dcenter.ums.security.core.oauth.exception.RegisterUserFailureException;
@@ -53,6 +56,9 @@ import top.dcenter.ums.security.core.oauth.service.Auth2StateCoder;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 import static top.dcenter.ums.security.core.oauth.util.MvcUtil.toJsonString;
@@ -202,6 +208,28 @@ public class DefaultConnectionServiceImpl implements ConnectionService {
     public List<ConnectionData> findConnectionByProviderIdAndProviderUserId(@NonNull String providerId,
                                                                             @NonNull String providerUserId) {
         return usersConnectionRepository.findConnectionByProviderIdAndProviderUserId(providerId, providerUserId);
+    }
+
+    @NonNull
+    @Override
+    public MultiValueMap<String, ConnectionDto> listAllConnections(@NonNull String userId) {
+        MultiValueMap<String, ConnectionData> allConnections = usersConnectionRepository.findAllConnections(userId);
+        Set<Map.Entry<String, List<ConnectionData>>> entrySet = allConnections.entrySet();
+        MultiValueMap<String, ConnectionDto> connectionMap = new LinkedMultiValueMap<>(allConnections.size());
+        for (Map.Entry<String, List<ConnectionData>> entry : entrySet) {
+            List<ConnectionDto> connectionDtoList =
+                    entry.getValue()
+                         .stream()
+                         .map(data -> ConnectionDto.builder()
+                                                   .tokenId(data.getTokenId())
+                                                   .providerId(data.getProviderId())
+                                                   .providerUserId(data.getProviderUserId())
+                                                   .build())
+                         .collect(Collectors.toList());
+            connectionMap.put(entry.getKey(), connectionDtoList);
+        }
+
+        return connectionMap;
     }
 
     /**
