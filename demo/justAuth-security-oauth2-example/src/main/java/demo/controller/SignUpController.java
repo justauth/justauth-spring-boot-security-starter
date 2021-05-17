@@ -106,7 +106,7 @@ public class SignUpController {
     private UmsUserDetailsService umsUserDetailsService;
     @Autowired
     private UsersConnectionRepository usersConnectionRepository;
-    @Autowired
+    @Autowired(required = false)
     private UsersConnectionTokenRepository usersConnectionTokenRepository;
     @Autowired(required = false)
     private Auth2StateCoder auth2StateCoder;
@@ -257,7 +257,9 @@ public class SignUpController {
 
         try {
             // 添加 token
-            usersConnectionTokenRepository.saveAuthToken(authToken);
+            if (nonNull(usersConnectionTokenRepository)) {
+                usersConnectionTokenRepository.saveAuthToken(authToken);
+            }
 
             // 添加到 第三方登录记录表
             addConnectionData(providerId, authUser, userDetails.getUsername(), authToken);
@@ -268,7 +270,9 @@ public class SignUpController {
             {
                 try {
                     // 再次添加 token
-                    usersConnectionTokenRepository.saveAuthToken(authToken);
+                    if (nonNull(usersConnectionTokenRepository)) {
+                        usersConnectionTokenRepository.saveAuthToken(authToken);
+                    }
                     // 再次添加到 第三方登录记录表
                     addConnectionData(providerId, authUser, userDetails.getUsername(), authToken);
                 }

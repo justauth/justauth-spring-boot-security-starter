@@ -48,7 +48,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings({"unused"})
 @Configuration
-@ConditionalOnProperty(prefix = "ums.oauth", name = "enabled", havingValue = "true")
 @AutoConfigureAfter(value = {ExecutorPropertiesAutoConfiguration.class})
 public class ExecutorAutoConfiguration implements DisposableBean {
 

@@ -289,6 +289,17 @@ public class Auth2Properties {
      */
     private String temporaryUserAuthorities = "ROLE_TEMPORARY_USER";
 
+    /**
+     * 是否支持内置的第三方登录用户表(user_connection) 和 第三方登录 token 表(auth_token). 默认: true.
+     * 注意: 如果为 false, 则必须重新实现 {@link ConnectionService} 接口.
+     */
+    private Boolean enableUserConnectionAndAuthTokenTable = Boolean.TRUE;
+
+    /**
+     * 是否支持内置的第三方登录 token 表(auth_token). 默认: true.
+     */
+    private Boolean enableAuthTokenTable = Boolean.TRUE;
+
     // =================== refreshToken 定时任务 属性 ===================
     /**
      * A cron-like expression.
@@ -321,16 +332,6 @@ public class Auth2Properties {
      */
     private Integer remainingExpireIn = 24;
 
-    /**
-     * 是否支持内置的第三方登录用户表(user_connection) 和 第三方登录 token 表(auth_token). 默认: true.
-     * 注意: 如果为 false, 则必须重新实现 {@link ConnectionService} 接口.
-     */
-    private Boolean enableUserConnectionAndAuthTokenTable = Boolean.TRUE;
-
-    /**
-     * 是否支持内置的第三方登录 token 表(auth_token). 默认: true.
-     */
-    private Boolean enableAuthTokenTable = Boolean.TRUE;
 
     // =================== justAuth 属性 ===================
 
