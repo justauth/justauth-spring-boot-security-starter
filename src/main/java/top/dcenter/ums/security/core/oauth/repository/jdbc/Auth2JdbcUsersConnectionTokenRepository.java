@@ -59,11 +59,14 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
 
     private final TextEncryptor textEncryptor;
 
+    private final String authTokenTableName;
+
 
     public Auth2JdbcUsersConnectionTokenRepository(JdbcTemplate auth2UserConnectionJdbcTemplate,
-                                                   TextEncryptor textEncryptor) {
+                                                   TextEncryptor textEncryptor, String authTokenTableName) {
         this.jdbcTemplate = auth2UserConnectionJdbcTemplate;
         this.textEncryptor = textEncryptor;
+        this.authTokenTableName = authTokenTableName;
     }
 
     @Cacheable(cacheNames = RedisCacheAutoConfiguration.USER_CONNECTION_CACHE_NAME, key = "'s:token:' + #tokenId")
@@ -75,7 +78,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
                                                    "`tokenType`, `idToken`, `macAlgorithm`, `macKey`, `code`, " +
                                                    "`oauthToken`, `oauthTokenSecret`, `userId`, `screenName`, " +
                                                    "`oauthCallbackConfirmed`, `expireTime` " +
-                                                   "FROM auth_token " +
+                                                   "FROM `" + authTokenTableName + "` " +
                                                    "WHERE id = ?;",
                                            authTokenPoMapper, tokenId);
     }
@@ -84,8 +87,8 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
     @CachePut(cacheNames = RedisCacheAutoConfiguration.USER_CONNECTION_CACHE_NAME, key = "'s:token:' + #result.id")
     @Override
     public AuthTokenPo saveAuthToken(AuthTokenPo authToken) throws DataAccessException {
-        jdbcTemplate.update("INSERT INTO auth_token(`enableRefresh` ,`providerId`, `accessToken`, `expireIn`, " +
-                                    "`refreshTokenExpireIn`, " +
+        jdbcTemplate.update("INSERT INTO " + authTokenTableName + "(`enableRefresh` ,`providerId`, `accessToken`, " +
+                                    "`expireIn`, `refreshTokenExpireIn`, " +
                                     "`refreshToken`, `uid`, `openId`, `accessCode`, `unionId`, `scope`, `tokenType`, " +
                                     "`idToken`, `macAlgorithm`, `macKey`, `code`, `oauthToken`, `oauthTokenSecret`, " +
                                     "`userId`, `screenName`, `oauthCallbackConfirmed`, `expireTime`) " +
@@ -131,7 +134,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
         {
             throw new RuntimeException("authToken id cannot be null");
         }
-        jdbcTemplate.update("UPDATE `auth_token` SET " +
+        jdbcTemplate.update("UPDATE `" + authTokenTableName + "` SET " +
                                     "`enableRefresh` = ?, " +
                                     "`providerId` = ?, " +
                                     "`accessToken` = ?, " +
@@ -191,12 +194,12 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
     @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRED)
     @Override
     public void delAuthTokenById(@NonNull String tokenId) throws DataAccessException {
-        jdbcTemplate.update("DELETE FROM auth_token WHERE id = ?;", tokenId);
+        jdbcTemplate.update("DELETE FROM `" + authTokenTableName + "` WHERE id = ?;", tokenId);
     }
 
     @Override
     public Long getMaxTokenId() throws IncorrectResultSizeDataAccessException {
-        return jdbcTemplate.queryForObject("SELECT MAX(`id`) FROM `auth_token`", Long.class);
+        return jdbcTemplate.queryForObject("SELECT MAX(`id`) FROM `" + authTokenTableName + "`", Long.class);
     }
 
     @Override
@@ -208,7 +211,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
                                            "`tokenType`, `idToken`, `macAlgorithm`, `macKey`, `code`, " +
                                            "`oauthToken`, `oauthTokenSecret`, `userId`, `screenName`, " +
                                            "`oauthCallbackConfirmed`, `expireTime` " +
-                                           "FROM auth_token " +
+                                           "FROM `" + authTokenTableName + "` " +
                                            "WHERE id BETWEEN ? AND ? AND `expireTime` <= ? " +
                                                   "AND enableRefresh = " + YES.getCode() + ";",
                            authTokenPoMapper, startId, endId, expiredTime);
@@ -219,7 +222,7 @@ public class Auth2JdbcUsersConnectionTokenRepository implements UsersConnectionT
     @Transactional(rollbackFor = {Exception.class}, propagation = Propagation.REQUIRED)
     @Override
     public void updateEnableRefreshByTokenId(@NonNull EnableRefresh enableRefresh, @NonNull Long tokenId) throws DataAccessException {
-        jdbcTemplate.update("update `auth_token` set `enableRefresh` = ? where id = ?",
+        jdbcTemplate.update("update `" + authTokenTableName + "` set `enableRefresh` = ? where id = ?",
                             enableRefresh.getCode(), tokenId);
     }
 

@@ -260,12 +260,20 @@ public class Auth2AutoConfiguration implements InitializingBean {
     @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-user-connection-and-auth-token-table", havingValue = "true")
     static class AuthTokenAutoConfiguration {
 
+        private final RepositoryProperties repositoryProperties;
+
+        public AuthTokenAutoConfiguration(RepositoryProperties repositoryProperties) {
+            this.repositoryProperties = repositoryProperties;
+        }
+
         @Bean
         @ConditionalOnMissingBean(type = {"top.dcenter.ums.security.core.oauth.repository.UsersConnectionTokenRepository"})
         @ConditionalOnProperty(prefix = "ums.oauth", name = "enable-auth-token-table", havingValue = "true")
         public UsersConnectionTokenRepository usersConnectionTokenRepository(TextEncryptor connectionTextEncryptor,
                                                                              JdbcTemplate auth2UserConnectionJdbcTemplate) {
-            return new Auth2JdbcUsersConnectionTokenRepository(auth2UserConnectionJdbcTemplate, connectionTextEncryptor);
+            return new Auth2JdbcUsersConnectionTokenRepository(auth2UserConnectionJdbcTemplate,
+                                                               connectionTextEncryptor,
+                                                               repositoryProperties.getAuthTokenTableName());
         }
 
     }
