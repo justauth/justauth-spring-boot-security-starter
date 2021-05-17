@@ -61,7 +61,9 @@ public enum ErrorCodeEnum {
     UN_BINDING_ERROR(961, "解绑第三方账号异常"),
     BINDING_ERROR(962, "绑定第三方账号异常"),
     BOUND_ERROR(963, "此第三方账号已绑定在其他账号上"),
+
     QUERY_MOBILE_FAILURE_OF_ONE_CLICK_LOGIN(968, "一键登录获取手机号失败"),
+    ACCESS_TOKEN_NOT_EMPTY(969, "accessToken 不能为空"),
 
     USER_REGISTER_OAUTH2_FAILURE(999, "本地用户注册成功, 第三方信息保存失败"),
 
