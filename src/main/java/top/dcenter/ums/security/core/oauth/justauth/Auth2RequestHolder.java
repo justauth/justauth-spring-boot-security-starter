@@ -412,6 +412,9 @@ public final class Auth2RequestHolder implements InitializingBean, ApplicationCo
      */
     @Nullable
     private AuthScope[] getDefaultScopeBySource(@NonNull AuthSource source) {
+        if (source instanceof AuthCustomizeSource) {
+            return ((AuthCustomizeSource) source).getDefaultScopes();
+        }
         //noinspection AlibabaSwitchStatement
         switch ((AuthDefaultSource) source) {
             case STACK_OVERFLOW:
