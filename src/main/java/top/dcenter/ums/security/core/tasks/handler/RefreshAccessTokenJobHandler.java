@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public class RefreshAccessTokenJobHandler {
 
-    @Autowired
+    @Autowired(required = false)
     private Map<String, RefreshTokenJob> refreshTokenJobMap;
 
     public void refreshAccessTokenJob() {
