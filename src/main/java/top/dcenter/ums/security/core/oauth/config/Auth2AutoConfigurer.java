@@ -23,6 +23,7 @@
 
 package top.dcenter.ums.security.core.oauth.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,6 +70,7 @@ import static java.util.Objects.nonNull;
 @SuppressWarnings("jol")
 @Configuration
 @AutoConfigureAfter({Auth2AutoConfiguration.class})
+@Slf4j
 public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> implements InitializingBean {
 
     private final Auth2Properties auth2Properties;
@@ -106,6 +108,7 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
                                @Autowired(required = false)
                                        AuthenticationToUserDetailsConverter authenticationToUserDetailsConverter,
                                OneClickLoginProperties oneClickLoginProperties,
+                               @Autowired(required = false)
                                OneClickLoginService oneClickLoginService) {
         this.auth2Properties = auth2Properties;
         this.umsUserDetailsService = umsUserDetailsService;
@@ -158,7 +161,7 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
         Boolean oneClickLoginPropertiesEnable = oneClickLoginProperties.getEnable();
         OneClickLoginAuthenticationFilter oneClickLoginAuthenticationFilter = null;
         OneClickLoginAuthenticationProvider oneClickLoginAuthenticationProvider = null;
-        if (oneClickLoginPropertiesEnable) {
+        if (oneClickLoginPropertiesEnable && nonNull(oneClickLoginService)) {
             // 一键登录
             oneClickLoginAuthenticationFilter =
                     new OneClickLoginAuthenticationFilter(oneClickLoginService, oneClickLoginProperties,
@@ -168,17 +171,20 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
                     new OneClickLoginAuthenticationProvider(umsUserDetailsService);
             http.addFilterAfter(postProcess(oneClickLoginAuthenticationFilter), AbstractPreAuthenticatedProcessingFilter.class);
         }
-
-
-        // 添加到 http
-        if (authenticationFailureHandler != null)
-        {
-            // 添加认证失败处理器
-            auth2LoginAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
-            if (nonNull(oneClickLoginAuthenticationFilter)) {
-                oneClickLoginAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
-            }
+        else {
+            log.info("一键登录功能未开启: ums.one-click-login.enable=false 或 OneClickLoginService 未实现.");
         }
+
+
+
+            // 添加到 http
+            if (authenticationFailureHandler != null) {
+                // 添加认证失败处理器
+                auth2LoginAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+                if (nonNull(oneClickLoginAuthenticationFilter)) {
+                    oneClickLoginAuthenticationFilter.setAuthenticationFailureHandler(authenticationFailureHandler);
+                }
+            }
         if (authenticationSuccessHandler != null)
         {
             // 添加认证成功处理器
