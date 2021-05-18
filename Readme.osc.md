@@ -1,6 +1,6 @@
 # Spring security 集成 JustAuth 实现第三方授权登录脚手架: 
 
-![justAuthSpringSecurity](https://img.shields.io/badge/justAuthSpringSecurity-1.1.18-green.svg)
+![justAuthSpringSecurity](https://img.shields.io/badge/justAuthSpringSecurity-1.1.23-green.svg)
 ![JDK](https://img.shields.io/badge/JDK-1.8+-green.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.6.3-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-5.7.27-green.svg)
@@ -38,7 +38,131 @@
 ```
 
 ------
-## 三、`快速开始(Quick Start)`：
+## 三、使用说明:
+
+### 1. `引入依赖`
+
+```xml
+<dependency>
+    <groupId>top.dcenter</groupId>
+    <artifactId>justAuth-spring-security-starter</artifactId>
+    <version>latest</version>
+</dependency>
+```
+### 2. `必须实现的接口`   
+
+   - 本地用户服务: [UmsUserDetailsService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)    
+   - 开启一键登录功能时: - [OneClickLoginService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/oneclicklogin/service/OneClickLoginService.java)
+
+### 3. `必须添加 Auth2AutoConfigurer 到 HttpSecurity`   
+
+```java
+@Configuration
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private Auth2AutoConfigurer auth2AutoConfigurer;
+    @Autowired
+    private Auth2Properties auth2Properties;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+
+        // ========= start: 使用 justAuth-spring-security-starter 必须步骤 ========= 
+        // 添加 Auth2AutoConfigurer 使 OAuth2(justAuth) login 生效.
+        http.apply(this.auth2AutoConfigurer);
+
+        http.csrf().disable();
+
+        // 放行第三方登录入口地址与第三方登录回调地址
+        // @formatter:off
+        http.authorizeRequests()
+                .antMatchers(HttpMethod.GET,
+                             auth2Properties.getRedirectUrlPrefix() + "/*",
+                             auth2Properties.getAuthLoginUrlPrefix() + "/*")
+                .permitAll();
+        // @formatter:on
+        // ========= end: 使用 justAuth-spring-security-starter 必须步骤 ========= 
+
+    }
+}
+```
+### 4. `属性配置`
+
+- justAuth-spring-security-starter 大部分功能实现都是通过配置文件设置属性来完成的, 详细属性配置请查看`五、属性配置列表`.
+------
+## 四、接口说明: 
+
+- [UmsUserDetailsService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java): `必须实现`
+
+- [Auth2StateCoder](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2StateCoder.java): `用户需要时实现`, 对第三方授权登录流程中的 state 进行自定义编解码. 可以传递必要的信息, 
+  如: 第三方登录成功的跳转地址等 注意此接口的两个方法必须同时实现对应的编解码逻辑, 实现此接口后注入 IOC 容器即可, 如有前端向后端获取 authorizeUrl
+  时向后端传递额外参数 且用作注册时的信息, 需配合 UmsUserDetailsService.registerUser(AuthUser, String, String, String) 方法实现.
+
+- [Auth2UserService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2UserService.java): 获取第三方用户信息的接口, 一般**不需要用户实现**, 除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+
+- [ConnectionService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/signup/ConnectionService.java): 第三方授权登录用户的注册, 绑定, 更新第三方用户信息与 accessToken 信息的接口, 一般**不需要用户实现**.
+  除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+
+  - [UsersConnectionRepository](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionRepository.java): 第三方授权登录的第三方用户信息增删改查, 绑定与解绑及查询是否绑定与解绑接口, 一般**不需要用户实现**. 
+    除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+  
+  - [UsersConnectionTokenRepository](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionTokenRepository.java): 第三方授权登录用户 accessToken 信息表增删改查接口, 一般**不需要用户实现**. 
+    除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
+
+  > # 取消 OAuth2 的内置数据库说明
+  > 
+  > ## 一. 同时取消第三方登录的 user_connection 与 auth_token 表
+  > ### 1. 属性配置 
+  > 
+  > ```yaml
+  > ums:
+  >   oauth:
+  >     # 是否支持内置的第三方登录用户表(user_connection) 和 auth_token 表. 默认: true.
+  >     # 注意: 如果为 false, 则必须重新实现 ConnectionService 接口.
+  >     enable-user-connection-and-auth-token-table: false
+  > ```
+  > ### 2. 必须重新实现 `top.dcenter.ums.security.core.oauth.signup.ConnectionService` 接口
+  > 
+  > ## 二. 取消第三方登录 auth_token 表
+  > ### 1. 属性配置
+  > 
+  > ```yaml
+  > ums:
+  >   oauth:
+  >     # 是否支持内置的第三方登录 token 表(auth_token). 默认: true.
+  >     enable-auth-token-table: false
+  > ```
+
+- 自定义 OAuth2 Login 扩展接口: 内置两个自定义 providerId(ums.oauth.customize 与 ums.oauth.gitlabPrivate)
+
+    - [AuthGitlabPrivateSource](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/justauth/source/AuthGitlabPrivateSource.java): 抽象类, 实现此自定义的 AuthGitlabPrivateSource 且注入 ioc 容器的同时, 必须实现 AuthCustomizeRequest , 会自动集成进 OAuth2 Login 逻辑流程中, 只需要像 JustAuth 默认实现的第三方登录一样, 配置相应的属性(ums.oauth.gitlabPrivate.[clientId|clientSecret]等属性)即可.
+    
+    - [AuthCustomizeSource](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/justauth/source/AuthCustomizeSource.java): 抽象类, 实现此自定义的 AuthCustomizeSource 且注入 ioc 容器的同时, 必须实现 AuthCustomizeRequest , 会自动集成进 OAuth2 Login 逻辑流程中, 只需要像 JustAuth 默认实现的第三方登录一样, 配置相应的属性(ums.oauth.customize.[clientId|clientSecret]等属性)即可.
+    
+    - [AuthCustomizeRequest](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/justauth/request/AuthCustomizeRequest.java): 抽象类, 实现此自定义的 AuthCustomizeRequest 同时, 必须实现 AuthCustomizeSource 或 AuthGitlabPrivateSource 且注入 ioc 容器, 会自动集成进 OAuth2 Login 逻辑流程中, 只需要像 JustAuth 默认实现的第三方登录一样, 配置相应的属性(ums.oauth.customize.[clientId|clientSecret]等属性)即可.
+
+- [OneClickLoginService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/oneclicklogin/service/OneClickLoginService.java): 一键登录功能开启时, `必须实现`此接口, 根据 accessToken 从服务商获取用户手机号.
+
+------
+## 五、`Jackson 序列化与反序列化`
+
+- 添加一些 Authentication 与 UserDetails 子类的反序列化器, 以解决 redis 缓存不能反序列化此类型的问题,
+具体配置 redis 反序列器的配置请看 [RedisCacheAutoConfiguration.getJackson2JsonRedisSerializer()](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/config/RedisCacheAutoConfiguration.java) 方法.
+
+```java
+// 示例
+Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
+ObjectMapper objectMapper = new ObjectMapper();
+// Auth2Jackson2Module 为此项目实现的反序列化配置     
+objectMapper.registerModules(new CoreJackson2Module(), new WebJackson2Module(), new Auth2Jackson2Module());
+jackson2JsonRedisSerializer.setObjectMapper(om);
+```
+- 注意: [UmsUserDetailsService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)
+的注册用户方法返回的 `UserDetails` 的默认实现 `User` 已实现反序列化器, 如果是开发者**自定义的子类**, **需开发者自己实现反序列化器**.
+
+------
+## 六、`快速开始(Quick Start)`：
 
 ### 1. 添加依赖:
 
@@ -97,7 +221,7 @@
   <version>4.4.1</version>
 </dependency>
 ```
-### 2. config:  
+### 2. config:
 
 ```yaml
 server:
@@ -452,135 +576,12 @@ hello world!<br>
 - 详细配置配置在: [justAuth-security-oauth2-example](https://gitee.com/pcore/just-auth-spring-security-starter/tree/master/demo/justAuth-security-oauth2-example)
 ------
 
-## 四、使用说明:
-
-### 1. `引入依赖`
-
-```xml
-<dependency>
-    <groupId>top.dcenter</groupId>
-    <artifactId>justAuth-spring-security-starter</artifactId>
-    <version>latest</version>
-</dependency>
-```
-### 2. `必须实现的接口`   
-
-   - 本地用户服务: [UmsUserDetailsService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)    
-   - 一键登录: - [OneClickLoginService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/oneclicklogin/service/OneClickLoginService.java)
-### 3. `必须添加 Auth2AutoConfigurer 到 HttpSecurity`   
-
-```java
-@Configuration
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    private Auth2AutoConfigurer auth2AutoConfigurer;
-    @Autowired
-    private Auth2Properties auth2Properties;
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-
-        // ========= start: 使用 justAuth-spring-security-starter 必须步骤 ========= 
-        // 添加 Auth2AutoConfigurer 使 OAuth2(justAuth) login 生效.
-        http.apply(this.auth2AutoConfigurer);
-
-        http.csrf().disable();
-
-        // 放行第三方登录入口地址与第三方登录回调地址
-        // @formatter:off
-        http.authorizeRequests()
-                .antMatchers(HttpMethod.GET,
-                             auth2Properties.getRedirectUrlPrefix() + "/*",
-                             auth2Properties.getAuthLoginUrlPrefix() + "/*")
-                .permitAll();
-        // @formatter:on
-        // ========= end: 使用 justAuth-spring-security-starter 必须步骤 ========= 
-
-    }
-}
-```
-### 4. `属性配置`
-
-- justAuth-spring-security-starter 大部分功能实现都是通过配置文件设置属性来完成的, 详细属性配置请查看`五、属性配置列表`.
-------
-## 五、接口说明: 
-
-- [UmsUserDetailsService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java): `必须实现`
-
-- [Auth2StateCoder](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2StateCoder.java): `用户需要时实现`, 对第三方授权登录流程中的 state 进行自定义编解码. 可以传递必要的信息, 
-  如: 第三方登录成功的跳转地址等 注意此接口的两个方法必须同时实现对应的编解码逻辑, 实现此接口后注入 IOC 容器即可, 如有前端向后端获取 authorizeUrl
-  时向后端传递额外参数 且用作注册时的信息, 需配合 UmsUserDetailsService.registerUser(AuthUser, String, String, String) 方法实现.
-
-- [Auth2UserService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/Auth2UserService.java): 获取第三方用户信息的接口, 一般**不需要用户实现**, 除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
-
-- [ConnectionService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/signup/ConnectionService.java): 第三方授权登录用户的注册, 绑定, 更新第三方用户信息与 accessToken 信息的接口, 一般**不需要用户实现**.
-  除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
-
-  - [UsersConnectionRepository](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionRepository.java): 第三方授权登录的第三方用户信息增删改查, 绑定与解绑及查询是否绑定与解绑接口, 一般**不需要用户实现**. 
-    除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
-  
-  - [UsersConnectionTokenRepository](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/repository/UsersConnectionTokenRepository.java): 第三方授权登录用户 accessToken 信息表增删改查接口, 一般**不需要用户实现**. 
-    除非想自定义获取第三方用户信息的逻辑, 实现此接口注入 IOC 容器即可替代.
-
-  > # 取消 OAuth2 的内置数据库说明
-  > 
-  > ## 一. 同时取消第三方登录的 user_connection 与 auth_token 表
-  > ### 1. 属性配置 
-  > 
-  > ```yaml
-  > ums:
-  >   oauth:
-  >     # 是否支持内置的第三方登录用户表(user_connection) 和 auth_token 表. 默认: true.
-  >     # 注意: 如果为 false, 则必须重新实现 ConnectionService 接口.
-  >     enable-user-connection-and-auth-token-table: false
-  > ```
-  > ### 2. 必须重新实现 `top.dcenter.ums.security.core.oauth.signup.ConnectionService` 接口
-  > 
-  > ## 二. 取消第三方登录 auth_token 表
-  > ### 1. 属性配置
-  > 
-  > ```yaml
-  > ums:
-  >   oauth:
-  >     # 是否支持内置的第三方登录 token 表(auth_token). 默认: true.
-  >     enable-auth-token-table: false
-  > ```
-
-- 自定义 OAuth2 Login 扩展接口: 内置两个自定义 providerId(ums.oauth.customize 与 ums.oauth.gitlabPrivate)
-
-    - [AuthGitlabPrivateSource](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/justauth/source/AuthGitlabPrivateSource.java): 抽象类, 实现此自定义的 AuthGitlabPrivateSource 且注入 ioc 容器的同时, 必须实现 AuthCustomizeRequest , 会自动集成进 OAuth2 Login 逻辑流程中, 只需要像 JustAuth 默认实现的第三方登录一样, 配置相应的属性(ums.oauth.gitlabPrivate.[clientId|clientSecret]等属性)即可.
-    
-    - [AuthCustomizeSource](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/justauth/source/AuthCustomizeSource.java): 抽象类, 实现此自定义的 AuthCustomizeSource 且注入 ioc 容器的同时, 必须实现 AuthCustomizeRequest , 会自动集成进 OAuth2 Login 逻辑流程中, 只需要像 JustAuth 默认实现的第三方登录一样, 配置相应的属性(ums.oauth.customize.[clientId|clientSecret]等属性)即可.
-    
-    - [AuthCustomizeRequest](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/justauth/request/AuthCustomizeRequest.java): 抽象类, 实现此自定义的 AuthCustomizeRequest 同时, 必须实现 AuthCustomizeSource 或 AuthGitlabPrivateSource 且注入 ioc 容器, 会自动集成进 OAuth2 Login 逻辑流程中, 只需要像 JustAuth 默认实现的第三方登录一样, 配置相应的属性(ums.oauth.customize.[clientId|clientSecret]等属性)即可.
-
-- [OneClickLoginService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/oneclicklogin/service/OneClickLoginService.java): 一键登录`必须实现`此接口, 根据 accessToken 从服务商获取用户手机号.
-
-------
-## 六、`Jackson 序列化与反序列化`
-
-- 添加一些 Authentication 与 UserDetails 子类的反序列化器, 以解决 redis 缓存不能反序列化此类型的问题,
-具体配置 redis 反序列器的配置请看 [RedisCacheAutoConfiguration.getJackson2JsonRedisSerializer()](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/config/RedisCacheAutoConfiguration.java) 方法.
-
-```java
-// 示例
-Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
-ObjectMapper objectMapper = new ObjectMapper();
-// Auth2Jackson2Module 为此项目实现的反序列化配置     
-objectMapper.registerModules(new CoreJackson2Module(), new WebJackson2Module(), new Auth2Jackson2Module());
-jackson2JsonRedisSerializer.setObjectMapper(om);
-```
-- 注意: [UmsUserDetailsService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)
-的注册用户方法返回的 `UserDetails` 的默认实现 `User` 已实现反序列化器, 如果是开发者**自定义的子类**, **需开发者自己实现反序列化器**.
-
-------
-## 八、`时序图`: 随着版本迭代会有出入
+## 七、`时序图`: 随着版本迭代会有出入
 
 ![第三方授权登录](doc/OAuth2Login.png)
 
 ------
-## 九、`属性配置列表`
+## 八、`属性配置列表`
 
 ###  OAuth2 / refreshToken 定时任务 / JustAuth 配置属性
 
@@ -853,7 +854,7 @@ jackson2JsonRedisSerializer.setObjectMapper(om);
 | ums.repository.removeConnectionsSql             | String   | delete from %s where %s = ? and %s = ?                       | 第三方登录用户数据库用户表根据 userId 与 providerId 删除多个用户。  注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应,%s按顺序会用对应的 :  tableName、  userIdColumnName、  providerIdColumnName |            |
 | ums.repository.removeConnectionSql              | String   | delete from %s where %s = ? and %s = ? and %s = ?            | 第三方登录用户数据库用户表根据 userId、providerId、providerUserId 删除一个用户。  注意： sql 语句中的 %s 必须写上，问号必须与指定的 %s 相对应,%s按顺序会用对应的 :  tableName、  userIdColumnName、  providerIdColumnName、  providerUserIdColumnName |            |
 
-## 十、参与贡献
+## 九、参与贡献
 
 1. Fork [本项目](https://gitee.com/pcore/just-auth-spring-security-starter)
 2. 新建 Feat_xxx 分支
