@@ -1,3 +1,7 @@
+## 1.1.23
+### Fixes and Improvements:
+1. 修复: 未实现 OneClickService 时不能启动的问题.
+
 ## 1.1.22
 ### Fixes and Improvements:
 1. 修复: redirect 时 url 中文乱码的bug. 感谢: jueding920.
