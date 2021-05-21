@@ -168,7 +168,7 @@ public class Auth2AutoConfigurer extends SecurityConfigurerAdapter<DefaultSecuri
                                                           authenticationDetailsSource);
             oneClickLoginAuthenticationFilter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
             oneClickLoginAuthenticationProvider =
-                    new OneClickLoginAuthenticationProvider(umsUserDetailsService);
+                    new OneClickLoginAuthenticationProvider(umsUserDetailsService, oneClickLoginService);
             http.addFilterAfter(postProcess(oneClickLoginAuthenticationFilter), AbstractPreAuthenticatedProcessingFilter.class);
         }
         else {

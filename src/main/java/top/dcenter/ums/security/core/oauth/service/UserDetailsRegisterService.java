@@ -31,8 +31,6 @@ import org.springframework.web.context.request.ServletWebRequest;
 import top.dcenter.ums.security.core.oauth.enums.ErrorCodeEnum;
 import top.dcenter.ums.security.core.oauth.exception.RegisterUserFailureException;
 
-import java.util.Map;
-
 /**
  * 用户名密码注册、手机短信登录与 OAuth 登录的用户注册接口.<br><br>
  * 推荐通过继承来实现 {@link UmsUserDetailsService} 此接口的功能
@@ -41,19 +39,6 @@ import java.util.Map;
  * Created by 2020/5/16 10:48
  */
 public interface UserDetailsRegisterService {
-
-    /**
-     * 一键登录用户注册接口.
-     * @param mobile        手机号
-     * @param otherParamMap 其他请求参数 map(包括请求头参数), map(paramName, paramValue)
-     * @return  注册后的 UserDetails 信息
-     * @throws RegisterUserFailureException 用户注册失败
-     */
-    @NonNull
-    default UserDetails registerUser(@NonNull String mobile,
-                                     @Nullable Map<String, String> otherParamMap) throws RegisterUserFailureException {
-        throw new RegisterUserFailureException(ErrorCodeEnum.USER_REGISTER_FAILURE, null);
-    }
 
     /**
      * 手机短信登录用户注册接口

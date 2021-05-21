@@ -24,6 +24,7 @@ package top.dcenter.ums.security.core.oauth.oneclicklogin.service;
 
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.security.core.userdetails.UserDetails;
 import top.dcenter.ums.security.core.oauth.exception.Auth2Exception;
 
 import java.util.Map;
@@ -45,4 +46,12 @@ public interface OneClickLoginService {
      */
     @NonNull
     String callback(@NonNull String accessToken, @Nullable Map<String, String> otherParamMap) throws Auth2Exception;
+
+    /**
+     * 一键登录成功后, 针对 otherParamMap 的处理.
+     * @param userDetails   登录成功后的 user details
+     * @param otherParamMap 一键登录时的其他请求参数.
+     */
+    void otherParamsHandler(@NonNull UserDetails userDetails, @Nullable Map<String, String> otherParamMap);
+
 }

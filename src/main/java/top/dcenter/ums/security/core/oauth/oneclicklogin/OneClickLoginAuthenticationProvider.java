@@ -22,13 +22,17 @@
  */
 package top.dcenter.ums.security.core.oauth.oneclicklogin;
 
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import top.dcenter.ums.security.core.oauth.oneclicklogin.service.OneClickLoginService;
 import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
+
+import java.util.Map;
+
+import static java.util.Objects.nonNull;
 
 
 /**
@@ -39,9 +43,12 @@ import top.dcenter.ums.security.core.oauth.service.UmsUserDetailsService;
  */
 public class OneClickLoginAuthenticationProvider implements AuthenticationProvider {
     private final UmsUserDetailsService userDetailsService;
+    private final OneClickLoginService oneClickLoginService;
 
-    public OneClickLoginAuthenticationProvider(@NonNull UmsUserDetailsService userDetailsService) {
+    public OneClickLoginAuthenticationProvider(UmsUserDetailsService userDetailsService,
+                                               OneClickLoginService oneClickLoginService) {
         this.userDetailsService = userDetailsService;
+        this.oneClickLoginService = oneClickLoginService;
     }
 
     @Override
@@ -64,15 +71,20 @@ public class OneClickLoginAuthenticationProvider implements AuthenticationProvid
             user = null;
         }
 
+        Map<String, String> otherParamMap = null;
         if (user == null)
         {
-            user = this.userDetailsService.registerUser((String) authenticationToken.getPrincipal(),
-                                                        authenticationToken.getOtherParamMap());
+            user = this.userDetailsService.registerUser((String) authenticationToken.getPrincipal());
+        }
 
+        // 一键登录的其他参数处理
+        otherParamMap = authenticationToken.getOtherParamMap();
+        if (nonNull(otherParamMap) && !otherParamMap.isEmpty()) {
+            this.oneClickLoginService.otherParamsHandler(user, otherParamMap);
         }
         OneClickLoginAuthenticationToken authenticationResult =
                 new OneClickLoginAuthenticationToken(user,
-                                                     authenticationToken.getOtherParamMap(),
+                                                     otherParamMap,
                                                      user.getAuthorities());
         authenticationResult.setDetails(authenticationToken.getDetails());
         return authenticationResult;

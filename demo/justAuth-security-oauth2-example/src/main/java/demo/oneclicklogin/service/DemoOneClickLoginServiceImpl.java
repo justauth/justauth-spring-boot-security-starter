@@ -1,7 +1,10 @@
 package demo.oneclicklogin.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import top.dcenter.ums.security.core.oauth.enums.ErrorCodeEnum;
 import top.dcenter.ums.security.core.oauth.exception.Auth2Exception;
@@ -10,6 +13,7 @@ import top.dcenter.ums.security.core.oauth.oneclicklogin.service.OneClickLoginSe
 import java.util.Map;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 /**
  * 一键登录服务实现: 从服务商获取手机号
@@ -19,6 +23,9 @@ import static java.util.Objects.isNull;
  */
 @Service
 public class DemoOneClickLoginServiceImpl implements OneClickLoginService {
+
+    public static final Logger log = LoggerFactory.getLogger(DemoOneClickLoginServiceImpl.class);
+
     @Override
     @NonNull
     public String callback(@NonNull String accessToken, @Nullable Map<String, String> otherParamMap) throws Auth2Exception {
@@ -32,5 +39,14 @@ public class DemoOneClickLoginServiceImpl implements OneClickLoginService {
         }
 
         return mobile;
+    }
+
+    @Override
+    public void otherParamsHandler(@NonNull UserDetails userDetails, Map<String, String> otherParamMap) {
+        if (nonNull(otherParamMap) && !otherParamMap.isEmpty()) {
+            // handler otherParamMap
+            log.info("登录用户: {}", userDetails.getUsername());
+            log.info("登录时的其他请求参数: {}", otherParamMap.toString());
+        }
     }
 }
