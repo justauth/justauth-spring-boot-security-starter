@@ -1,3 +1,7 @@
+## 1.1.24
+### Fixes and Improvements:
+1. oauth/添加: 一键登录 OneClickLoginService#otherParamsHandler(userDetails, otherParamMap) 接口方法. 因与手机登录注册方法逻辑重复, 故删除 UserDetailsRegisterService#registerUser(mobile,otherParamMap) 默认接口方法.
+
 ## 1.1.23
 ### Fixes and Improvements:
 1. 修复: 未实现 OneClickService 时不能启动的问题.

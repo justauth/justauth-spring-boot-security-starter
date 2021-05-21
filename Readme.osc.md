@@ -1,6 +1,6 @@
 # Spring security 集成 JustAuth 实现第三方授权登录脚手架: 
 
-![justAuthSpringSecurity](https://img.shields.io/badge/justAuthSpringSecurity-1.1.23-green.svg)
+![justAuthSpringSecurity](https://img.shields.io/badge/justAuthSpringSecurity-1.1.24-green.svg)
 ![JDK](https://img.shields.io/badge/JDK-1.8+-green.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.6.3-green.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-5.7.27-green.svg)
@@ -52,7 +52,7 @@
 ### 2. `必须实现的接口`   
 
    - 本地用户服务: [UmsUserDetailsService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/service/UmsUserDetailsService.java)    
-   - 开启一键登录功能时: - [OneClickLoginService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/oneclicklogin/service/OneClickLoginService.java)
+   - 开启一键登录功能时: [OneClickLoginService](https://gitee.com/pcore/just-auth-spring-security-starter/blob/master/src/main/java/top/dcenter/ums/security/core/oauth/oneclicklogin/service/OneClickLoginService.java)
 
 ### 3. `必须添加 Auth2AutoConfigurer 到 HttpSecurity`   
 
