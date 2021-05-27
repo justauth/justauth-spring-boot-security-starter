@@ -1,3 +1,7 @@
+## 1.1.25
+### Fixes and Improvements:
+1. 修复: UsersConnectionTokenRepository 构造器参数(TextEncryptor)没有限定beanName , 而注入应用中其他的 TextEncryptor 对象,, 而报 Unable to initialize due to invalid secret key 的bug. 感谢: Maooooooooooo_
+
 ## 1.1.24
 ### Fixes and Improvements:
 1. oauth/添加: 一键登录 OneClickLoginService#otherParamsHandler(userDetails, otherParamMap) 接口方法. 因与手机登录注册方法逻辑重复, 故删除 UserDetailsRegisterService#registerUser(mobile,otherParamMap) 默认接口方法.
