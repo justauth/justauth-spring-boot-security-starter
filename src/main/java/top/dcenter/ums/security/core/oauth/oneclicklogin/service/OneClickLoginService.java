@@ -39,7 +39,7 @@ public interface OneClickLoginService {
 
     /**
      * 根据 accessToken 从服务商获取用户手机号
-     * @param accessToken   access token
+     * @param accessToken   前端通过 sdk 获取的服务商的 access token
      * @param otherParamMap 其他请求参数 map(包括请求头参数), map(paramName, paramValue)
      * @return 手机号
      * @throws Auth2Exception 获取手机号失败
